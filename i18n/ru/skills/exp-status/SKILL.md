@@ -1,8 +1,9 @@
 ---
 description: View the status of all running experiments; optionally auto-collect completed experiments and advance the pipeline
+lang: ru
 argument-hint: "[--pipeline <slug>] [--collect-ready] [--auto-advance]"
+---
 
-lang: ru---
 # /exp-status
 
 > Панель состояния запущенных экспериментов; авто-сбор результатов.

@@ -1,8 +1,9 @@
 ---
 description: Experiment verdict gate — Review LLM independently judges results → 4 verdict paths → auto-update the linked idea's status / failure_reason and graph edges
+lang: ru
 argument-hint: <experiment-slug> [--auto]
+---
 
-lang: ru---
 # /exp-eval
 
 > Оценить результаты эксперимента, вынести вердикт и обновить связанные страницы.

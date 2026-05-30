@@ -1,8 +1,9 @@
 ---
 description: Bootstrap ΩmegaWiki from user sources plus optional discovery, then ingest the final paper set in parallel
+lang: ru
 argument-hint: "[topic] [--no-introduction]"
+---
 
-lang: ru---
 # /init
 
 > Инициализировать вики из пользовательских источников с опциональным внешним поиском.

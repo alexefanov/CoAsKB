@@ -1,8 +1,9 @@
 ---
 description: Pilot result evaluation — read pilot results, apply success criteria, update idea page (pilot_result, failure_reason if failed), generate PILOT_VERDICT_REPORT. Called by /ideate Phase 5 after /exp-pilot-run.
+lang: ru
 argument-hint: <idea-slug> [--auto]
+---
 
-lang: ru---
 # /exp-pilot-eval
 
 > Оценить результаты пилотного эксперимента с лояльной логикой вердикта.

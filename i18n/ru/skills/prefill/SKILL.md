@@ -1,8 +1,9 @@
 ---
 description: Seed wiki/foundations/ with domain background knowledge so subsequent /ingest does not create duplicate concept pages for textbook material
+lang: ru
 argument-hint: "[domain] [--add 'concept name']"
+---
 
-lang: ru---
 # /prefill
 
 > Опционально заполнить foundations/ фоновыми знаниями из Wikipedia.
@@ -39,3 +40,4 @@ lang: ru---
 ### Инструменты
 - WebFetch (Wikipedia API)
 - `python3 tools/research_wiki.py slug "<title>"`
+
