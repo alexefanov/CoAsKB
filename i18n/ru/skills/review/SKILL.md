@@ -1,7 +1,9 @@
 ---
-description: General-purpose cross-model review — Review LLM independently reviews any research artifact, outputs structured scores, wiki entity mapping, and improvement suggestions
+description: Межмодельная adversarial-рецензия любого исследовательского артефакта
+lang: ru
 argument-hint: <artifact-path-or-slug> [--difficulty standard|hard|adversarial] [--focus method|evidence|writing|completeness]
 ---
+
 
 # /review
 

@@ -1,7 +1,9 @@
 ---
-description: Generate and update visualization artifacts — Obsidian graph config and Canvas knowledge maps. The interactive web graph view lives in the SPA at app/modules/graph.js (served by tools/serve.py).
+description: Сгенерировать или обновить артефакты визуализации графа знаний (веб-интерфейс, Obsidian-конфиг, Canvas)
+lang: ru
 argument-hint: [--obsidian] [--canvas] [--focus <node_id>] [--depth N] [--types <page-type,...>] [--edge-types <edge-type,...>] [--all]
 ---
+
 
 # /visualize
 

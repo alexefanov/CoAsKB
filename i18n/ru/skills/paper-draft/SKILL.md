@@ -1,7 +1,9 @@
 ---
-description: Draft a LaTeX paper from PAPER_PLAN — write each section from wiki sources + generate figures/tables + BibTeX verification + de-AI polish
+description: Написать черновик статьи (LaTeX + рисунки) по разделу из плана, используя знания вики
+lang: ru
 argument-hint: <paper-plan-path> [--review] [--sections <section-numbers>]
 ---
+
 
 # /paper-draft
 

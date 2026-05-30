@@ -1,7 +1,9 @@
 ---
-description: Build a ranked shortlist of candidate papers (anchor-driven, topic-driven, or derived from current wiki state) that the user — or an upstream skill — may decide to feed into `/ingest`. Use whenever the user asks "what should I read next", "find papers similar to this one", "recommend related work", "what's around this topic", or whenever `/ingest` is invoked with `--discover`. Does not ingest; only proposes.
+description: Построить ранжированный шорт-лист кандидатов (по якорям, теме или состоянию вики), который пользователь или вышестоящий скилл может передать в /ingest. Не выполняет ingest, только предлагает
+lang: ru
 argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str> | --from-wiki | --venue <slug> --year <int>) [--limit N]"
 ---
+
 
 # /discover
 

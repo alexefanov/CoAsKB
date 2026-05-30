@@ -1,7 +1,9 @@
 ---
-description: End-to-end research orchestrator — idea discovery → experiment design → execution → verdict → paper writing, with human gates and session-resumable state
+description: Сквозной оркестратор исследования с человеческими шлюзами
+lang: ru
 argument-hint: <research-direction-or-brief> [--auto] [--start-from stage1|stage2|stage3|stage3-collect|stage3-check|stage4|stage5] [--skip-paper] [--venue ICLR|NeurIPS|ICML|ACL|CVPR]
 ---
+
 
 # /research
 

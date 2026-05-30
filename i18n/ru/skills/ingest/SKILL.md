@@ -1,7 +1,9 @@
 ---
-description: Ingest a paper into the wiki — creates pages (papers + concepts + methods + people) and builds all cross-references and graph edges. Trigger whenever the user says "ingest", "add this paper", drops a `.pdf` / `.tex` / arXiv URL, or asks to fold a paper into the knowledge base.
+description: Внедрить источник в вики — создаёт страницы и строит все перекрёстные ссылки и рёбра графа. Запускать когда пользователь говорит "внедри", "добавь этот документ", передаёт .pdf/.tex/URL
+lang: ru
 argument-hint: <local-path-or-arXiv-URL> [--discover] [--visualize]
 ---
+
 
 # /ingest
 

@@ -1,7 +1,9 @@
 ---
-description: Reset wiki state to a clean scaffold by scope (wiki / raw / log / checkpoints / all). Useful during development or carefree restarts after a botched setup.
+description: Деструктивная очистка по областям: wiki | raw | log | checkpoints | all
+lang: ru
 argument-hint: "--scope wiki|raw|log|checkpoints|all"
 ---
+
 
 # /reset
 

@@ -1,8 +1,10 @@
 ---
 name: edit
-description: Add or remove raw sources, or update wiki content, per user request
+description: Добавить или удалить исходные источники, или обновить содержимое вики по запросу пользователя
+lang: ru
 argument-hint: "[request]"
 ---
+
 
 # /edit
 

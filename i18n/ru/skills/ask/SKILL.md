@@ -1,7 +1,9 @@
 ---
-description: Ask the wiki a question, retrieve and synthesize relevant pages, optionally crystallize the answer back into the wiki
+description: Задать вопрос вики — найти и обобщить релевантные страницы, опционально кристаллизовать ответ обратно в вики
+lang: ru
 argument-hint: <question>
 ---
+
 
 # /ask
 

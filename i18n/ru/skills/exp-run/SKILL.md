@@ -1,7 +1,9 @@
 ---
-description: Full experiment execution pipeline — prepare code → deploy(Confirm with the user before operation and ask the applicant to conduct manual inspection) → monitor → collect results, supporting three run modes
+description: Реализовать, развернуть и отследить эксперимент (локально или на удалённом GPU)
+lang: ru
 argument-hint: <experiment-slug> [--review] [--collect] [--full] [--env local|remote]
 ---
+
 
 # /exp-run
 

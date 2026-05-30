@@ -1,7 +1,9 @@
 ---
-description: Generate a Related Work section for a paper from wiki knowledge — thematic grouping → narrative structure → LaTeX output, following citation-verification and academic-writing
+description: Сгенерировать раздел Related Work для статьи из знаний вики — тематическая группировка → нарративная структура → LaTeX-вывод, следуя citation-verification и academic-writing
+lang: ru
 argument-hint: <research-question-or-idea-slugs> [--format latex|markdown] [--max-papers 30]
 ---
+
 
 # /survey
 

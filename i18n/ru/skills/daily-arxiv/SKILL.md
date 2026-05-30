@@ -1,7 +1,9 @@
 ---
-description: Run or manage the daily arXiv recommendation feed. Use for one-off fresh-paper recommendations, scheduled GitHub Actions setup/status/disable, email digests, and explicit high-confidence auto-ingest through /ingest.
+description: Запустить или управлять ежедневной лентой рекомендаций arXiv. Для разовых рекомендаций свежих статей, настройки/статуса/отключения GitHub Actions, email-дайджестов и явного высоконадёжного авто-ingest через /ingest
+lang: ru
 argument-hint: "[setup|status|disable] [--mode inform|auto-ingest] [--hours 24] [--categories <cat...>] [--max-recommendations 10] [--max-auto-ingest 1] [--send-email true|false]"
 ---
+
 
 # /daily-arxiv
 

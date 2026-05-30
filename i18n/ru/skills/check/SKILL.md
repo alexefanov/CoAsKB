@@ -1,6 +1,8 @@
 ---
-description: Scan the full wiki to detect health issues and produce a tiered fix-recommendation report (covers all entity types in runtime/schema/entities.yaml + graph consistency)
+description: Просканировать всю вики на проблемы здоровья и составить отчёт с рекомендациями по исправлению (все типы сущностей из runtime/schema/entities.yaml + целостность графа)
+lang: ru
 ---
+
 
 # /check
 
