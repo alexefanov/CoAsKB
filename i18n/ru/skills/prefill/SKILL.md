@@ -1,10 +1,8 @@
 ---
-description: Опционально заполнить foundations/ фоновыми знаниями из Wikipedia
-lang: ru
+description: Seed wiki/foundations/ with domain background knowledge so subsequent /ingest does not create duplicate concept pages for textbook material
 argument-hint: "[domain] [--add 'concept name']"
----
 
-
+lang: ru---
 # /prefill
 
 > Sediments foundational background (seminal methods, common practice, standard architectures) into `wiki/foundations/` as **terminal** pages.

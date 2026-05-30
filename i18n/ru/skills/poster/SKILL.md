@@ -1,10 +1,8 @@
 ---
-description: Превратить готовый черновик статьи в печатный постер конференции (HTML + PNG)
-lang: ru
+description: Generate an academic poster from a drafted paper — distill sections into a single-page HTML poster with figures and inter-section transitions
 argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos] [--no-refine]"
----
 
-
+lang: ru---
 # /poster
 
 > Generate an academic HTML poster from a drafted paper. Reads `paper/main.tex`,

@@ -1,62 +1,41 @@
 ---
 name: edit
-description: Добавить или удалить исходные источники, или обновить содержимое вики по запросу пользователя
-lang: ru
+description: Add or remove raw sources, or update wiki content, per user request
 argument-hint: "[request]"
----
 
-
+lang: ru---
 # /edit
 
-> Add or remove raw sources, or update wiki content, per user request.
+> Добавить, изменить или удалить содержимое вики по запросу пользователя.
+> Единственный скилл, который может напрямую редактировать файлы вики.
 
-## Trigger
+## Аргументы
 
-User manual: `/edit <user request>`
+- `--raw-source <путь>` (опционально): полный путь к исходному файлу или URL. Если передан, прочитай источник, извлеки метаданные и создай страницу вики.
+- `--page <путь>` (опционально): путь к существующей странице вики для редактирования. Прочитай текущее содержимое, внеси изменения по запросу пользователя.
+- `--delete <путь>` (опционально): страница для удаления. Требует подтверждения пользователя.
+- `--merge <page-a> <page-b>` (опционально): объединить две страницы в одну. Страница A становится основной, B — перенаправлением.
 
-## Inputs
+## Поведение
 
-User request, for example:
-- "Download this paper to raw/papers/"
-- "Delete raw/papers/xxx.pdf"
-- "Update the SOTA tracker in topics/efficient-llm-adaptation"
-- "Add a new variant to concepts/lora"
+1. Прими запрос пользователя.
+2. Если указан `--raw-source`: прочитай источник, извлеки метаданные (автор, дата, тема), создай страницу вики в соответствующем каталоге.
+3. Если указан `--page`: прочитай текущее содержимое страницы, внеси изменения.
+4. Если указан `--delete`: запроси подтверждение. Проверь все входящие ссылки на эту страницу. Если ссылки есть — покажи их пользователю перед удалением.
+5. Если указан `--merge`: объедини содержимое A + B, обнови все ссылки с B на A.
+6. Обнови `wiki/log.md` и при необходимости `wiki/Source Notes.md`.
 
-## Outputs
+## Обработка ошибок
 
-Updated wiki files, `index.md`, `log.md`
+- **Страница не существует**: сообщи, предложи создать через `--raw-source`.
+- **Входящие ссылки есть**: перечисли их, запроси подтверждение.
+- **Конфликт slug**: используй числовой суффикс.
 
-## Steps
+## Зависимости
 
-### STEP 1: Parse User Intent
+### Инструменты
+- `python3 tools/research_wiki.py read-meta <path>`
+- `python3 tools/research_wiki.py set-meta <path> <field> <value>`
 
-1. **Add raw sources**:
-   - If the user provides a local path: copy to the corresponding directory under `raw/`
-   - If the user provides an arXiv URL: download to `raw/papers/`
-   - If the user provides a web URL: fetch content with markdownify and save to `raw/web/`
-2. **Delete raw sources**:
-   - Confirm then execute deletion
-3. **Update wiki**:
-   - Read the relevant pages and modify content per user instructions
-
-### STEP 2: Execute Updates
-
-1. Newly added raw sources can later be incorporated into the wiki via `/ingest`
-2. Direct wiki modifications: update the specified fields/content in specific pages per user instructions
-3. When writing forward links, simultaneously write reverse links
-
-### STEP 3: Update Navigation
-
-1. `EDIT wiki/index.md`: update relevant entries
-2. `APPEND wiki/log.md`: `## [{date}] update | {description}`
-
-### STEP 4: Report
-
-- List all changes made
-- Suggest follow-up actions (e.g. ingest newly added raw sources if applicable)
-
-## Constraints
-
-- `raw/` is read-only for existing files (this skill may add files to `raw/`, but must not modify existing ones)
-- Wiki modifications must follow template structure
-- Bidirectional links must be kept in sync
+### Скиллы
+- `/check` — для проверки результата редактирования

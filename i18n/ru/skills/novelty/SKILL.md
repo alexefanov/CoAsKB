@@ -1,10 +1,8 @@
 ---
-description: Многоисточниковая проверка новизны: веб + Semantic Scholar + вики + Review LLM
-lang: ru
+description: Multi-source novelty verification — WebSearch + Semantic Scholar + wiki + Review LLM cross-verify — outputs novelty score and recommendations. Optionally writes the score back to an idea page with --write.
 argument-hint: <idea-description-or-slug> [--quick] [--verbose] [--write]
----
 
-
+lang: ru---
 # /novelty
 
 > Verify the novelty of a research idea or method using multiple sources. Searches WebSearch,

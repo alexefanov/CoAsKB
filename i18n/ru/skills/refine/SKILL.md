@@ -1,10 +1,8 @@
 ---
-description: Многораундовое улучшение: создать → рецензировать → исправить → перерецензировать
-lang: ru
+description: General-purpose multi-round iterative improvement — repeatedly calls /review on any research artifact, parses feedback, applies fixes, updates wiki, until the target score is reached
 argument-hint: <artifact-slug-or-path> [--max-rounds N] [--target-score N] [--difficulty standard|hard|adversarial] [--focus method|evidence|writing|completeness]
----
 
-
+lang: ru---
 # /refine
 
 > General-purpose multi-round iterative improvement loop for any research artifact

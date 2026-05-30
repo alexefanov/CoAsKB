@@ -1,10 +1,8 @@
 ---
-description: Спроектировать эксперимент из идеи: выбрать метод, метрики, бейзлайн — и записать страницу эксперимента в вики
-lang: ru
+description: Idea-driven experiment design with iterative ablation — method candidate generation (direct / hybrid / cross-idea combination) → benchmark selection → iterative ablation (non-linear: ablation can trigger method simplification and re-planning) → sensitivity analysis → main experiment → optional generalization → deep analysis of intermediate quantities. Use when designing a full experiment suite for an idea after pilot evaluation.
 argument-hint: <idea-slug>
----
 
-
+lang: ru---
 # /exp-design
 
 > Design a complete, non-linear experiment suite for an idea.

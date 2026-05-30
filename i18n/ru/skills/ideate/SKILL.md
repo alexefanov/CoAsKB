@@ -1,10 +1,8 @@
 ---
-description: Многофазовый конвейер генерации исследовательских идей: обзор ландшафта → дуальная мозговая атака → фильтрация и валидация → запись в вики → пилот
-lang: ru
+description: Multi-phase research idea generation pipeline: landscape scan → dual-model brainstorm → filter & validation → write to wiki → pilot
 argument-hint: "[research-direction-or-topic] [--max-ideas N] [--skip-validation] [--skip-pilot] [--auto]"
----
 
-
+lang: ru---
 # /ideate
 
 > Generates high-quality research ideas through a 5-phase pipeline, grounded in the wiki knowledge base and external search.

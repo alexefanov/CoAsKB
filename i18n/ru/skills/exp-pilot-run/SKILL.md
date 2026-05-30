@@ -1,10 +1,8 @@
 ---
-description: Запустить пилотный эксперимент: написать код, развернуть, отследить, собрать сырые результаты
-lang: ru
+description: Pilot experiment execution — read Pilot Spec YAML, write pilot code, run experiment(Confirm with the user before operation and require the applicant to conduct manual inspection), return results. Called by /ideate Phase 5. Does NOT modify wiki pages or judge pass/fail.
 argument-hint: <idea-slug> [--env local|remote]
----
 
-
+lang: ru---
 # /exp-pilot-run
 
 > Execute a pilot experiment described by a Pilot Spec YAML file.

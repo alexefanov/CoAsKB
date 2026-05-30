@@ -1,10 +1,8 @@
 ---
-description: Оценить результаты пилотного эксперимента: прочитать результаты, применить лояльную логику вердикта
-lang: ru
+description: Pilot result evaluation — read pilot results, apply success criteria, update idea page (pilot_result, failure_reason if failed), generate PILOT_VERDICT_REPORT. Called by /ideate Phase 5 after /exp-pilot-run.
 argument-hint: <idea-slug> [--auto]
----
 
-
+lang: ru---
 # /exp-pilot-eval
 
 > Evaluate pilot experiment results and update the linked idea page.

@@ -1,10 +1,8 @@
 ---
-description: Скомпилировать LaTeX в PDF, авто-исправить ошибки, проверить объём и анонимность
-lang: ru
+description: LaTeX compile → PDF — latexmk compile + auto-fix + page count/anonymity/font/[UNCONFIRMED] checks + submission checklist
 argument-hint: "[paper-dir] [--fix] [--checklist]"
----
 
-
+lang: ru---
 # /paper-compile
 
 > Compile a LaTeX paper to PDF, auto-fix common errors, and verify submission requirements.
