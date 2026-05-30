@@ -1,18 +1,20 @@
 # entities.yaml — Node contract for the wiki entity types.
+# entities.yaml — Контракт узлов для типов сущностей вики.
 #
-# Field attributes:
+# Field attributes / Атрибуты полей:
 #   type           str | int | float | bool | date | enum | object | link
 #                  | list_str | list_int | list_link | list_object
 #   required       boolean, default false
-#   default        literal value used by `lint --fix`
+#   default        literal value used by `lint --fix` / значение по умолчанию, используется `lint --fix`
 #   range          [min, max] for int / float
 #   values         [...] for enum
-#   to             entity kind (or list of kinds) for link / list_link
-#   required_when  { other_field: value } for conditional required
-#   fields         nested schema for object
-#   item           per-element schema for list_object
+#   to             entity kind (or list of kinds) for link / list_link / вид сущности для link/list_link
+#   required_when  { other_field: value } for conditional required / для условной обязательности
+#   fields         nested schema for object / вложенная схема для объекта
+#   item           per-element schema for list_object / поэлементная схема для list_object
 #
 # `terminal: true` means the entity writes no outward links (xref reverse-rule exempt).
+# `terminal: true` — сущность не создаёт внешних ссылок (исключение из правил обратных ссылок xref).
 
 papers:
   dir: wiki/papers/
