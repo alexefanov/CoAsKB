@@ -35,3 +35,4 @@ argument-hint: "<idea-slug> [--env local|remote]"
 ## Зависимости
 ### Инструменты
 - `python3 tools/run_experiment.py --config <slug> --mode pilot`
+

@@ -5,20 +5,15 @@ argument-hint: "<artifact-path-or-slug> [--difficulty standard|hard|adversarial]
 ---
 # /review
 
-
 > Межмодельная adversarial-рецензия любого исследовательского артефакта.
 
-
 ## Аргументы
-
 
 - `--from <файл>` (обязательно): артефакт для рецензии (.tex, .md, .pdf)
 
 - `--type <тип>` (опц.): тип рецензии: full (по умолч.) | quick | methodology | writing
 
-
 ## Поведение
-
 
 1. Прочитай артефакт (статья, план, идея, постер).
 
@@ -42,16 +37,15 @@ argument-hint: "<artifact-path-or-slug> [--difficulty standard|hard|adversarial]
 
 4. Составь сводный отчёт с оценками и рекомендациями.
 
-
 ## Выходы
 
 - Отчёт рецензии с баллами и комментариями
 
 - (Опц.) Сравнение с Review LLM
 
-
 ## Зависимости
 
 ### Скиллы
 
 - /edit — для исправления по рецензии
+

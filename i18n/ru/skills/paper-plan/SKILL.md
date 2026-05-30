@@ -5,20 +5,15 @@ argument-hint: "<idea-slugs...> --venue <ICLR|NeurIPS|ICML|ACL|CVPR|IEEE> [--tit
 ---
 # /paper-plan
 
-
 > Составить план статьи из валидированных идей + матрицы свидетельств.
 
-
 ## Аргументы
-
 
 - `--from <slug1,slug2,...>` (обязательно): страницы идей, лежащих в основе статьи
 
 - `--venue <название>` (опц.): целевой журнал/конференция для форматирования
 
-
 ## Поведение
-
 
 1. Прочитай указанные страницы идей.
 
@@ -66,7 +61,6 @@ argument-hint: "<idea-slugs...> --venue <ICLR|NeurIPS|ICML|ACL|CVPR|IEEE> [--tit
 
 7. Проверь BibTeX для всех запланированных цитат.
 
-
 ## Выходы
 
 - Страница плана в wiki/outputs/
@@ -74,7 +68,6 @@ argument-hint: "<idea-slugs...> --venue <ICLR|NeurIPS|ICML|ACL|CVPR|IEEE> [--tit
 - Список BibTeX для цитирований
 
 - Обновлён index.md
-
 
 ## Зависимости
 
@@ -84,7 +77,7 @@ argument-hint: "<idea-slugs...> --venue <ICLR|NeurIPS|ICML|ACL|CVPR|IEEE> [--tit
 
 - `python3 tools/research_wiki.py find wiki/ experiments --field linked_idea <slug>`
 
-
 ### Скиллы
 
 - /paper-draft — для написания разделов
+

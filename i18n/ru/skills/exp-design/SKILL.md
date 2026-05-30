@@ -39,3 +39,4 @@ argument-hint: "<idea-slug>"
 - `python3 tools/research_wiki.py slug "<title>"`
 - `python3 tools/research_wiki.py add-edge wiki/ --from X --to Y --type Z`
 - `python3 tools/research_wiki.py log wiki/ "<msg>"`
+

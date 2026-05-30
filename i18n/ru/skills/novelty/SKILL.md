@@ -33,3 +33,4 @@ argument-hint: "<idea-description-or-slug> [--quick] [--verbose] [--write]"
 
 ### Скиллы
 - /review — для кросс-модельной рецензии
+

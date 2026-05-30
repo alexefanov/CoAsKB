@@ -5,12 +5,9 @@ argument-hint: "<research-question-or-idea-slugs> [--format latex|markdown] [--m
 ---
 # /survey
 
-
 > Сгенерировать раздел Related Work для статьи из знаний вики — тематическая группировка → нарративная структура → LaTeX-вывод.
 
-
 ## Аргументы
-
 
 - `--topic <тема>` (обязательно): тема обзора
 
@@ -18,9 +15,7 @@ argument-hint: "<research-question-or-idea-slugs> [--format latex|markdown] [--m
 
 - `--output <файл>` (опц.): путь для .tex (по умолч. outputs/survey-<slug>.tex)
 
-
 ## Поведение
-
 
 1. Собери релевантные страницы (из аргумента или поиском по теме).
 
@@ -48,13 +43,11 @@ argument-hint: "<research-question-or-idea-slugs> [--format latex|markdown] [--m
 
 6. Сохрани `.tex` файл.
 
-
 ## Выходы
 
 - `.tex` файл раздела Related Work
 
 - (Опц.) обновлён `.bib` файл
-
 
 ## Зависимости
 
@@ -62,7 +55,7 @@ argument-hint: "<research-question-or-idea-slugs> [--format latex|markdown] [--m
 
 - `python3 tools/research_wiki.py find wiki/ <kind> --field <field> <value>`
 
-
 ### Shared References
 
 - academic-writing.md, citation-verification.md
+

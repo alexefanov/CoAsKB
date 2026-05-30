@@ -4,14 +4,11 @@ lang: ru
 ---
 # /setup
 
-
 > Одноразовая настройка окружения: установка зависимостей,
 
 > конфигурация .env, активация локали, проверка инструментов.
 
-
 ## Аргументы
-
 
 - `--lang <код>` (опционально): язык (по умолчанию `ru`)
 
@@ -19,9 +16,7 @@ lang: ru
 
 - `--skip-dotenv` (опционально): не копировать .env
 
-
 ## Поведение
-
 
 1. **Поиск Python** — проверь наличие `python3` (Windows: `python`).
 
@@ -51,9 +46,7 @@ lang: ru
 
 6. **Отчёт** — покажи статус установки.
 
-
 ## Использование
-
 
 ```bash
 
@@ -61,13 +54,11 @@ lang: ru
 
 ./setup.sh
 
-
 # Выбор языка
 
 ./setup.sh --lang en
 
 ./setup.sh --lang zh
-
 
 # Windows
 
@@ -76,3 +67,4 @@ powershell -ExecutionPolicy Bypass -File .\setup.ps1
 powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Lang en
 
 ```
+

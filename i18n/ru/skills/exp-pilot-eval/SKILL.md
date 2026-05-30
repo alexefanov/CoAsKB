@@ -26,3 +26,4 @@ argument-hint: "<idea-slug> [--auto]"
 ## Зависимости
 ### Инструменты
 - `python3 tools/research_wiki.py set-meta <path> <field> <value>`
+

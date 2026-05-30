@@ -39,3 +39,4 @@ argument-hint: "[domain] [--add 'concept name']"
 ### Инструменты
 - WebFetch (Wikipedia API)
 - `python3 tools/research_wiki.py slug "<title>"`
+

@@ -30,3 +30,4 @@ argument-hint: "[--pipeline <slug>] [--collect-ready] [--auto-advance]"
 ## Зависимости
 ### Инструменты
 - `python3 tools/research_wiki.py find wiki/ experiments`
+

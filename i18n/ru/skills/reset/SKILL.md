@@ -5,12 +5,9 @@ argument-hint: "--scope wiki|raw|log|checkpoints|all"
 ---
 # /reset
 
-
 > Деструктивная очистка по областям: wiki | raw | log | checkpoints | all.
 
-
 ## Аргументы
-
 
 - `--target <область>` (обязательно): что очищать.
 
@@ -18,9 +15,7 @@ argument-hint: "--scope wiki|raw|log|checkpoints|all"
 
 - `--force` (опционально, флаг): пропустить подтверждение.
 
-
 ## Поведение
-
 
 1. Если не `--force` — запроси подтверждение.
 
@@ -30,9 +25,7 @@ argument-hint: "--scope wiki|raw|log|checkpoints|all"
 
 4. Если очищена wiki — предложи запустить `/init`.
 
-
 ## Области
-
 
 - `wiki`: удалить всё из `wiki/` кроме `wiki/log.md`.
 
@@ -44,10 +37,9 @@ argument-hint: "--scope wiki|raw|log|checkpoints|all"
 
 - `all`: всё вышеперечисленное.
 
-
 ## Ограничения
-
 
 - Требует явного подтверждения.
 
 - `raw/` не очищается без явного указания `raw` или `all`.
+

@@ -70,3 +70,4 @@ equired: true из entities.yaml
 ## Зависимости
 ### Инструменты
 - python3 tools/lint.py <wiki_root>
+

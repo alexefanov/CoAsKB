@@ -50,3 +50,4 @@ argument-hint: "<local-path-or-arXiv-URL> [--discover] [--visualize]"
 
 ### Shared References
 - `.claude/skills/shared-references/citation-verification.md`
+

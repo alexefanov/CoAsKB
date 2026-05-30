@@ -38,3 +38,4 @@ argument-hint: "<experiment-slug> [--auto]"
 ### Инструменты
 - `python3 tools/research_wiki.py set-meta <path> <field> <value>`
 - `python3 tools/research_wiki.py add-edge wiki/ --from X --to Y --type Z`
+

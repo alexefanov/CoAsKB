@@ -53,3 +53,4 @@ argument-hint: "[research-direction-or-topic] [--max-ideas N] [--skip-validation
 
 ### Скиллы
 - /exp-design, /exp-pilot-run, /exp-pilot-eval
+
