@@ -4,26 +4,30 @@ lang: ru
 argument-hint: "<idea-slug>"
 ---
 # /exp-design
-
 > Спроектировать эксперимент из идеи: выбрать метод, метрики, бейзлайн — и записать страницу эксперимента в вики.
 
 ## Аргументы
-
 - `--from <slug-идеи>` (обязательно): страница идеи для проверки
 - `--method <slug-метода>` (опц.): метод для проверки (если не указан — выбрать лучший из вики)
 
 ## Поведение
-
 1. Прочитай страницу идеи (гипотеза, ожидаемый результат, метрики успеха).
+
 2. Выбери метод проверки: синтез из существующих методов в вики или предложи новый.
+
 3. Определи бейзлайн для сравнения.
+
 4. Определи метрики (точность, скорость, стоимость и т.д.).
+
 5. Спроектируй протокол эксперимента: данные, шаги, условия.
+
 6. Создай страницу эксперимента:
    ```bash
    python3 tools/research_wiki.py slug "<название эксперимента>"
    ```
+
 7. Запиши страницу в `wiki/experiments/<slug>.md` с полным frontmatter.
+
 8. Обнови рёбра:
    ```bash
    python3 tools/research_wiki.py add-edge wiki/ --from experiments/<slug> --to ideas/<slug-idea> --type tests_hypothesis
@@ -39,4 +43,3 @@ argument-hint: "<idea-slug>"
 - `python3 tools/research_wiki.py slug "<title>"`
 - `python3 tools/research_wiki.py add-edge wiki/ --from X --to Y --type Z`
 - `python3 tools/research_wiki.py log wiki/ "<msg>"`
-

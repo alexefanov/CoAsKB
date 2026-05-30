@@ -4,21 +4,23 @@ lang: ru
 argument-hint: "[--pipeline <slug>] [--collect-ready] [--auto-advance]"
 ---
 # /exp-status
-
 > Панель состояния запущенных экспериментов; авто-сбор результатов.
 
 ## Аргументы
-
 - `--auto-collect` (опц.): собрать результаты завершённых экспериментов
 - `--watch` (опц.): непрерывное наблюдение
 
 ## Поведение
-
 1. Найди все страницы экспериментов (wiki/experiments/*.md).
+
 2. Для каждого проверь status: running, completed, failed, designed.
+
 3. Если `--auto-collect`: для running экспериментов проверь, завершились ли процессы.
+
 4. Собери результаты завершённых.
+
 5. Покажи панель:
+
    - **Выполняется**: slug, время запуска, прогресс
    - **Завершён**: slug, результат, метрики
    - **Спроектирован**: slug, статус готовности
@@ -30,4 +32,3 @@ argument-hint: "[--pipeline <slug>] [--collect-ready] [--auto-advance]"
 ## Зависимости
 ### Инструменты
 - `python3 tools/research_wiki.py find wiki/ experiments`
-
