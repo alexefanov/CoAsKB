@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Wiki lint helper — structural checks for ΩmegaWiki.
+"""Wiki lint helper — structural checks for ΩmegaWiki / Проверка структуры ΩmegaWiki.
 
-Checks performed:
+Checks performed / Выполняемые проверки:
   1. Broken wikilinks: [[slug]] target file does not exist
   2. Orphan pages: pages with zero incoming links
   3. Missing required YAML frontmatter fields per entity type (one per

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""OmegaWiki — Wiki Knowledge Engine.
+"""OmegaWiki — Wiki Knowledge Engine / Движок базы знаний Wiki.
 
 Core operations for a wiki-centric research knowledge base: entity metadata
 read/write, typed graph management, knowledge-state queries, purpose-driven
 context compilation, lifecycle enforcement, and audit logging.
+Основные операции для исследовательской базы знаний на вики: чтение/запись
+метаданных сущностей, управление типизированным графом, запросы состояния
+знаний, контекстная компиляция, контроль жизненного цикла, аудит.
 
 Called by skills via:  Bash: python3 tools/research_wiki.py <command> [args]
 
