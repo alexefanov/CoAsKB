@@ -1,23 +1,23 @@
-# conventions.yaml — System-level constants that schema cannot derive.
+# conventions.yaml — System-level constants / Системные константы, которые схема не может вывести.
+# 
 
-# How a slug is shaped.  Generation rule: paper title keywords, hyphen-joined,
-# all lowercase.  This regex validates the result.
+# How a slug is shaped / Как формируется slug.  Generation rule / Правило: ключевые слова заголовка,
+# через дефис, нижний регистр.  This regex validates / Этот regex проверяет результат.
 slug_rule: "^[a-z0-9]+(-[a-z0-9]+)*$"
 
-# Where an entity page lives, given its kind and slug.
+# Where an entity page lives, given its kind and slug / Путь страницы сущности по виду и slug.
 path_pattern: "wiki/{kind}/{slug}.md"
 
-# How wikilinks resolve.  `[[slug]]` matches by trying each entity dir until a
-# `{slug}.md` file is found.
+# How wikilinks resolve / Как разрешаются вики-ссылки.  `[[slug]]` ищет по каталогам сущностей.
 wikilink_syntax: "[[slug]]"
 
-# All schema dates are ISO 8601 calendar dates.
+# All schema dates are ISO 8601 / Все даты в ISO 8601.
 date_format: "YYYY-MM-DD"
 
-# Append-only log line grammar.
+# Append-only log line grammar / Грамматика строки лога (только добавление).
 log_grammar: "## [{date}] {skill} | {details}"
 
-# File-system ownership rules.
+# File-system ownership rules / Правила владения файловой системой.
 ownership:
   user_owned:  [raw/papers, raw/notes, raw/web]   # skills must not overwrite
   tools_only:  [wiki/graph]                       # only via tools/research_wiki.py
