@@ -3,8 +3,9 @@
 # ΩmegaWiki — One-Click Setup
 # ============================================================================
 # Usage:
-#   chmod +x setup.sh && ./setup.sh            # English (default)
+#   chmod +x setup.sh && ./setup.sh            # Русский (по умолчанию / default)
 #   chmod +x setup.sh && ./setup.sh --lang zh  # Chinese / 中文
+#   chmod +x setup.sh && ./setup.sh --lang en  # English
 #
 # What it does:
 #   1. Checks prerequisites (Python, pip, Claude Code)
@@ -39,8 +40,8 @@ _sed_i() {
   fi
 }
 
-# ── Language selection ──────────────────────────────────────────────
-LANG_CODE="en"
+# ── Language selection / Выбор языка ────────────────────────────────
+LANG_CODE="ru"
 _ARGS=("$@")
 for i in "${!_ARGS[@]}"; do
   case "${_ARGS[$i]}" in
@@ -49,7 +50,7 @@ for i in "${!_ARGS[@]}"; do
   esac
 done
 PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-[[ "$LANG_CODE" == "en" || "$LANG_CODE" == "zh" ]] || { fail "Unknown lang: $LANG_CODE (use 'en' or 'zh')"; exit 1; }
+[[ "$LANG_CODE" == "en" || "$LANG_CODE" == "zh" || "$LANG_CODE" == "ru" ]] || { fail "Unknown lang: $LANG_CODE (use 'en', 'zh', or 'ru')"; exit 1; }
 I18N_DIR="$PROJECT_ROOT/i18n/$LANG_CODE"
 [ -d "$I18N_DIR" ] || { fail "i18n/$LANG_CODE not found — run from the project root"; exit 1; }
 cd "$PROJECT_ROOT"

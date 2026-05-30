@@ -2,8 +2,9 @@
 # OmegaWiki - One-Click Setup (Windows / PowerShell)
 # ============================================================================
 # Usage:
-#   powershell -ExecutionPolicy Bypass -File .\setup.ps1            # English (default)
+#   powershell -ExecutionPolicy Bypass -File .\setup.ps1            # Русский (по умолчанию / default)
 #   powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Lang zh   # Chinese
+#   powershell -ExecutionPolicy Bypass -File .\setup.ps1 -Lang en   # English
 #
 # Mirrors setup.sh: prerequisites -> venv + deps -> config -> activate i18n -> verify.
 # API key configuration (Semantic Scholar, DeepXiv, Review LLM) is handled
@@ -12,8 +13,8 @@
 
 [CmdletBinding()]
 param(
-    [ValidateSet("en", "zh")]
-    [string]$Lang = "en"
+    [ValidateSet("en", "zh", "ru")]
+    [string]$Lang = "ru"
 )
 
 $ErrorActionPreference = "Stop"
