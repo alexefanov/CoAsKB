@@ -1,94 +1,94 @@
-# Citation Discipline
+# Дисциплина цитирования
 
-> Shared reference for all skills that generate citations: /paper-draft, /survey, /paper-plan.
-> Every citation in a OmegaWiki output must be **verifiable** — never LLM-generated.
+> Общий референс для всех скиллов, создающих цитирования: /paper-draft, /survey, /paper-plan.
+> Каждое цитирование в выводе OmegaWiki должно быть **проверяемым** — никогда не сгенерированным LLM.
 
 ---
 
-## Core Rule
+## Основное правило
 
-**BibTeX entries must come from authoritative sources, not from LLM memory.**
+**BibTeX-записи должны браться из авторитетных источников, а не из памяти LLM.**
 
-LLMs hallucinate citation details (wrong year, wrong venue, wrong authors, non-existent papers).
-The only acceptable sources for BibTeX are:
+LLM галлюцинируют детали цитирования (неверный год, неверное издание, неверные авторы, несуществующие работы).
+Единственные допустимые источники для BibTeX:
 
-1. **DBLP** (`https://dblp.org/`) — primary source for CS venues
-2. **CrossRef** (`https://api.crossref.org/`) — primary source for DOI-bearing publications
-3. **Semantic Scholar** (`https://api.semanticscholar.org/`) — fallback for preprints
-4. **The paper's own .bib file** — if available in `raw/papers/`
+1. **DBLP** (`https://dblp.org/`) — основной источник для CS-изданий
+2. **CrossRef** (`https://api.crossref.org/`) — основной источник для публикаций с DOI
+3. **Semantic Scholar** (`https://api.semanticscholar.org/`) — запасной для препринтов
+4. **Собственный .bib файл работы** — если доступен в `raw/papers/`
 
-## The [UNCONFIRMED] Protocol
+## Протокол [UNCONFIRMED]
 
-When a BibTeX entry **cannot** be fetched from any authoritative source:
+Когда BibTeX-запись **нельзя** получить ни из одного авторитетного источника:
 
-1. Generate a best-effort entry from available information (title, authors, year from wiki page)
-2. Prefix the BibTeX key with `UNCONFIRMED_`: `@article{UNCONFIRMED_smith2024attention, ...}`
-3. Add a comment: `% [UNCONFIRMED] BibTeX not confirmed from DBLP/CrossRef — manual check required`
-4. The `[UNCONFIRMED]` marker is a **hard blocker** for submission — /paper-compile must flag all remaining `[UNCONFIRMED]` entries
+1. Сгенерируй best-effort запись из доступной информации (заголовок, авторы, год со страницы вики)
+2. Добавь префикс к BibTeX-ключу: `UNCONFIRMED_`: `@article{UNCONFIRMED_smith2024attention, ...}`
+3. Добавь комментарий: `% [UNCONFIRMED] BibTeX не подтверждён из DBLP/CrossRef — требуется ручная проверка`
+4. Маркер `[UNCONFIRMED]` — **жёсткий блокер для отправки** — /paper-compile должен отметить все оставшиеся `[UNCONFIRMED]` записи
 
-## Fetching BibTeX
+## Получение BibTeX
 
-### DBLP (preferred for CS)
+### DBLP (предпочтительно для CS)
 
 ```bash
-# Search by title
+# Поиск по заголовку
 WebFetch: https://dblp.org/search/publ/api?q={url-encoded-title}&format=json&h=3
 
-# Parse response: .result.hits.hit[].info contains title, authors, venue, year, url
-# Get BibTeX: WebFetch the .url field + ".bib" suffix
+# Разбор ответа: .result.hits.hit[].info содержит title, authors, venue, year, url
+# Получение BibTeX: WebFetch поля .url + суффикс ".bib"
 ```
 
-### CrossRef (preferred for DOI)
+### CrossRef (предпочтительно для DOI)
 
 ```bash
-# Search by title
+# Поиск по заголовку
 WebFetch: https://api.crossref.org/works?query.bibliographic={url-encoded-title}&rows=3
 
-# Parse response: .message.items[] contains title, author, container-title, DOI
-# Construct BibTeX from structured data
+# Разбор ответа: .message.items[] содержит title, author, container-title, DOI
+# Сборка BibTeX из структурированных данных
 ```
 
-### Semantic Scholar (fallback for arXiv preprints)
+### Semantic Scholar (запасной для arXiv препринтов)
 
 ```bash
-# Use tools/fetch_s2.py which is already in the project
+# Используй tools/fetch_s2.py который уже есть в проекте
 python3 tools/fetch_s2.py search "<title>"
-# Returns paperId, title, authors, year, venue, externalIds
+# Возвращает paperId, title, authors, year, venue, externalIds
 ```
 
-## Citation Key Convention
+## Соглашение о ключах цитирования
 
 ```
 {first-author-lastname}{year}{first-keyword}
 ```
 
-Examples:
+Примеры:
 - `hu2022lora` (Hu et al., 2022, "LoRA: Low-Rank Adaptation...")
 - `vaswani2017attention` (Vaswani et al., 2017, "Attention Is All You Need")
 
-## Rules for Skills
+## Правила для скиллов
 
 ### /paper-draft
-1. After drafting each section, collect all `\cite{}` references
-2. For each citation: attempt DBLP → CrossRef → S2 in order
-3. Only include entries that are actually cited (`\nocite{*}` is forbidden)
-4. Write `references.bib` with fetched entries + [UNCONFIRMED] entries separated at bottom
+1. После черновика каждого раздела собери все ссылки `\cite{}`
+2. Для каждого цитирования: попробуй DBLP → CrossRef → S2 по порядку
+3. Включай только реально цитируемые записи (`\nocite{*}` запрещён)
+4. Запиши `references.bib` с полученными записями + [UNCONFIRMED] записи отдельно внизу
 
 ### /survey
-1. Use `[[slug]]` wikilinks during drafting (wiki-internal format)
-2. When converting to LaTeX, resolve each `[[slug]]` to a `\cite{key}`
-3. The citation key must match a verified BibTeX entry
-4. If a wiki paper has no verifiable BibTeX, output `\cite{UNCONFIRMED_slug}` and flag
+1. Используй `[[slug]]` вики-ссылки при черновике (внутренний формат вики)
+2. При конвертации в LaTeX преобразуй каждый `[[slug]]` в `\cite{key}`
+3. Ключ цитирования должен соответствовать подтверждённой BibTeX-записи
+4. Если у страницы вики нет подтверждённого BibTeX, выведи `\cite{UNCONFIRMED_slug}` и отметь
 
 ### /paper-plan
-1. In the citation plan, list all wiki papers that will be cited
-2. Pre-fetch BibTeX for each planned citation (fail-fast: identify [UNCONFIRMED] entries early)
-3. Report citation coverage: how many are verified vs. [UNCONFIRMED]
+1. В плане цитирования перечисли все страницы вики, которые будут цитироваться
+2. Предварительно получи BibTeX для каждого запланированного цитирования (быстрый провал: выяви [UNCONFIRMED] записи рано)
+3. Отчитайся о покрытии цитирований: сколько подтверждено vs. [UNCONFIRMED]
 
-## What NOT To Do
+## Чего НЕ делать
 
-- **Never** generate BibTeX from memory (wrong venue/year is worse than [UNCONFIRMED])
-- **Never** cite a paper not in the wiki (all citations trace back to wiki/papers/)
-- **Never** use `\nocite{*}` (every entry must be explicitly cited)
-- **Never** silently drop a [UNCONFIRMED] marker (it must survive until human verification or successful fetch)
-- **Never** fabricate DOIs or arXiv IDs
+- **Никогда** не генерировать BibTeX из памяти (неверное издание/год хуже, чем [UNCONFIRMED])
+- **Никогда** не цитировать работу не из вики (все цитирования ведут к wiki/papers/)
+- **Никогда** не использовать `\nocite{*}` (каждая запись должна быть явно процитирована)
+- **Никогда** не удалять молча маркер [UNCONFIRMED] (он должен сохраняться до ручной проверки или успешного получения)
+- **Никогда** не выдумывать DOI или arXiv ID
