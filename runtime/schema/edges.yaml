@@ -1,7 +1,8 @@
 # edges.yaml — Relation contract for graph edges (incl. citations).
+# edges.yaml — Контракт отношений для рёбер графа (включая цитирования).
 #
-# Each edge type declares:
-#   endpoints   { from: <kind>, to: <kind> }  -- '*' means any kind
+# Each edge type declares / Каждый тип ребра объявляет:
+#   endpoints   { from: <kind>, to: <kind> }  -- '*' means any kind / '*' — любой вид
 #   direction   directed | symmetric           -- symmetric edges are stored once
 #                                                 with sorted endpoints
 #   workflow    which subsystem owns this edge type
@@ -12,6 +13,7 @@
 
 # -----------------------------------------------------------------------------
 # Paper ↔ Paper semantic edges  (written by /ingest)
+# Семантические рёбра Статья ↔ Статья (создаются /ingest)
 # -----------------------------------------------------------------------------
 
 # 4 irreducible paper↔paper semantic edges. The 4 removed in this round
