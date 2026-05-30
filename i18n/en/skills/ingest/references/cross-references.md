@@ -6,14 +6,14 @@ Open this reference when you are writing a link on any wiki page. Every forward 
 
 Mirrors the matrix in the root `CLAUDE.md` ("Cross-Reference Rules"), trimmed to the edges `/ingest` actually writes:
 
-| Forward action (what you write on page A) | Required reverse action (what you also write on page B in the same turn) |
-|-------------------------------------------|--------------------------------------------------------------------------|
-| `papers/P` writes `Related: [[concept-K]]` | `concepts/K` appends `P` to `key_papers` |
-| `papers/P` writes `[[person-R]]` (any body section) | `people/R` appends `[[P]]` to `## Recent work` |
-| `concepts/K` writes `key_papers: [[paper-P]]` | `papers/P` appends `K` to `## Related` |
-| `methods/M` writes `source_papers: [[paper-P]]` | `papers/P` appends `M` to `## Related` |
-| `methods/M` writes `parent_methods: [[method-N]]` | `methods/N` appends `M` to `child_methods` (and vice versa) |
-| any page writes `[[foundation-X]]` | **no reverse link** — foundations are terminal |
+| Forward action (what you write on page A)           | Required reverse action (what you also write on page B in the same turn) |
+| --------------------------------------------------- | ------------------------------------------------------------------------ |
+| `papers/P` writes `Related: [[concept-K]]`          | `concepts/K` appends `P` to `key_papers`                                 |
+| `papers/P` writes `[[person-R]]` (any body section) | `people/R` appends `[[P]]` to `## Recent work`                           |
+| `concepts/K` writes `key_papers: [[paper-P]]`       | `papers/P` appends `K` to `## Related`                                   |
+| `methods/M` writes `source_papers: [[paper-P]]`     | `papers/P` appends `M` to `## Related`                                   |
+| `methods/M` writes `parent_methods: [[method-N]]`   | `methods/N` appends `M` to `child_methods` (and vice versa)              |
+| any page writes `[[foundation-X]]`                  | **no reverse link** — foundations are terminal                           |
 
 Writing a forward link without its reverse is the most common way `/check` surfaces `missing-field` errors. Doing both together eliminates the class entirely.
 
