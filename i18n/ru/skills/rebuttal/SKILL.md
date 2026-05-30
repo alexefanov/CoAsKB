@@ -35,7 +35,7 @@ argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [-
 
 ## Выходы
 - Rebuttal letter (markdown или LaTeX)
-- (опциональноонально) Список необходимых правок статьи
+- (опциональнок необходимых правок статьи
 
 ## Зависимости
 ### Скиллы

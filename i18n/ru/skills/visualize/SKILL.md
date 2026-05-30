@@ -8,7 +8,7 @@ argument-hint: "[--obsidian] [--canvas] [--focus <node_id>] [--depth N] [--types
 
 ## Аргументы
 - `--type <тип>` (обязательно): тип визуализации. Варианты: graph (веб-граф) | obsidian (конфиг Obsidian) | canvas (Obsidian Canvas)
-- `--output <путь>` (опциональноонально): путь для сохранения (по умолч. outputs/viz/)
+- `--output <путь>` (опционально): путь для сохранения (по умолч. outputs/viz/)
 
 ## Поведение
 ### Тип: graph

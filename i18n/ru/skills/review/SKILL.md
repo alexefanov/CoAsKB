@@ -8,7 +8,7 @@ argument-hint: "<artifact-path-or-slug> [--difficulty standard|hard|adversarial]
 
 ## Аргументы
 - `--from <файл>` (обязательно): артефакт для рецензии (.tex, .md, .pdf)
-- `--type <тип>` (опциональноонально): тип рецензии: full (по умолч.) | quick | methodology | writing
+- `--type <тип>` (опционально): тип рецензии: full (по умолч.) | quick | methodology | writing
 
 ## Поведение
 1. Прочитай артефакт (статья, план, идея, постер).
