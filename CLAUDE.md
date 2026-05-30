@@ -1,40 +1,40 @@
-# ΩmegaWiki — Runtime Contract
+# ΩmegaWiki — Контракт времени выполнения
 
-Edit `i18n/en/CLAUDE.md`, not the active copy at root. Run `./setup.sh --lang en` to sync.
+Редактировать `i18n/ru/CLAUDE.md`, не активную копию в корне. Запустите `./setup.sh --lang ru` для синхронизации.
 
-## Repository Layout
+## Структура репозитория
 
-- `wiki/` — product surface. `index.md` is the catalog; `log.md` is append-only; subdirs per entity kind; `wiki/graph/` is auto-generated.
-- `runtime/` — contract source (schema + policy + templates). Read `runtime/CLAUDE.md` before changing any rule.
-- `raw/` — user-owned `{papers,notes,web}/` (read-only) + skill-writable `discovered/`, `tmp/`.
-- `tools/` — Python helpers (`research_wiki.py` is the wiki engine; `lint.py` is the validator).
+- `wiki/` — поверхность продукта. `index.md` — каталог; `log.md` — только добавление; поддиректории по типу сущности; `wiki/graph/` — автогенерируется.
+- `runtime/` — исходник контракта (схема + политика + шаблоны). Прочитайте `runtime/CLAUDE.md` перед изменением любого правила.
+- `raw/` — пользовательские `{papers,notes,web}/` (только чтение) + доступные для записи скиллами `discovered/`, `tmp/`.
+- `tools/` — Python-помощники (`research_wiki.py` — движок wiki; `lint.py` — валидатор).
 
-Full tree: `docs/runtime-directory-structure.en.md`.
+Полное дерево: `docs/runtime-directory-structure.en.md`.
 
-## Link Syntax
+## Синтаксис ссылок
 
-Wikilinks: `[[slug]]`. Slugs are lowercase, hyphen-separated, no spaces.
+Wikilinks: `[[slug]]`. Slug'и строчные, через дефис, без пробелов.
 
-## Hard Rules
+## Жёсткие правила
 
-1. `raw/{papers,notes,web}` are user-owned, read-only. Skills append only to `raw/discovered/` or `raw/tmp/`.
-2. `wiki/graph/` is derived. Modify only via `tools/research_wiki.py` (`add-edge`, `add-citation`, `rebuild-*`).
-3. `wiki/log.md` is append-only. Never rewrite in place.
-4. Forward link → write reverse simultaneously. Rules in `runtime/schema/xref.yaml`.
-5. User-facing skill flags (those listed in a skill's `argument-hint`) are user-owned. Do not invent, flip, or drop them based on repo state. If the user omitted one, use a default only when the skill documents omission behavior; otherwise ask.
+1. `raw/{papers,notes,web}` принадлежат пользователю, только чтение. Скиллы добавляют только в `raw/discovered/` или `raw/tmp/`.
+2. `wiki/graph/` — производное. Изменять только через `tools/research_wiki.py` (`add-edge`, `add-citation`, `rebuild-*`).
+3. `wiki/log.md` — только добавление. Никогда не перезаписывать.
+4. Прямая ссылка → одновременно писать обратную. Правила в `runtime/schema/xref.yaml`.
+5. Пользовательские флаги скиллов (указанные в `argument-hint` скилла) принадлежат пользователю. Не изобретать, не переключать и не отбрасывать их на основе состояния репозитория. Если пользователь опустил флаг, используйте значение по умолчанию только если скилл документирует поведение при отсутствии; иначе спросите.
 
-## Where to look
+## Где смотреть
 
-| Need | Source |
+| Нужно | Источник |
 |---|---|
-| Page frontmatter fields, enums, defaults, lifecycle | `runtime/schema/entities.yaml` |
-| Page body section structure                          | `runtime/templates/{kind}.md.tmpl` |
-| Edge types, attributes, direction, confidence       | `runtime/schema/edges.yaml` |
-| Forward → reverse link rules                         | `runtime/schema/xref.yaml` |
-| Slug rule, ownership, edge storage location          | `runtime/schema/conventions.yaml` |
-| Field/edge write permissions per skill               | `runtime/policy/writers.yaml` |
-| Changing the contract / regen                        | `runtime/CLAUDE.md` |
+| Поля frontmatter страниц, перечисления, умолчания, жизненный цикл | `runtime/schema/entities.yaml` |
+| Структура разделов тела страницы | `runtime/templates/{kind}.md.tmpl` |
+| Типы рёбер, атрибуты, направление, уверенность | `runtime/schema/edges.yaml` |
+| Правила прямой/обратной связи | `runtime/schema/xref.yaml` |
+| Правила slug'ов, владение, расположение рёбер | `runtime/schema/conventions.yaml` |
+| Разрешения на запись полей/рёбер для скиллов | `runtime/policy/writers.yaml` |
+| Изменение контракта / регенерация | `runtime/CLAUDE.md` |
 
-## Python Environment
+## Окружение Python
 
-Prefer in order: `.venv/bin/python` (`.venv/Scripts/python.exe` on Windows) → active conda env → `python3` (`python` on Windows). Tools auto-load API keys from `~/.env` and project-root `.env` via `tools/_env.py`.
+Предпочтение по порядку: `.venv/bin/python` (`.venv/Scripts/python.exe` на Windows) → активное conda-окружение → `python3` (`python` на Windows). Инструменты автоматически загружают API-ключи из `~/.env` и корневого `.env` через `tools/_env.py`.
