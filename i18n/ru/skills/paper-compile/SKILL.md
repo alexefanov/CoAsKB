@@ -3,18 +3,13 @@ description: "LaTeX compile → PDF — latexmk compile + auto-fix + page count/
 lang: ru
 argument-hint: "[paper-dir] [--fix] [--checklist]"
 ---
-
-
 # /paper-compile
-
 
 
 > Скомпилировать LaTeX в PDF, авто-исправить ошибки, проверить объём и анонимность.
 
 
-
 ## Аргументы
-
 
 
 - `--input <файл.tex>` (обязательно): главный .tex файл
@@ -26,9 +21,7 @@ argument-hint: "[paper-dir] [--fix] [--checklist]"
 - `--max-pages <N>` (опц.): макс. число страниц
 
 
-
 ## Поведение
-
 
 
 1. Скомпилируй LaTeX:
@@ -60,7 +53,6 @@ argument-hint: "[paper-dir] [--fix] [--checklist]"
 8. Предоставь PDF.
 
 
-
 ## Выходы
 
 - PDF файл
@@ -68,10 +60,8 @@ argument-hint: "[paper-dir] [--fix] [--checklist]"
 - Отчёт о компиляции (ошибки, предупреждения, объём)
 
 
-
 ## Зависимости
 
 ### Инструменты
 
 - `pdflatex`, `bibtex` (должны быть установлены)
-

@@ -3,18 +3,13 @@ description: "Build a ranked shortlist of candidate papers (anchor-driven, topic
 lang: ru
 argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str> | --from-wiki | --venue <slug> --year <int>) [--limit N]"
 ---
-
-
 # /discover
-
 
 
 > Построить ранжированный шорт-лист кандидатов (по якорям, теме или состоянию вики) для передачи в /ingest.
 
 
-
 ## Аргументы
-
 
 
 - `--anchor <ид>` (опц.): найти работы, связанные с указанной сущностью
@@ -28,9 +23,7 @@ argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str>
 - `--max <N>` (опц.): макс. число кандидатов (по умолч. 10)
 
 
-
 ## Поведение
-
 
 
 1. Определи режим: по якорю, теме, пробелу.
@@ -46,17 +39,13 @@ argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str>
 6. Покажи пользователю. Передай в /ingest по запросу.
 
 
-
 ## Выход
-
 
 
 Список кандидатов с: заголовок, авторы, год, релевантность, обоснование.
 
 
-
 ## Зависимости
-
 
 
 ### Инструменты
@@ -64,8 +53,6 @@ argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str>
 - `python3 tools/research_wiki.py find wiki/ <kind> --field <field> <value>` — проверка наличия
 
 
-
 ### Скиллы
 
 - /ingest — для внедрения
-

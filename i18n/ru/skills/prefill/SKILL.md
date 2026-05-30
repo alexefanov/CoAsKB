@@ -3,8 +3,6 @@ description: "Seed wiki/foundations/ with domain background knowledge so subsequ
 lang: ru
 argument-hint: "[domain] [--add 'concept name']"
 ---
-
-
 # /prefill
 
 > Опционально заполнить foundations/ фоновыми знаниями из Wikipedia.
@@ -41,4 +39,3 @@ argument-hint: "[domain] [--add 'concept name']"
 ### Инструменты
 - WebFetch (Wikipedia API)
 - `python3 tools/research_wiki.py slug "<title>"`
-

@@ -3,18 +3,13 @@ description: "Generate an academic poster from a drafted paper — distill secti
 lang: ru
 argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos] [--no-refine]"
 ---
-
-
 # /poster
-
 
 
 > Превратить готовый черновик статьи в печатный постер конференции (HTML + PNG).
 
 
-
 ## Аргументы
-
 
 
 - `--from <файл.tex>` (обязательно): главный .tex файл статьи
@@ -24,9 +19,7 @@ argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos]
 - `--format` (опц.): формат: html (по умолч.) | png | both
 
 
-
 ## Поведение
-
 
 
 1. Прочитай статью (аннотация, введение, метод, результаты, выводы).
@@ -48,7 +41,6 @@ argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos]
 5. Сохрани файлы.
 
 
-
 ## Выходы
 
 - HTML-постер
@@ -56,10 +48,8 @@ argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos]
 - (Опц.) PNG-изображение
 
 
-
 ## Зависимости
 
 ### Инструменты
 
 - `python3 tools/compile_poster.py --input <file.tex> --output <dir>`
-

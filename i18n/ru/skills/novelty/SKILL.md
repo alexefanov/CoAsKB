@@ -3,8 +3,6 @@ description: "Multi-source novelty verification — WebSearch + Semantic Scholar
 lang: ru
 argument-hint: "<idea-description-or-slug> [--quick] [--verbose] [--write]"
 ---
-
-
 # /novelty
 
 > Многоисточниковая проверка новизны: веб + Semantic Scholar + вики + Review LLM.

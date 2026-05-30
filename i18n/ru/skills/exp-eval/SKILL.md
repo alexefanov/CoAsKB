@@ -3,8 +3,6 @@ description: "Experiment verdict gate — Review LLM independently judges result
 lang: ru
 argument-hint: "<experiment-slug> [--auto]"
 ---
-
-
 # /exp-eval
 
 > Оценить результаты эксперимента, вынести вердикт и обновить связанные страницы.

@@ -3,10 +3,7 @@ description: "End-to-end research orchestrator — idea discovery → experiment
 lang: ru
 argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stage2|stage3|stage3-collect|stage3-check|stage4|stage5] [--skip-paper] [--venue ICLR|NeurIPS|ICML|ACL|CVPR]"
 ---
-
-
 # /research
-
 
 
 > Сквозной оркестратор исследования с человеческими шлюзами.
@@ -14,9 +11,7 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 > Проводит полный цикл: идеация → эксперименты → статья.
 
 
-
 ## Аргументы
-
 
 
 - `--topic <тема>` (обязательно): тема исследования
@@ -26,9 +21,7 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 - `--quick` (опц.): быстрый режим (минимум итераций)
 
 
-
 ## Поведение
-
 
 
 ### Фаза 1: Идеация
@@ -36,7 +29,6 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 1. Запусти /ideate для генерации идей по теме.
 
 2. Покажи идеи пользователю. Жди утверждения.
-
 
 
 ### Фаза 2: Эксперименты
@@ -54,7 +46,6 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 5. Покажи результаты пользователю. Жди решения.
 
 
-
 ### Фаза 3: Статья
 
 1. Запусти /paper-plan (из валидированных идей).
@@ -68,7 +59,6 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 5. Покажи финальный результат.
 
 
-
 ## Человеческие шлюзы
 
 После каждой фазы — покажи результат и жди подтверждения:
@@ -80,7 +70,6 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 - Фаза 3: «Утвердите финальную статью»
 
 
-
 ## Выходы
 
 - Страницы идей, экспериментов, плана, черновиков
@@ -90,7 +79,6 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 - Записи в log.md
 
 
-
 ## Зависимости
 
 ### Скиллы
@@ -98,4 +86,3 @@ argument-hint: "<research-direction-or-brief> [--auto] [--start-from stage1|stag
 - /ideate, /exp-design, /exp-pilot-run, /exp-pilot-eval, /exp-run, /exp-eval
 
 - /paper-plan, /paper-draft, /paper-compile, /refine
-

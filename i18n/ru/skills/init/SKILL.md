@@ -3,8 +3,6 @@ description: "Bootstrap ΩmegaWiki from user sources plus optional discovery, th
 lang: ru
 argument-hint: "[topic] [--no-introduction]"
 ---
-
-
 # /init
 
 > Инициализировать вики из пользовательских источников с опциональным внешним поиском.

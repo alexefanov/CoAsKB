@@ -3,18 +3,13 @@ description: "Draft a LaTeX paper from PAPER_PLAN — write each section from wi
 lang: ru
 argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 ---
-
-
 # /paper-draft
-
 
 
 > Написать черновик статьи (LaTeX + рисунки) по разделу из плана, используя знания вики.
 
 
-
 ## Аргументы
-
 
 
 - `--from <slug-плана>` (обязательно): страница плана статьи
@@ -24,9 +19,7 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 - `--output <путь>` (опц.): путь для сохранения .tex (по умолч. outputs/<slug>.<section>.tex)
 
 
-
 ## Поведение
-
 
 
 1. Прочитай план статьи (структура, ключевые идеи, цитаты).
@@ -46,7 +39,6 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 6. Сохрани .tex файл.
 
 
-
 ## Требования к цитированию
 
 - BibTeX только из DBLP, CrossRef, Semantic Scholar
@@ -56,13 +48,11 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 - Проверка: `python3 tools/fetch_bib.py "<title>"`
 
 
-
 ## Выходы
 
 - `.tex` файл раздела
 
 - (Опц.) обновлён `.bib` файл
-
 
 
 ## Зависимости
@@ -74,8 +64,6 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 - `python3 tools/research_wiki.py neighbors wiki/ <slug> --edge-type <type>`
 
 
-
 ### Shared References
 
 - academic-writing.md, citation-verification.md
-

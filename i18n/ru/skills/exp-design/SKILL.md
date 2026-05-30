@@ -3,8 +3,6 @@ description: "Idea-driven experiment design with iterative ablation — method c
 lang: ru
 argument-hint: "<idea-slug>"
 ---
-
-
 # /exp-design
 
 > Спроектировать эксперимент из идеи: выбрать метод, метрики, бейзлайн — и записать страницу эксперимента в вики.

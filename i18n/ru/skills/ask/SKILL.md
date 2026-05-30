@@ -3,18 +3,13 @@ description: "Ask the wiki a question, retrieve and synthesize relevant pages, o
 lang: ru
 argument-hint: "<question>"
 ---
-
-
 # /ask
-
 
 
 > Задать вопрос базе знаний вики. LLM читает context_brief.md для глобального контекста, находит релевантные страницы, синтезирует ответ с цитированием. Хорошие ответы можно кристаллизовать обратно в вики.
 
 
-
 ## Входы
-
 
 
 - question: вопрос на естественном языке
@@ -24,9 +19,7 @@ argument-hint: "<question>"
 - --format (опц.): формат вывода: markdown (по умолч.) | table | timeline | bullets
 
 
-
 ## Выходы
-
 
 
 - **Всегда**: синтезированный ответ с [[slug]] цитированием
@@ -42,9 +35,7 @@ argument-hint: "<question>"
   - обновлён wiki/graph/edges.jsonl, wiki/index.md, wiki/log.md
 
 
-
 ## Взаимодействие с вики
-
 
 
 ### Читает
@@ -54,7 +45,6 @@ argument-hint: "<question>"
 - wiki/papers/*.md, wiki/concepts/*.md, wiki/methods/*.md, wiki/topics/*.md, wiki/people/*.md
 
 - wiki/ideas/*.md, wiki/experiments/*.md, wiki/Summary/*.md
-
 
 
 ### Пишет (только кристаллизация)
@@ -74,7 +64,6 @@ argument-hint: "<question>"
 - wiki/log.md — ДОБАВИТЬ
 
 
-
 ### Рёбра графа (кристаллизация)
 
 - output → paper|concept|idea|method: derived_from
@@ -82,13 +71,10 @@ argument-hint: "<question>"
 - concept → paper: supports
 
 
-
 ## Процесс
 
 
-
 **Предусловие**: рабочая директория — корень проекта. WIKI_ROOT=wiki/.
-
 
 
 ### Шаг 1: Глобальный контекст
@@ -108,7 +94,6 @@ argument-hint: "<question>"
    `
 
 
-
 ### Шаг 2: Поиск страниц
 
 1. Сопоставь slug''и из index.md с вопросом
@@ -116,7 +101,6 @@ argument-hint: "<question>"
 2. Выбери топ-15 по релевантности
 
 3. Прочитай полное содержимое
-
 
 
 ### Шаг 3: Синтез ответа
@@ -132,13 +116,11 @@ argument-hint: "<question>"
 ovelty_score идей
 
 
-
 ### Шаг 4: Оценка кристаллизации
 
 Полезна если: синтез нескольких статей, новое понятие, заполнение пробела.
 
 Не нужна если: пересказ одной страницы, простая справка.
-
 
 
 ### Шаг 5: Кристаллизация
@@ -156,7 +138,6 @@ python3 tools/research_wiki.py add-edge wiki/ --from outputs/<slug> --to papers/
 `
 
 
-
 ### Шаг 6: Обновление
 
 `ash
@@ -170,11 +151,9 @@ python3 tools/research_wiki.py rebuild-open-questions wiki/
 `
 
 
-
 ### Шаг 7: Отчёт
 
 Сводка: число страниц, ответ, пробелы, рекомендации.
-
 
 
 ## Ограничения
@@ -192,7 +171,6 @@ aw/ только чтение, graph/ только через инструмен
 - ≤ 15 страниц
 
 
-
 ## Обработка ошибок
 
 - context_brief.md отсутствует: python3 tools/research_wiki.py rebuild-context-brief wiki/
@@ -202,7 +180,6 @@ aw/ только чтение, graph/ только через инструмен
 - slug конфликт: числовой суффикс
 
 - index.md отсутствует: python3 tools/research_wiki.py init wiki/
-
 
 
 ## Зависимости
@@ -228,4 +205,3 @@ aw/ только чтение, graph/ только через инструмен
 ### Shared References
 
 - .claude/skills/shared-references/citation-verification.md
-

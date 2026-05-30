@@ -3,8 +3,6 @@ description: "Pilot result evaluation — read pilot results, apply success crit
 lang: ru
 argument-hint: "<idea-slug> [--auto]"
 ---
-
-
 # /exp-pilot-eval
 
 > Оценить результаты пилотного эксперимента с лояльной логикой вердикта.

@@ -3,18 +3,13 @@ description: "Parse review comments → atomize concerns (Rvx-Cy) → map to wik
 lang: ru
 argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [--stress-test] [--format formal|rich]"
 ---
-
-
 # /rebuttal
-
 
 
 > Разобрать комментарии рецензентов и составить поточечный ответ.
 
 
-
 ## Аргументы
-
 
 
 - `--reviews <файл|текст>` (обязательно): текст рецензий
@@ -22,9 +17,7 @@ argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [-
 - `--paper <slug>` (обязательно): страница статьи в вики
 
 
-
 ## Поведение
-
 
 
 1. Прочитай рецензии (из файла или из аргумента).
@@ -44,7 +37,6 @@ argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [-
    ## Ответ рецензенту 1
 
 
-
    ### Комментарий 1.1
 
    > Текст комментария...
@@ -58,7 +50,6 @@ argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [-
 5. Если нужны правки статьи — отметь.
 
 
-
 ## Выходы
 
 - Rebuttal letter (markdown или LaTeX)
@@ -66,10 +57,8 @@ argument-hint: "<review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [-
 - (Опц.) Список необходимых правок статьи
 
 
-
 ## Зависимости
 
 ### Скиллы
 
 - /edit — для внесения правок по рецензии
-

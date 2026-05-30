@@ -3,8 +3,6 @@ description: "Pilot experiment execution — read Pilot Spec YAML, write pilot c
 lang: ru
 argument-hint: "<idea-slug> [--env local|remote]"
 ---
-
-
 # /exp-pilot-run
 
 > Запустить пилотный эксперимент: написать код, развернуть, отследить, собрать результаты.

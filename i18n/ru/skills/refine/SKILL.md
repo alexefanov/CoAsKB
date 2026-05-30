@@ -3,18 +3,13 @@ description: "General-purpose multi-round iterative improvement — repeatedly c
 lang: ru
 argument-hint: "<artifact-slug-or-path> [--max-rounds N] [--target-score N] [--difficulty standard|hard|adversarial] [--focus method|evidence|writing|completeness]"
 ---
-
-
 # /refine
-
 
 
 > Многораундовое улучшение: создать → рецензировать → исправить → перерецензировать.
 
 
-
 ## Аргументы
-
 
 
 - `--from <файл>` (обязательно): исходный артефакт (.tex/.md)
@@ -26,9 +21,7 @@ argument-hint: "<artifact-slug-or-path> [--max-rounds N] [--target-score N] [--d
 - `--quality <порог>` (опц.): порог качества для остановки (high/medium, по умолч. high)
 
 
-
 ## Поведение
-
 
 
 1. **Раунд 1**: Создай артефакт через указанный скилл.
@@ -48,13 +41,11 @@ argument-hint: "<artifact-slug-or-path> [--max-rounds N] [--target-score N] [--d
 6. Запиши историю улучшений.
 
 
-
 ## Выходы
 
 - Улучшенный артефакт
 
 - История раундов (оценки, изменения)
-
 
 
 ## Зависимости
@@ -64,4 +55,3 @@ argument-hint: "<artifact-slug-or-path> [--max-rounds N] [--target-score N] [--d
 - /review — рецензия
 
 - /edit — исправление
-

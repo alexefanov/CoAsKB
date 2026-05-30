@@ -3,8 +3,6 @@ description: "Ingest a paper into the wiki — creates pages (papers + concepts 
 lang: ru
 argument-hint: "<local-path-or-arXiv-URL> [--discover] [--visualize]"
 ---
-
-
 # /ingest
 
 > Превратить один источник в полностью связанный набор страниц вики.

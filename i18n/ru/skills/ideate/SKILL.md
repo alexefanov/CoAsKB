@@ -3,8 +3,6 @@ description: "Multi-phase research idea generation pipeline: landscape scan → 
 lang: ru
 argument-hint: "[research-direction-or-topic] [--max-ideas N] [--skip-validation] [--skip-pilot] [--auto]"
 ---
-
-
 # /ideate
 
 > Многофазовый конвейер генерации исследовательских идей: обзор ландшафта → дуальная мозговая атака → фильтрация → запись → пилот.

@@ -2,8 +2,6 @@
 description: "Scan the full wiki to detect health issues and produce a tiered fix-recommendation report (covers all entity types in runtime/schema/entities.yaml + graph consistency)"
 lang: ru
 ---
-
-
 # /check
 
 > Сканирование всей вики на проблемы здоровья: битые ссылки, отсутствующие обратные ссылки, устаревшие утверждения, дублирующиеся страницы, осиротевшие страницы, несоответствия схеме.

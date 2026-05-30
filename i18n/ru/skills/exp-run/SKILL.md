@@ -3,18 +3,13 @@ description: "Full experiment execution pipeline — prepare code → deploy(Con
 lang: ru
 argument-hint: "<experiment-slug> [--review] [--collect] [--full] [--env local|remote]"
 ---
-
-
 # /exp-run
-
 
 
 > Реализовать, развернуть и отследить полный эксперимент (локально или на удалённом GPU).
 
 
-
 ## Аргументы
-
 
 
 - `--from <slug-дизайна>` (обязательно): страница дизайна эксперимента
@@ -26,9 +21,7 @@ argument-hint: "<experiment-slug> [--review] [--collect] [--full] [--env local|r
 - `--watch` (опц.): отслеживать выполнение в реальном времени
 
 
-
 ## Поведение
-
 
 
 1. Прочитай дизайн эксперимента (метод, данные, метрики, бейзлайн).
@@ -62,7 +55,6 @@ argument-hint: "<experiment-slug> [--review] [--collect] [--full] [--env local|r
 8. Передай результаты в /exp-eval.
 
 
-
 ## Выходы
 
 - Код эксперимента
@@ -74,7 +66,6 @@ argument-hint: "<experiment-slug> [--review] [--collect] [--full] [--env local|r
 - Запись в log.md
 
 
-
 ## Зависимости
 
 ### Инструменты
@@ -84,8 +75,6 @@ argument-hint: "<experiment-slug> [--review] [--collect] [--full] [--env local|r
 - `python3 tools/research_wiki.py set-meta <path> <field> <value>`
 
 
-
 ### Скиллы
 
 - /exp-eval — для оценки результатов
-
