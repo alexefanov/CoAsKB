@@ -1,24 +1,27 @@
 """Schema access API for OmegaWiki.
+API доступа к схеме для OmegaWiki.
 
 Hand-written, fully data-driven loader.  Reads runtime/schema/*.yaml at import
-time and exposes:
+time and exposes / Написанный вручную, полностью управляемый данными загрузчик.
+Читает runtime/schema/*.yaml при импорте и предоставляет:
 
   - raw YAML:        ENTITIES, EDGES, XREF, CONVENTIONS, WRITERS
   - derived dicts:   ENTITY_DIRS, REQUIRED_FIELDS, VALID_VALUES, FIELD_DEFAULTS,
-                     EDGE_TYPE_SPECS
+                     EDGE_TYPE_SPECS / производные словари
   - derived sets:    PAPER_PAPER_EDGE_TYPES, PAPER_CONCEPT_EDGE_TYPES,
                      SYMMETRIC_EDGE_TYPES, CONFIDENCE_REQUIRED_EDGE_TYPES,
-                     VALID_EDGE_TYPES
+                     VALID_EDGE_TYPES / производные множества
   - static enums:    EDGE_CONFIDENCE_VALUES, CITATION_EDGE_TYPES, CITATION_SOURCES
-  - legacy sets:     LEGACY_EDGE_TYPES, LEGACY_PAPER_PAPER_EDGE_TYPES,
-                     LEGACY_PAPER_CONCEPT_EDGE_TYPES
+                     / статические перечисления
   - helpers:         edge_types_matching, edge_type_spec, edge_is_symmetric,
                      edge_requires_confidence, edge_expected_endpoint,
                      edge_endpoint_matches, edge_is_legacy_for_endpoint,
-                     edge_legacy_replacement_message
+                     edge_legacy_replacement_message / вспомогательные функции
 
 All derivations are dict comprehensions over ENTITIES / EDGES — adding a new
 entity or edge to YAML automatically propagates without any code change here.
+Все производные — dict comprehensions над ENTITIES/EDGES. Добавление новой
+сущности или ребра в YAML автоматически распространяется без изменений кода.
 """
 
 from __future__ import annotations
