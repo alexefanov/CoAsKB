@@ -1,23 +1,24 @@
-# xref.yaml — Bidirectional link contract.
+# xref.yaml — Bidirectional link contract / Контракт двунаправленных ссылок.
 #
 # Whenever entity A writes a forward link to entity B, the reverse update on B
-# is required.  Each rule has:
+# is required / Когда сущность A пишет прямую ссылку на B, обратное обновление B обязательно.
+# Each rule has / Каждое правило имеет:
 #
-#   forward.kind                     source entity kind
-#   forward.<frontmatter_field |     where the forward link lives:
-#            body_section       |       a frontmatter list field, OR
-#            edge_type>                 a body section (use '*' for any), OR
-#                                       a graph edge type
-#   forward.target                   target entity kind
+#   forward.kind                     source entity kind / вид сущности-источника
+#   forward.<frontmatter_field |     where the forward link lives / где живёт прямая ссылка:
+#            body_section       |       frontmatter list field / поле списка в frontmatter, ИЛИ
+#            edge_type>                 body section (use '*' for any) / раздел тела ('*' — любой), ИЛИ
+#                                       graph edge type / тип ребра графа
+#   forward.target                   target entity kind / вид целевой сущности
 #
-#   reverse.kind                     target entity kind (same as forward.target)
-#   reverse.<frontmatter_field |     where the reverse update goes
+#   reverse.kind                     target entity kind (same as forward.target) / вид целевой (совпадает)
+#   reverse.<frontmatter_field |     where the reverse update goes / куда идёт обратное обновление
 #            body_section>
 #   reverse.action                   append_slug | append_record
-#   record                           record template (only for append_record);
-#                                    {from} expands to the source slug
+#   record                           record template (only for append_record) / шаблон записи (только append_record);
+#                                    {from} expands to the source slug / {from} заменяется на slug источника
 #
-# Foundations are terminal: any link to foundations writes no reverse.
+# Foundations are terminal: any link to foundations writes no reverse / Фундаментальные страницы терминальны: ссылка на них не создаёт обратной связи.
 
 rules:
 

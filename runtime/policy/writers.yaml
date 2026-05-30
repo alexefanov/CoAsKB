@@ -1,6 +1,7 @@
 # writers.yaml — Field- and edge-level write permissions.
+# writers.yaml — Права записи на уровне полей и рёбер.
 #
-# STATUS: SPEC, NOT A RUNTIME GATE.
+# STATUS: SPEC, NOT A RUNTIME GATE / СТАТУС: СПЕЦИФИКАЦИЯ, НЕ ШЛЮЗ ВЫПОЛНЕНИЯ.
 # Nothing in tools/ or .claude/skills/ reads this file at write time. It is a
 # declarative contract for SKILL.md authors and for Claude when reading the
 # repo's rules — "this is who is supposed to write this." Enforcement is at
