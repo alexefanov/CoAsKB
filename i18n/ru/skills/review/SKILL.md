@@ -8,7 +8,7 @@ argument-hint: "<artifact-path-or-slug> [--difficulty standard|hard|adversarial]
 
 ## Аргументы
 - `--from <файл>` (обязательно): артефакт для рецензии (.tex, .md, .pdf)
-- `--type <тип>` (опц.): тип рецензии: full (по умолч.) | quick | methodology | writing
+- `--type <тип>` (опциональноонально): тип рецензии: full (по умолч.) | quick | methodology | writing
 
 ## Поведение
 1. Прочитай артефакт (статья, план, идея, постер).
@@ -25,7 +25,7 @@ argument-hint: "<artifact-path-or-slug> [--difficulty standard|hard|adversarial]
 
 ## Выходы
 - Отчёт рецензии с баллами и комментариями
-- (Опц.) Сравнение с Review LLM
+- (опционально) Сравнение с Review LLM
 
 ## Зависимости
 ### Скиллы

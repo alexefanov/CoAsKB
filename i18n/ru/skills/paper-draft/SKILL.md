@@ -9,7 +9,7 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 ## Аргументы
 - `--from <slug-плана>` (обязательно): страница плана статьи
 - `--section <имя>` (обязательно): раздел для написания (Introduction, Method, Experiments, Related Work, Discussion)
-- `--output <путь>` (опц.): путь для сохранения .tex (по умолч. outputs/<slug>.<section>.tex)
+- `--output <путь>` (опционально): путь для сохранения .tex (по умолч. outputs/<slug>.<section>.tex)
 
 ## Поведение
 1. Прочитай план статьи (структура, ключевые идеи, цитаты).
@@ -28,7 +28,7 @@ argument-hint: "<paper-plan-path> [--review] [--sections <section-numbers>]"
 
 ## Выходы
 - `.tex` файл раздела
-- (Опц.) обновлён `.bib` файл
+- (опционально) обновлён `.bib` файл
 
 ## Зависимости
 ### Инструменты

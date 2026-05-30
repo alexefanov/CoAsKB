@@ -8,7 +8,7 @@ argument-hint: "<idea-description-or-slug> [--quick] [--verbose] [--write]"
 
 ## Аргументы
 - `--from <slug>` (обязательно): страница идеи или черновика для проверки
-- `--deep` (опц.): глубокий поиск
+- `--deep` (опционально): глубокий поиск
 
 ## Поведение
 1. **Поиск по вики**: найди похожие страницы через `python3 tools/research_wiki.py find`.
