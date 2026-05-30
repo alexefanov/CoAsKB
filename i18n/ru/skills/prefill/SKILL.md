@@ -1,8 +1,9 @@
 ---
-description: Seed wiki/foundations/ with domain background knowledge so subsequent /ingest does not create duplicate concept pages for textbook material
+description: "Seed wiki/foundations/ with domain background knowledge so subsequent /ingest does not create duplicate concept pages for textbook material"
 lang: ru
 argument-hint: "[domain] [--add 'concept name']"
 ---
+
 
 # /prefill
 
