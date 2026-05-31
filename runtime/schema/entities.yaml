@@ -30,10 +30,7 @@
   dir: wiki/документы/
   fields:
     title:              { type: str, required: true }
-    doc_type:           { type: enum,
-                          values: [ГОСТ, ГОСТ Р, "ГОСТ Р ИСО", СП, "СП ", ФЗ, Кодекс,
-                                   Постановление, ПП, РД, ОДМ, МДС, МРР, ВСН, СТО, СНиП, Пособие],
-                          required: true }
+    type:               { type: str, required: true }
     number:             { type: str, required: true }
     name:               { type: str, required: true }
     description:        { type: str, required: true }
