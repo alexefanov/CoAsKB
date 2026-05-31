@@ -52,8 +52,8 @@ CONFIDENCE_REQUIRED = "required"
 CONFIDENCE_NONE     = "none"
 
 EDGE_CONFIDENCE_VALUES = {"high", "medium", "low"}
-CITATION_EDGE_TYPES    = {"cites"}
-CITATION_SOURCES       = set(EDGES['cites']['attributes']['source']['values'])
+CITATION_EDGE_TYPES    = {"cites"} if "cites" in EDGES else set()
+CITATION_SOURCES       = set(EDGES['cites']['attributes']['source']['values']) if "cites" in EDGES else set()
 
 # Legacy edge types kept for /lint backwards-compat reports.
 LEGACY_EDGE_TYPES = {"extends", "supersedes"}
@@ -128,7 +128,12 @@ EDGE_TYPE_SPECS: dict[str, dict[str, str]] = {
 # ── Helper functions (operate on EDGE_TYPE_SPECS) ───────────────────────────
 
 def _spec_matches(spec: dict, key: str, value):
-    return value is None or spec.get(key) == value
+    if value is None:
+        return True
+    spec_val = spec.get(key)
+    if isinstance(spec_val, list):
+        return value in spec_val
+    return spec_val == value
 
 
 def edge_types_matching(*, from_kind=None, to_kind=None, direction=None,
