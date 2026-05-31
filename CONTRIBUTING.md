@@ -1,4 +1,4 @@
-﻿# Contributing to OmegaWiki
+# Contributing to OmegaWiki
 
 Thank you for your interest in contributing to OmegaWiki. This guide covers the essentials.
 
@@ -51,11 +51,11 @@ python -m pytest tests/ -v
 
 ## Bilingual (i18n)
 
-OmegaWiki ships in English and Chinese. English is canonical.
+OmegaWiki ships in Russian, English and Chinese. Russian is canonical.
 
 When modifying any SKILL.md, runtime AGENTS.md, or shared-references file:
 
-1. Edit `i18n/en/<path>` first.
+1. Edit `i18n/ru/<path>` first.
 2. Apply the equivalent change to `i18n/zh/<path>`.
 3. Run `./setup.sh --lang $(cat .claude/.current-lang 2>/dev/null || echo en)` to sync.
 4. Run tests.

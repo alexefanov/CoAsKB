@@ -144,7 +144,7 @@ try {
     # -- Step 3b: Activate language files ----------------------------------
     Write-Host ""
     Write-Info "Activating language: $Lang"
-    Copy-Item (Join-Path $I18nDir "CLAUDE.md") "CLAUDE.md" -Force
+    Copy-Item (Join-Path $I18nDir "AGENTS.md") "AGENTS.md" -Force
 
     $skillsSrc = Join-Path $I18nDir "skills"
     Get-ChildItem -Path $skillsSrc -Directory | ForEach-Object {
