@@ -1,7 +1,7 @@
 ---
 name: visualize
 description: Генерация и обновление артефактов визуализации — конфигурация графа Obsidian и карты знаний Canvas. Интерактивный веб-просмотр графа находится в SPA в app/modules/graph.js (обслуживается tools/serve.py).
-argument-hint: [--obsidian] [--canvas] [--focus <node_id>] [--depth N] [--types <page-type,...>] [--edge-types <edge-type,...>] [--all]
+argument-hint: "[--obsidian] [--canvas] [--focus <node_id>] [--depth N] [--types <page-type,...>] [--edge-types <edge-type,...>] [--all]"
 ---
 
 # /visualize
