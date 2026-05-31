@@ -1,210 +1,212 @@
 ---
-description: Ask the wiki a question, retrieve and synthesize relevant pages, optionally crystallize the answer back into the wiki
-argument-hint: <question>
+name: ask
+description: Задайте вопрос wiki, получите и синтезируйте релевантные страницы, при желании кристаллизуйте ответ обратно в wiki
+argument-hint: <вопрос>
 ---
 
 # /ask
 
-> Ask a question to the wiki knowledge base. The LLM reads context_brief.md for global context,
-> retrieves relevant pages, synthesizes an answer with citations. Good answers can be
-> crystallized back into the wiki — written to outputs/, as new concept pages, or appended
-> to an existing idea/method/output note — so exploration compounds like ingestion does.
+> Задайте вопрос базе знаний wiki. LLM читает context_brief.md для глобального контекста,
+> извлекает релевантные страницы, синтезирует ответ с цитатами. Хорошие ответы можно
+> кристаллизовать обратно в wiki — записать в outputs/, как новые страницы концепций или
+> дополнить существующую заметку об идее/методе/результате — так исследование накапливается
+> наряду с загрузкой данных.
 
-## Inputs
+## Входы
 
-- `question`: natural-language question (e.g. "What is the core difference between LoRA and Adapter?")
-- `--crystallize` (optional): if specified, crystallize the answer back into the wiki (default: answer only, no write)
-- `--format` (optional): output format, default `markdown`, options: `table` / `timeline` / `bullets`
+- `question`: вопрос на естественном языке (например, "Каково ключевое отличие LoRA от Adapter?")
+- `--crystallize` (опционально): если указано, кристаллизовать ответ обратно в wiki (по умолчанию: только ответ, без записи)
+- `--format` (опционально): формат вывода, по умолчанию `markdown`, варианты: `table` / `timeline` / `bullets`
 
-## Outputs
+## Выходы
 
-- **Always**: terminal output of synthesized answer (with `[[slug]]` citations)
-- **If crystallize**:
-  - `wiki/outputs/{query-slug}.md` — query result page (default crystallize target)
-  - or `wiki/concepts/{slug}.md` — if the answer reveals a new cross-paper concept
-  - or appended to an existing `wiki/ideas/{slug}.md` / `wiki/methods/{slug}.md` / `wiki/outputs/{slug}.md` — if the answer adds a finding to an existing entity
-  - updated `wiki/graph/edges.jsonl` (relationships produced by crystallize)
-  - updated `wiki/index.md` and `wiki/log.md`
+- **Всегда**: вывод в терминал синтезированного ответа (с цитатами `[[slug]]`)
+- **При --crystallize**:
+  - `wiki/outputs/{query-slug}.md` — страница с результатом запроса (целевой объект по умолчанию)
+  - или `wiki/concepts/{slug}.md` — если ответ открывает новую междудокументную концепцию
+  - или дополнение к существующему `wiki/ideas/{slug}.md` / `wiki/methods/{slug}.md` / `wiki/outputs/{slug}.md` — если ответ добавляет находку к существующему объекту
+  - обновлённый `wiki/graph/edges.jsonl` (связи, созданные кристаллизацией)
+  - обновлённые `wiki/index.md` и `wiki/log.md`
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/graph/context_brief.md` — global compressed context (ideas, gaps, failed ideas, papers, edges)
-- `wiki/index.md` — page catalog for locating relevant pages
-- `wiki/graph/open_questions.md` — open questions, helps identify whether the question touches known gaps
-- `wiki/papers/*.md` — paper pages relevant to the question
-- `wiki/concepts/*.md` — concept pages relevant to the question
-- `wiki/methods/*.md` — method pages relevant to the question
-- `wiki/topics/*.md` — topic pages relevant to the question
-- `wiki/people/*.md` — if the question involves specific researchers
-- `wiki/ideas/*.md` — if the question involves research ideas or failed ideas
-- `wiki/experiments/*.md` — if the question involves experiment results
-- `wiki/Summary/*.md` — if the question involves domain-wide landscape
+### Чтение
+- `wiki/graph/context_brief.md` — глобальный сжатый контекст (идеи, пробелы, провалившиеся идеи, статьи, связи)
+- `wiki/index.md` — каталог страниц для поиска релевантных
+- `wiki/graph/open_questions.md` — открытые вопросы, помогает определить, затрагивает ли вопрос известные пробелы
+- `wiki/papers/*.md` — страницы статей, релевантные вопросу
+- `wiki/concepts/*.md` — страницы концепций, релевантные вопросу
+- `wiki/methods/*.md` — страницы методов, релевантные вопросу
+- `wiki/topics/*.md` — страницы тем, релевантные вопросу
+- `wiki/people/*.md` — если вопрос касается конкретных исследователей
+- `wiki/ideas/*.md` — если вопрос касается исследовательских идей или провалившихся идей
+- `wiki/experiments/*.md` — если вопрос касается результатов экспериментов
+- `wiki/Summary/*.md` — если вопрос касается ландшафта домена
 
-### Writes (crystallize mode only)
-- `wiki/outputs/{query-slug}.md` — CREATE (query result page)
-- `wiki/concepts/{slug}.md` — CREATE (newly discovered concept) or EDIT (supplement existing concept)
-- `wiki/ideas/{slug}.md` / `wiki/methods/{slug}.md` / `wiki/outputs/{slug}.md` — EDIT (append finding to existing page)
-- `wiki/graph/edges.jsonl` — APPEND (relationships produced by crystallize)
-- `wiki/graph/context_brief.md` — REBUILD (if crystallize created new pages)
-- `wiki/graph/open_questions.md` — REBUILD (if crystallize created new pages)
-- `wiki/index.md` — EDIT (if crystallize created new pages)
-- `wiki/log.md` — APPEND
+### Запись (только в режиме кристаллизации)
+- `wiki/outputs/{query-slug}.md` — СОЗДАТЬ (страница результата запроса)
+- `wiki/concepts/{slug}.md` — СОЗДАТЬ (вновь обнаруженная концепция) или РЕДАКТИРОВАТЬ (дополнить существующую концепцию)
+- `wiki/ideas/{slug}.md` / `wiki/methods/{slug}.md` / `wiki/outputs/{slug}.md` — РЕДАКТИРОВАТЬ (добавить находку к существующей странице)
+- `wiki/graph/edges.jsonl` — ДОПОЛНИТЬ (связи, созданные кристаллизацией)
+- `wiki/graph/context_brief.md` — ПЕРЕСОБРАТЬ (если кристаллизация создала новые страницы)
+- `wiki/graph/open_questions.md` — ПЕРЕСОБРАТЬ (если кристаллизация создала новые страницы)
+- `wiki/index.md` — РЕДАКТИРОВАТЬ (если кристаллизация создала новые страницы)
+- `wiki/log.md` — ДОПОЛНИТЬ
 
-### Graph edges created (crystallize only)
-- `output → paper`: `derived_from` (papers cited in the answer)
-- `output → concept`: `derived_from` (concepts cited in the answer)
-- `output → idea` / `output → method`: `derived_from` (ideas or methods cited in the answer)
-- `concept → paper`: `supports` (if a new concept is generalized from papers)
+### Создаваемые графовые рёбра (только кристаллизация)
+- `output → paper`: `derived_from` (статьи, цитируемые в ответе)
+- `output → concept`: `derived_from` (концепции, цитируемые в ответе)
+- `output → idea` / `output → method`: `derived_from` (идеи или методы, цитируемые в ответе)
+- `concept → paper`: `supports` (если новая концепция обобщена из статей)
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`).
-Set `WIKI_ROOT=wiki/`.
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`).
+Установите `WIKI_ROOT=wiki/`.
 
-### Step 1: Load Global Context
+### Шаг 1: Загрузка глобального контекста
 
-1. Read `wiki/graph/context_brief.md` — get compressed snapshot of wiki's current knowledge (ideas, gaps, papers, edges)
-2. Read `wiki/graph/open_questions.md` — understand known open questions and knowledge gaps
-3. If both are missing, rebuild first:
+1. Прочитайте `wiki/graph/context_brief.md` — получите сжатый снимок текущих знаний wiki (идеи, пробелы, статьи, связи)
+2. Прочитайте `wiki/graph/open_questions.md` — изучите известные открытые вопросы и пробелы в знаниях
+3. Если оба отсутствуют, пересоберите:
    ```bash
    python3 tools/research_wiki.py rebuild-context-brief wiki/
    python3 tools/research_wiki.py rebuild-open-questions wiki/
    ```
 
-### Step 2: Retrieve Relevant Pages
+### Шаг 2: Извлечение релевантных страниц
 
-1. Read `wiki/index.md`, match relevant slugs against question keywords
-2. Extract ideas, methods, and papers semantically related to the question from context_brief.md
-3. Sort by relevance, select top-K pages (K ≤ 15 to avoid exceeding context window)
-4. Read full content of selected pages
-5. If the question involves relationships (e.g. "difference between X and Y"), additionally read edges connecting X and Y from `wiki/graph/edges.jsonl`
+1. Прочитайте `wiki/index.md`, сопоставьте релевантные slug'и с ключевыми словами вопроса
+2. Извлеките идеи, методы и статьи, семантически связанные с вопросом, из context_brief.md
+3. Отсортируйте по релевантности, выберите до 15 страниц (K ≤ 15, чтобы не превысить контекстное окно)
+4. Прочитайте полное содержимое выбранных страниц
+5. Если вопрос касается отношений (например, "разница между X и Y"), дополнительно прочитайте связи X и Y из `wiki/graph/edges.jsonl`
 
-### Step 3: Synthesize Answer
+### Шаг 3: Синтез ответа
 
-1. Synthesize an answer to the user's question based on collected page content
-2. Answer requirements:
-   - **Cited**: every key statement must include a `[[slug]]` wikilink pointing to its source page
-   - **Structured**: organize output according to `--format` parameter (markdown / table / timeline / bullets)
-   - **Acknowledge uncertainty**: clearly flag "insufficient evidence in wiki" for parts with weak support
-   - **Flag knowledge gaps**: if the question touches a known gap in open_questions.md, call it out explicitly
-   - **Cite idea status**: when referencing ideas, note their `status` and `novelty_score`
-3. If the question exceeds the wiki's current knowledge, honestly say so and suggest:
-   - which papers to ingest to fill the gap
-   - possible search directions (arXiv keywords, Semantic Scholar queries)
+1. Синтезируйте ответ на вопрос пользователя на основе собранных содержаний страниц
+2. Требования к ответу:
+   - **С цитатами**: каждое ключевое утверждение должно содержать wikilink `[[slug]]`, указывающий на исходную страницу
+   - **Структурированный**: организуйте вывод в соответствии с параметром `--format` (markdown / table / timeline / bullets)
+   - **Признание неопределённости**: явно отмечайте "недостаточно доказательств в wiki" для частей со слабой поддержкой
+   - **Отмечайте пробелы в знаниях**: если вопрос затрагивает известный пробел в open_questions.md, явно укажите на это
+   - **Цитируйте статус идей**: при ссылках на идеи указывайте их `status` и `novelty_score`
+3. Если вопрос превышает текущие знания wiki, честно скажите об этом и предложите:
+   - какие статьи загрузить для заполнения пробела
+   - возможные направления поиска (ключевые слова arXiv, запросы Semantic Scholar)
 
-### Step 4: Assess Crystallize Value
+### Шаг 4: Оценка ценности кристаллизации
 
-1. Judge whether the answer is worth writing back to the wiki (make a recommendation even if `--crystallize` was not specified)
-2. Signals that crystallize is worthwhile:
-   - The answer synthesizes information from multiple papers, forming a new cross-paper insight
-   - The answer reveals a concept not yet explicitly recorded in the wiki
-   - The answer adds a finding that strengthens an existing idea, method, or output note
-   - The answer addresses a known gap in open_questions.md
-3. Signals that crystallize is not worthwhile:
-   - The answer merely restates the content of a single page
-   - The question is a simple factual lookup (e.g. "What year was LoRA published?")
-   - The answer relies primarily on inference rather than wiki evidence
-4. Append a crystallize recommendation at the end of the answer:
+1. Определите, стоит ли записывать ответ обратно в wiki (сделайте рекомендацию, даже если `--crystallize` не был указан)
+2. Признаки того, что кристализация ценна:
+   - Ответ синтезирует информацию из нескольких статей, формируя новое междудокументное наблюдение
+   - Ответ раскрывает концепцию, ещё не явно зафиксированную в wiki
+   - Ответ добавляет находку, укрепляющую существующую идею, метод или результат
+   - Ответ затрагивает известный пробел в open_questions.md
+3. Признаки того, что кристализация не нужна:
+   - Ответ лишь повторяет содержание одной страницы
+   - Вопрос является простым справочным (например, "В каком году вышла LoRA?")
+   - Ответ опирается в основном на выводы, а не на доказательства из wiki
+4. Добавьте рекомендацию по кристализации в конец ответа:
    ```
-   💡 Crystallize recommendation: [worthwhile / not needed] — [reason]
+   💡 Рекомендация по кристализации: [стоит / не нужно] — [причина]
    ```
 
-### Step 5: Crystallize Back to Wiki (if user confirms or --crystallize was specified)
+### Шаг 5: Кристализация обратно в wiki (если пользователь подтвердил или был указан --crystallize)
 
-Choose the crystallize target based on answer content:
+Выберите цель кристализации на основе содержания ответа:
 
-**Case A — Write to outputs/ (default):**
-1. Generate slug: `python3 tools/research_wiki.py slug "<query-summary>"`
-2. Create `wiki/outputs/{query-slug}.md`:
+**Вариант A — Запись в outputs/ (по умолчанию):**
+1. Сгенерируйте slug: `python3 tools/research_wiki.py slug "<сводка-запроса>"`
+2. Создайте `wiki/outputs/{query-slug}.md`:
    ```yaml
    ---
    title: ""
    slug: ""
-   query: ""           # original question
-   source_pages: []    # slugs of all pages cited in the answer
+   query: ""           # исходный вопрос
+   source_pages: []    # slug'и всех страниц, цитируемых в ответе
    date_created: YYYY-MM-DD
    ---
    ```
-   Body is the answer content (preserve wikilinks)
-3. Add a graph edge for each cited source page:
+   Тело — содержимое ответа (сохраняйте wikilinks)
+3. Добавьте графовое ребро для каждой цитируемой исходной страницы:
    ```bash
    python3 tools/research_wiki.py add-edge wiki/ --from outputs/<slug> --to papers/<source-slug> --type derived_from --evidence "query answer"
    ```
 
-**Case B — Create new concept:**
-1. If the answer reveals a new concept: create `wiki/concepts/{slug}.md` using the CLAUDE.md concept template
+**Вариант B — Создание новой концепции:**
+1. Если ответ раскрывает новую концепцию: создайте `wiki/concepts/{slug}.md`, используя шаблон концепции из CLAUDE.md
 2. maturity: emerging
-3. key_papers: extracted from answer citations
-4. Add graph edges (concept → papers)
-5. Append reverse links to relevant paper pages under `## Related`
+3. key_papers: извлечены из цитат ответа
+4. Добавьте графовые рёбра (concept → papers)
+5. Добавьте обратные ссылки на релевантные страницы статей в `## Related`
 
-**Case C — Append finding to an existing idea, method, or output note:**
-1. If the answer extends a finding tied to an existing entity, append a short paragraph (with `[[slug]]` citations) to the appropriate section:
-   - `wiki/ideas/{slug}.md` → `## Lessons learned` or `## Pilot results`
-   - `wiki/methods/{slug}.md` → `## Limitations` or `## Tradeoff profile`
-   - `wiki/outputs/{slug}.md` → end of the body
-2. Add graph edges from the touched page to the cited papers/concepts/methods (`derived_from`)
-3. Do not create a new entity; this case only enriches an existing one
+**Вариант C — Добавление находки к существующей идее, методу или результату:**
+1. Если ответ расширяет находку, привязанную к существующему объекту, добавьте короткий абзац (с цитатами `[[slug]]`) в соответствующий раздел:
+   - `wiki/ideas/{slug}.md` → `## Lessons learned` или `## Pilot results`
+   - `wiki/methods/{slug}.md` → `## Limitations` или `## Tradeoff profile`
+   - `wiki/outputs/{slug}.md` → конец тела
+2. Добавьте графовые рёбра от затронутой страницы к цитируемым статьям/концепциям/методам (`derived_from`)
+3. Не создавайте новый объект; этот вариант только обогащает существующий
 
-### Step 6: Update Navigation and Graph (crystallize only)
+### Шаг 6: Обновление навигации и графа (только кристаллизация)
 
-1. **index.md**: append new page entries under the appropriate category
+1. **index.md**: добавьте новые записи страниц в соответствующую категорию
 2. **log.md**:
    ```bash
-   python3 tools/research_wiki.py log wiki/ "ask | <question-summary> | crystallized: <target-path>"
+   python3 tools/research_wiki.py log wiki/ "ask | <сводка-запроса> | кристализовано: <путь-цели>"
    ```
-   If not crystallized:
+   Если не кристализовано:
    ```bash
-   python3 tools/research_wiki.py log wiki/ "ask | <question-summary> | answer-only"
+   python3 tools/research_wiki.py log wiki/ "ask | <сводка-запроса> | только-ответ"
    ```
-3. **Rebuild derived graph files** (only if crystallize created new pages):
+3. **Пересборка производных файлов графа** (только если кристаллизация создала новые страницы):
    ```bash
    python3 tools/research_wiki.py rebuild-context-brief wiki/
    python3 tools/research_wiki.py rebuild-open-questions wiki/
    ```
 
-### Step 7: Report to User
+### Шаг 7: Отчёт пользователю
 
-Output a summary including:
-- Number and list of retrieved pages
-- Answer (with citations and formatting)
-- Knowledge gap annotations (if any)
-- Crystallize recommendation or execution result
-- Follow-up suggestions (papers recommended for ingestion, related open questions)
+Выведите сводку, включающую:
+- Количество и список извлечённых страниц
+- Ответ (с цитатами и форматированием)
+- Аннотации о пробелах в знаниях (если есть)
+- Рекомендацию по кристализации или результат выполнения
+- Предложения по дальнейшим действиям (рекомендуемые статьи для загрузки, связанные открытые вопросы)
 
-## Constraints
+## Ограничения
 
-- **No fabrication**: answers must be grounded in actual wiki content; do not invent from LLM pre-training knowledge
-- **Citations must exist**: every `[[slug]]` must point to a page that actually exists in the wiki
-- **raw/ is read-only**: do not modify files under `raw/`
-- **graph/ only via tools**: do not hand-edit files under `graph/`
-- **Crystallize requires confirmation**: unless the user explicitly specifies `--crystallize`, only recommend but do not write
-- **Context limit**: retrieve at most 15 pages to stay within context window
-- **Cite idea status**: when referencing ideas, always note their `status` and `novelty_score`
-- **Flag gaps**: if the question touches a known gap in open_questions.md, explicitly call it out
-- **outputs/ frontmatter must include query and source_pages**: ensures traceability
+- **Без выдумок**: ответы должны основываться на реальном содержимом wiki; не измышляйте на основе предобучения LLM
+- **Цитаты должны существовать**: каждый `[[slug]]` должен указывать на реально существующую страницу в wiki
+- **raw/ только для чтения**: не изменяйте файлы в `raw/`
+- **graph/ только через инструменты**: не редактируйте вручную файлы в `graph/`
+- **Кристализация требует подтверждения**: если пользователь явно не указал `--crystallize`, только рекомендуйте, но не записывайте
+- **Лимит контекста**: извлекайте не более 15 страниц для укладывания в контекстное окно
+- **Цитируйте статус идей**: при ссылках на идеи всегда указывайте их `status` и `novelty_score`
+- **Отмечайте пробелы**: если вопрос затрагивает известный пробел в open_questions.md, явно укажите на это
+- **frontmatter outputs/ должен включать query и source_pages**: обеспечивает прослеживаемость
 
-## Error Handling
+## Обработка ошибок
 
-- **context_brief.md missing**: run `python3 tools/research_wiki.py rebuild-context-brief wiki/` to rebuild, then retry
-- **wiki is empty**: inform the user to first run `/init` or `/ingest` to build the knowledge base
-- **no matching pages**: honestly report that no relevant content exists in the wiki, suggest search and ingest directions
-- **crystallize slug conflict**: append a numeric suffix (e.g. `query-result-2`)
-- **index.md missing**: run `python3 tools/research_wiki.py init wiki/` to initialize, then retry
+- **отсутствует context_brief.md**: запустите `python3 tools/research_wiki.py rebuild-context-brief wiki/` для пересборки, затем повторите
+- **wiki пуста**: сообщите пользователю о необходимости сначала запустить `/init` или `/ingest` для построения базы знаний
+- **нет подходящих страниц**: честно сообщите, что в wiki нет релевантного содержимого, предложите направления поиска и загрузки
+- **конфликт slug'ов кристализации**: добавьте численный суффикс (например, `query-result-2`)
+- **отсутствует index.md**: запустите `python3 tools/research_wiki.py init wiki/` для инициализации, затем повторите
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py slug "<title>"` — slug generation
-- `python3 tools/research_wiki.py add-edge wiki/ --from <id> --to <id> --type <type> --evidence "<text>"` — add graph edge
-- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — rebuild compressed context
-- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — rebuild knowledge gap map
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log entry
-- `python3 tools/research_wiki.py init wiki/` — initialize wiki (fallback)
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py slug "<title>"` — генерация slug
+- `python3 tools/research_wiki.py add-edge wiki/ --from <id> --to <id> --type <type> --evidence "<text>"` — добавление графового ребра
+- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — пересборка сжатого контекста
+- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — пересборка карты пробелов в знаниях
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление записи в журнал
+- `python3 tools/research_wiki.py init wiki/` — инициализация wiki (запасной вариант)
 
-### Skills（via Skill tool）
-- `/ingest` — referenced when suggesting the user supplement knowledge
+### Навыки (через инструмент Skill)
+- `/ingest` — при рекомендации пользователю дополнить знания
 
-### Shared References
-- `.claude/skills/shared-references/citation-verification.md` (created in Phase 3)
+### Общие справочники
+- `.claude/skills/shared-references/citation-verification.md` (создан на этапе 3)

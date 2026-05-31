@@ -1,163 +1,164 @@
 ---
-description: Pilot result evaluation — read pilot results, apply success criteria, update idea page (pilot_result, failure_reason if failed), generate PILOT_VERDICT_REPORT. Called by /ideate Phase 5 after /exp-pilot-run.
+name: exp-pilot-eval
+description: Оценка результатов пилота — чтение пилотных результатов, применение критериев успеха, обновление страницы идеи (pilot_result, failure_reason при провале), генерация PILOT_VERDICT_REPORT. Вызывается из /ideate Этап 5 после /exp-pilot-run.
 argument-hint: <idea-slug> [--auto]
 ---
 
 # /exp-pilot-eval
 
-> Evaluate pilot experiment results and update the linked idea page.
-> Reads pilot results from `experiments/pilot/code/{slug}/results/`, applies verdict logic (pass/fail/inconclusive), and updates the idea's `pilot_result`, `failure_reason`, and `status` fields.
-> Called by `/ideate` Phase 5 after `/exp-pilot-run` completes.
+> Оценка результатов пилотного эксперимента и обновление связанной страницы идеи.
+> Читает пилотные результаты из `experiments/pilot/code/{slug}/results/`, применяет логику вердикта (проход/провал/неопределённо) и обновляет поля `pilot_result`, `failure_reason` и `status` идеи.
+> Вызывается `/ideate` Этап 5 после завершения `/exp-pilot-run`.
 
-## Inputs
+## Входы
 
-- `idea-slug`: slug of the idea whose pilot was just run
-- `--auto` (optional): automatic mode, no pause for user confirmation (used when called by `/research`)
+- `idea-slug`: slug идеи, чей пилот только что был запущен
+- `--auto` (опционально): автоматический режим, без паузы для подтверждения пользователя (используется при вызове из `/research`)
 
-## Outputs
+## Выходы
 
-- `wiki/ideas/{slug}.md` — updated `pilot_result` (always), `failure_reason` (if failed), `status` (if failed → `failed`)
-- `wiki/log.md` — appended log entry
-- **PILOT_VERDICT_REPORT** (printed to terminal) — verdict, wiki change summary, next step suggestions
-- `experiments/pilot/{slug}/report.md` — PILOT_VERDICT_REPORT file copy (persistent record)
+- `wiki/ideas/{slug}.md` — обновлённый `pilot_result` (всегда), `failure_reason` (при провале), `status` (при провале → `failed`)
+- `wiki/log.md` — добавлена запись в журнал
+- **PILOT_VERDICT_REPORT** (выводится в терминал) — вердикт, сводка изменений wiki, предложения по следующим шагам
+- `experiments/pilot/{slug}/report.md` — файл-копия PILOT_VERDICT_REPORT (постоянная запись)
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/ideas/{slug}.md` — linked idea current state: `status`, `pilot_result`, `failure_reason`
-- `experiments/pilot/code/{slug}/results/seed_*.json` — pilot experiment results
-- `experiments/pilot/code/{slug}/pilot.log` — pilot run log (for failure diagnosis: errors, warnings, runtime behavior)
-- `experiments/pilot/{slug}.yaml` — Pilot Spec (for success_criterion and baseline reference)
+### Чтение
+- `wiki/ideas/{slug}.md` — текущее состояние связанной идеи: `status`, `pilot_result`, `failure_reason`
+- `experiments/pilot/code/{slug}/results/seed_*.json` — результаты пилотного эксперимента
+- `experiments/pilot/code/{slug}/pilot.log` — лог запуска пилота (для диагностики провалов: ошибки, предупреждения, поведение во времени)
+- `experiments/pilot/{slug}.yaml` — спецификация пилота (для success_criterion и эталонного значения)
 
-### Writes
-- `wiki/ideas/{slug}.md` — update `pilot_result`, `failure_reason` (if failed), `status` (if failed)
-- `wiki/log.md` — append operation log
-- `experiments/pilot/{slug}/report.md` — PILOT_VERDICT_REPORT file copy
+### Запись
+- `wiki/ideas/{slug}.md` — обновление `pilot_result`, `failure_reason` (при провале), `status` (при провале)
+- `wiki/log.md` — добавление в журнал операций
+- `experiments/pilot/{slug}/report.md` — файл-копия PILOT_VERDICT_REPORT
 
-### Graph edges created
-- None. Pilot evaluations do not create graph edges (those are for formal experiments via `/exp-eval`).
+### Создаваемые графовые рёбра
+- Нет. Пилотные оценки не создают графовых рёбер (они для формальных экспериментов через `/exp-eval`).
 
-## Workflow
+## Рабочий процесс
 
-**Step 1: Load Context**
+**Шаг 1: Загрузка контекста**
 
-1. Read idea page `wiki/ideas/{slug}.md`:
-   - Current `status` and `pilot_result`
-   - Current `failure_reason` (should be empty for proposed ideas)
+1. Чтение страницы идеи `wiki/ideas/{slug}.md`:
+   - Текущие `status` и `pilot_result`
+   - Текущий `failure_reason` (должен быть пуст для предложенных идей)
 
-2. Read pilot results from `experiments/pilot/code/{slug}/results/seed_*.json`:
-   - Parse result files (JSON)
-   - Compute mean ± std per metric (across seeds)
+2. Чтение пилотных результатов из `experiments/pilot/code/{slug}/results/seed_*.json`:
+   - Парсинг файлов результатов (JSON)
+   - Вычисление среднего ± стандартное отклонение для каждой метрики (по сидам)
 
-3. Read pilot log from `experiments/pilot/code/{slug}/pilot.log`:
-   - Scan for errors, warnings, OOM, divergence signals
-   - Extract runtime behavior context for failure diagnosis and verdict report
+3. Чтение лога пилота из `experiments/pilot/code/{slug}/pilot.log`:
+   - Сканирование на ошибки, предупреждения, OOM, сигналы расхождения
+   - Извлечение контекста поведения во времени для диагностики провалов и отчёта вердикта
 
-4. Read Pilot Spec from `experiments/pilot/{slug}.yaml`:
-   - Extract `success_criterion` (pass, fail, inconclusive conditions)
-   - Extract `baseline.expected_value` for comparison
+4. Чтение спецификации пилота из `experiments/pilot/{slug}.yaml`:
+   - Извлечение `success_criterion` (условия прохода, провала, неопределённости)
+   - Извлечение `baseline.expected_value` для сравнения
 
-**Step 2: Apply Verdict Logic**
+**Шаг 2: Применение логики вердикта**
 
-Evaluate the pilot results against the success_criterion from the Pilot Spec. The verdict thresholds are intentionally lenient — the purpose of a pilot is to detect obvious failures, not to measure final performance.
+Оценка пилотных результатов по критерию success_criterion из спецификации пилота. Пороги вердикта намеренно мягкие — цель пилота — обнаружить явные провалы, а не измерить конечную производительность.
 
-- **Pass**: pilot does NOT show clear failure. Since pilots use reduced batch size (1/4–1/8 of paper's) and shortened training (10–30% of full steps), results are inherently noisy and biased downward. Therefore: improvement over baseline, roughly on par with baseline, or even slightly worse than baseline all count as pass. Also passes if the gap is confirmed (path C: existing methods indeed fail under new setting).
-- **Fail**: pilot shows clear, unambiguous failure (divergence, severe degradation vs baseline, fundamental incompatibility). The threshold is high — only ideas that are clearly broken should fail at this stage.
-- **Inconclusive**: pilot is noisy or ambiguous — results don't clearly pass or fail.
+- **Проход**: пилот НЕ показывает явного провала. Поскольку пилоты используют уменьшенный размер батча (1/4–1/8 от статьи) и сокращённое обучение (10–30% от полных шагов), результаты по своей природе шумные и смещены вниз. Поэтому: улучшение по сравнению с базовым, примерно на уровне базового или даже немного хуже базового — всё считается проходом. Также проходит, если подтверждается пробел (путь C: существующие методы действительно не работают в новых настройках).
+- **Провал**: пилот показывает явный, однозначный провал (расхождение, сильная деградация по сравнению с базовым, фундаментальная несовместимость). Порог высокий — только явно дефектные идеи должны проваливаться на этом этапе.
+- **Неопределённо**: пилот шумный или неоднозначный — результаты не ясно проходят и не ясно проваливаются.
 
-**Step 3: Update Idea Page**
+**Шаг 3: Обновление страницы идеи**
 
-If verdict == `pass`:
-- Set `pilot_result`: `"pass — <one-sentence summary of key metric vs baseline>"`
-- Status unchanged (stays `proposed` or current)
-- Example: `"pass — accuracy 0.82 vs baseline 0.80, loss converges"`
+Если вердикт == `проход`:
+- Установите `pilot_result`: `"проход — <однострочное описание ключевой метрики относительно базовой>"`
+- Статус без изменений (остаётся `proposed` или текущий)
+- Пример: `"проход — accuracy 0.82 при базовой 0.80, loss сходится"`
 
-If verdict == `fail`:
-- Set `pilot_result`: `"fail — <specific failure>"`
-- Set `failure_reason`: `"[pilot] <specific failure description>"`
-  - The `[pilot]` prefix distinguishes pilot failures from `[filter]` eliminations (Phase 3) and post-experiment failures from `/exp-eval`
-- Transition status to `failed`:
+Если вердикт == `провал`:
+- Установите `pilot_result`: `"провал — <конкретный провал>"`
+- Установите `failure_reason`: `"[pilot] <описание конкретного провала>"`
+  - Префикс `[pilot]` отличает пилотные провалы от исключений `[filter]` (Этап 3) и послепилотных провалов от `/exp-eval`
+- Переведите статус в `failed`:
   ```bash
-  python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md pilot_result "fail — <specific failure>"
-  python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to failed --reason "[pilot] <specific failure description>"
+  python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md pilot_result "провал — <конкретный провал>"
+  python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to failed --reason "[pilot] <описание конкретного провала>"
   ```
-  - `transition` validates lifecycle rules (e.g. refuses to downgrade `validated` → `failed`) and auto-sets `failure_reason` and `date_resolved`.
-- Example failure_reason: `"[pilot] loss diverged after 50 steps (reached 1e5 vs baseline 0.3)"`
+  - `transition` валидирует правила жизненного цикла (например, отказывается понижать `validated` → `failed`) и автоматически устанавливает `failure_reason` и `date_resolved`.
+- Пример failure_reason: `"[pilot] loss расходился после 50 шагов (достиг 1e5 при базовой 0.3)"`
 
-If verdict == `inconclusive`:
-- Set `pilot_result`: `"inconclusive — needs full experiment"`
-- Status unchanged
+Если вердикт == `неопределённо`:
+- Установите `pilot_result`: `"неопределённо — нужен полный эксперимент"`
+- Статус без изменений
 
-**Step 4: Report**
+**Шаг 4: Отчёт**
 
-1. If `--auto` is not set: display verdict and wiki changes in terminal, wait for user confirmation on borderline cases
+1. Если `--auto` не задан: покажите вердикт и изменения wiki в терминале, дождитесь подтверждения пользователя в пограничных случаях
 
-2. Append log:
+2. Добавление в журнал:
    ```bash
    python3 tools/research_wiki.py log wiki/ \
-     "exp-pilot-eval | {slug} | verdict: {verdict} | pilot_result: {result}"
+     "exp-pilot-eval | {slug} | вердикт: {verdict} | pilot_result: {result}"
    ```
 
-3. Print **PILOT_VERDICT_REPORT** to terminal and write to `experiments/pilot/{slug}/report.md`:
+3. Вывод **PILOT_VERDICT_REPORT** в терминал и запись в `experiments/pilot/{slug}/report.md`:
    ```markdown
-   # Pilot Verdict Report: {slug}
+   # Отчёт о вердикте пилота: {slug}
 
-   ## Verdict: {pass / fail / inconclusive}
+   ## Вердикт: {проход / провал / неопределённо}
 
-   ## Results Summary
-   | Metric | Baseline | Pilot (mean±std) | Δ |
-   |--------|----------|------------------|---|
+   ## Сводка результатов
+   | Метрика | Базовая | Пилот (среднее±стд) | Δ |
+   |---------|---------|---------------------|---|
    | {metric} | {baseline-value} | {mean}±{std} | {delta} |
 
-   ## Pilot Log
-   - Log: experiments/pilot/code/{slug}/pilot.log
-   - Key signals: {errors / warnings / OOM / divergence observed in log, or "clean run"}
+   ## Лог пилота
+   - Лог: experiments/pilot/code/{slug}/pilot.log
+   - Ключевые сигналы: {ошибки / предупреждения / OOM / расхождение в логе, или "чистый запуск"}
 
-   ## Wiki Changes
-   | Page | Field | Old | New |
-   |------|-------|-----|-----|
-   | ideas/{slug} | pilot_result | {old} | {new} |
-   | ideas/{slug} | status | {old} | {new} | (only if changed) |
-   | ideas/{slug} | failure_reason | — | {new} | (only if failed) |
+   ## Изменения в wiki
+   | Страница | Поле | Старое | Новое |
+   |----------|------|--------|-------|
+   | ideas/{slug} | pilot_result | {старое} | {новое} |
+   | ideas/{slug} | status | {старое} | {новое} | (только если изменено) |
+   | ideas/{slug} | failure_reason | — | {новое} | (только при провале) |
 
-   ## Next Steps
-   - {if pass: proceed to /exp-design for full experiments}
-   - {if fail: idea eliminated; review pilot log for details}
-   - {if inconclusive: proceed to full experiment with caution}
+   ## Следующие шаги
+   - {если проход: переходите к /exp-design для полных экспериментов}
+   - {если провал: идея отсеяна; изучите лог пилота для подробностей}
+   - {если неопределённо: переходите к полному эксперименту с осторожностью}
    ```
 
-## Constraints
+## Ограничения
 
-- **Only processes pilot-tested ideas**: results must exist in `experiments/pilot/code/{slug}/results/`
-- **failure_reason must be specific**: not vague "pilot failed" — include what failed and why
-- **Idea lifecycle is forward-only**: `proposed → failed` (cannot regress validated → failed)
-- **Does NOT create graph edges**: those are for formal experiments via `/exp-eval`
-- **Pilot pass threshold is intentionally low**: detect obvious failures, not measure final performance
-- **The `[pilot]` prefix is mandatory on failure_reason**: distinguishes from `[filter]` and post-experiment failures
+- **Обрабатывает только протестированные пилотом идеи**: результаты должны существовать в `experiments/pilot/code/{slug}/results/`
+- **failure_reason должен быть конкретным**: не расплывчатый "пилот провален" — включите, что именно провалилось и почему
+- **Жизненный цикл идеи только вперёд**: `proposed → failed` (нельзя понижать validated → failed)
+- **НЕ создаёт графовых рёбер**: они для формальных экспериментов через `/exp-eval`
+- **Порог прохода пилота намеренно низкий**: обнаружение явных провалов, а не измерение конечной производительности
+- **Префикс `[pilot]` обязателен для failure_reason**: отличает от `[filter]` и послепилотных провалов
 
-## Error Handling
+## Обработка ошибок
 
-- **Idea page not found**: report error, suggest running `/ideate` first
-- **Pilot results not found**: report error, suggest running `/exp-pilot-run` first
-- **Idea already failed**: report current state, do not overwrite
-- **Idea already validated**: refuse to downgrade status, report warning
-- **Pilot Spec not found**: report error, suggest running `/ideate` first to generate the spec
+- **Страница идеи не найдена**: сообщите об ошибке, предложите сначала запустить `/ideate`
+- **Пилотные результаты не найдены**: сообщите об ошибке, предложите сначала запустить `/exp-pilot-run`
+- **Идея уже провалена**: сообщите текущее состояние, не перезаписывайте
+- **Идея уже валидирована**: откажитесь от понижения статуса, выведите предупреждение
+- **Спецификация пилота не найдена**: сообщите об ошибке, предложите сначала запустить `/ideate` для генерации спецификации
 
-## Dependencies
+## Зависимости
 
-### Skills (via Skill tool)
-- None
+### Навыки (через инструмент Skill)
+- Нет
 
-### Tools (via Bash)
-- `python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md <field> "<value>"` — update idea fields (e.g. pilot_result)
-- `python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to <status> [--reason "..."]` — transition idea lifecycle status
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md <field> "<value>"` — обновление полей идеи (например, pilot_result)
+- `python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to <status> [--reason "..."]` — переход жизненного цикла статуса идеи
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
 
 ### Claude Code Native
-- `Read` — read idea page, pilot results, pilot log, Pilot Spec
-- `Edit` — update idea page fields
-- `Bash` — execute research_wiki.py commands
+- `Read` — чтение страницы идеи, пилотных результатов, лога пилота, спецификации пилота
+- `Edit` — обновление полей страницы идеи
+- `Bash` — выполнение команд research_wiki.py
 
-### Called by
-- `/ideate` Phase 5
-- User directly
+### Вызывается из
+- `/ideate` Этап 5
+- Пользователь напрямую

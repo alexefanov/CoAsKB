@@ -1,78 +1,79 @@
 ---
-description: Scan the full wiki to detect health issues and produce a tiered fix-recommendation report (covers all entity types in runtime/schema/entities.yaml + graph consistency)
+name: check
+description: Сканирование всей wiki для обнаружения проблем целостности и составление поуровневого отчёта по исправлениям (охватывает все типы сущностей из runtime/schema/entities.yaml + согласованность графа)
 ---
 
 # /check
 
-> Scans the full wiki to detect structural, link, field, and graph health issues, and generates a tiered fix-recommendation report.
-> Covers every entity type declared in `runtime/schema/entities.yaml` (papers, concepts, topics, people, ideas, experiments, methods, Summary, foundations), plus graph edge / citation consistency. Highlights include: idea novelty-score plausibility, idea failure-reason completeness, experiment `linked_idea` validity.
+> Сканирует всю wiki для обнаружения структурных, ссылочных, полевых и графовых проблем целостности и генерирует поуровневый отчёт по исправлениям.
+> Охватывает каждый тип сущности, объявленный в `runtime/schema/entities.yaml` (статьи, концепции, темы, люди, идеи, эксперименты, методы, Summary, foundations), а также согласованность рёбер графа/цитат. Ключевые моменты: достоверность novelty_score для идей, полнота failure_reason для идей, корректность `linked_idea` для экспериментов.
 
-## Inputs
+## Входы
 
-- Full wiki directory (default `wiki/`)
-- Optional: `--json` flag (output JSON format via `tools/lint.py`)
-- Optional: `--fix` flag (auto-fix deterministic issues)
-- Optional: `--fix --dry-run` (preview fixes without applying them)
-- Optional: `--suggest` flag (show recommendations for issues that cannot be auto-fixed)
+- Полная директория wiki (по умолчанию `wiki/`)
+- Опционально: флаг `--json` (вывод в формате JSON через `tools/lint.py`)
+- Опционально: флаг `--fix` (автоисправление детерминированных проблем)
+- Опционально: `--fix --dry-run` (предпросмотр исправлений без их применения)
+- Опционально: флаг `--suggest` (показ рекомендаций для проблем, которые невозможно исправить автоматически)
 
-## Outputs
+## Выходы
 
-- Lint report (reported directly to the user)
-- Optional file write: `wiki/outputs/lint-report-{date}.md`
+- Отчёт lint (выводится непосредственно пользователю)
+- Опциональная запись файла: `wiki/outputs/lint-report-{date}.md`
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/papers/*.md` — paper page fields and links
-- `wiki/concepts/*.md` — concept page fields and links
-- `wiki/topics/*.md` — topic page fields and links
-- `wiki/people/*.md` — people page fields and links
-- `wiki/ideas/*.md` — idea status, novelty_score, failure_reason, origin_gaps, target_venue
-- `wiki/experiments/*.md` — experiment status, linked_idea, outcome
-- `wiki/methods/*.md` — method type, source_papers, parent/child chains
-- `wiki/Summary/*.md` — survey page fields
-- `wiki/foundations/*.md` — foundations (terminal — incoming-link checks only)
-- `wiki/graph/edges.jsonl` — semantic graph edge consistency check
-- `wiki/graph/citations.jsonl` — bibliographic citation consistency check
-- `wiki/index.md` — cross-check page completeness
+### Чтение
+- `wiki/papers/*.md` — поля и ссылки страниц статей
+- `wiki/concepts/*.md` — поля и ссылки страниц концепций
+- `wiki/topics/*.md` — поля и ссылки страниц тем
+- `wiki/people/*.md` — поля и ссылки страниц людей
+- `wiki/ideas/*.md` — статус идей, novelty_score, failure_reason, origin_gaps, target_venue
+- `wiki/experiments/*.md` — статус экспериментов, linked_idea, outcome
+- `wiki/methods/*.md` — тип метода, source_papers, цепочки parent/child
+- `wiki/Summary/*.md` — поля страниц обзоров
+- `wiki/foundations/*.md` — foundations (терминальные — только проверка входящих ссылок)
+- `wiki/graph/edges.jsonl` — проверка согласованности рёбер семантического графа
+- `wiki/graph/citations.jsonl` — проверка согласованности библиографических цитат
+- `wiki/index.md` — перекрёстная проверка полноты страниц
 
-### Writes
-- Does not directly modify wiki content (reports only, unless `--fix` is set)
-- `wiki/log.md` — records lint result summary via `tools/research_wiki.py log`
+### Запись
+- Не изменяет напрямую содержимое wiki (только отчёты, если не задан `--fix`)
+- `wiki/log.md` — записывает сводку результата lint через `tools/research_wiki.py log`
 
-## Workflow
+## Рабочий процесс
 
-**Pre-conditions**: confirm the working directory is the wiki project root (directory containing `wiki/`, `raw/`, `tools/`).
-Set `WIKI_ROOT=wiki/`.
+**Предусловия**: убедитесь, что рабочая директория — корень проекта wiki (директория, содержащая `wiki/`, `raw/`, `tools/`).
+Установите `WIKI_ROOT=wiki/`.
 
-### Step 1: Run the Automated Lint Tool
+### Шаг 1: Запуск автоматического инструмента Lint
 
-**Default mode (report only)**:
+**Режим по умолчанию (только отчёт)**:
 ```bash
 python3 tools/lint.py --wiki-dir wiki/ --json
 ```
 
-**Auto-fix mode** (when user specifies `--fix`):
+**Режим автоисправления** (когда пользователь указывает `--fix`):
 ```bash
 python3 tools/lint.py --wiki-dir wiki/ --fix --json
 ```
-Auto-fixes deterministic issues (xref reverse-link completion, missing fields filled with default values) and outputs a fix report.
+Автоматически исправляет детерминированные проблемы (завершение обратных ссылок xref, заполнение отсутствующих полей значениями по умолчанию) и выводит отчёт об исправлениях.
 
-**Preview mode** (when user specifies `--fix --dry-run`):
+**Режим предпросмотра** (когда пользователь указывает `--fix --dry-run`):
 ```bash
 python3 tools/lint.py --wiki-dir wiki/ --fix --dry-run --json
 ```
-Previews what would be fixed without applying any changes.
+Показывает, что было бы исправлено, без применения каких-либо изменений.
 
-Parse the JSON output to obtain all automatically detected issues (and fix results).
+Разберите JSON-вывод для получения всех автоматически обнаруженных проблем (и результатов исправления).
 
-### Step 2: Structural Completeness (automated coverage)
+### Шаг 2: Структурная полнота (автоматическое покрытие)
 
-The automated tool checks:
+Автоматический инструмент проверяет:
 
-1. **Broken wikilinks**: `[[slug]]` target file does not exist
-2. **Orphan pages**: pages with no incoming links
-3. **Missing required fields** (per entity declared in `runtime/schema/entities.yaml`). Authoritative source: `runtime.loader.REQUIRED_FIELDS`. Current set:
+1. **Битые wikilinks**: целевой файл `[[slug]]` не существует
+2. **Страницы-сироты**: страницы без входящих ссылок
+3. **Отсутствующие обязательные поля** (для каждой сущности, объявленной в `runtime/schema/entities.yaml`). Авторитетный источник: `runtime.loader.REQUIRED_FIELDS`. Текущий набор:
    - papers: title, slug, tags, importance
    - concepts: title, tags, maturity, key_papers
    - topics: title, tags
@@ -83,9 +84,9 @@ The automated tool checks:
    - experiments: title, slug, status, linked_idea, hypothesis, tags
    - foundations: title, slug, domain, status
 
-### Step 3: Field Value Validation (automated coverage)
+### Шаг 3: Валидация значений полей (автоматическое покрытие)
 
-1. **Enum value checks** (sourced from `runtime.loader.VALID_VALUES`):
+1. **Проверки значений enum** (из `runtime.loader.VALID_VALUES`):
    - papers.importance ∈ {1,2,3,4,5}
    - concepts.maturity ∈ {stable, active, emerging, deprecated}
    - ideas.status ∈ {proposed, in_progress, tested, validated, failed}
@@ -94,98 +95,98 @@ The automated tool checks:
    - experiments.outcome ∈ {succeeded, failed, inconclusive}
    - methods.type ∈ {architecture, training, inference, evaluation, data, benchmark, system, optimization, prompting, protocol, other}
    - foundations.status ∈ {mainstream, historical}
-2. **Idea novelty_score** (when present) ∈ [1, 5] (integer)
-3. **Idea failure_reason**: must be non-empty when status=failed (anti-repetition memory)
-4. **Experiment linked_idea**: the referenced idea page must exist
+2. **novelty_score идеи** (при наличии) ∈ [1, 5] (целое число)
+3. **failure_reason идеи**: должен быть непустым при status=failed (память предотвращения повторений)
+4. **linked_idea эксперимента**: указанная страница идеи должна существовать
 
-### Step 4: Cross Reference Symmetry (automated coverage)
+### Шаг 4: Симметрия перекрёстных ссылок (автоматическое покрытие)
 
-Check all bidirectional link rules defined in `runtime/schema/xref.yaml`:
+Проверьте все правила двунаправленных ссылок, определённые в `runtime/schema/xref.yaml`:
 
-| Forward link | Reverse link checked |
-|--------------|---------------------|
-| `papers ## Related → concepts` | `concepts.key_papers` contains paper slug |
-| `papers wikilink → people` | `people ## Recent work` contains paper slug |
-| `topics.key_people → people` | `people ## Research areas` contains topic slug |
-| `concepts.key_papers → papers` | `papers ## Related` contains concept slug |
-| `ideas.origin_gaps → concepts` | `concepts.linked_ideas` contains idea slug |
-| `ideas.origin_gaps → topics` | `topics.linked_ideas` contains idea slug |
-| `experiments.linked_idea → ideas` | `ideas.linked_experiments` contains experiment slug |
-| `methods.source_papers → papers` | `papers ## Related` contains method slug |
-| `methods.parent_methods ↔ methods.child_methods` | reciprocity |
+| Прямая ссылка | Проверяемая обратная ссылка |
+|--------------|---------------------------|
+| `papers ## Related → concepts` | `concepts.key_papers` содержит slug статьи |
+| `papers wikilink → people` | `people ## Recent work` содержит slug статьи |
+| `topics.key_people → people` | `people ## Research areas` содержит slug темы |
+| `concepts.key_papers → papers` | `papers ## Related` содержит slug концепции |
+| `ideas.origin_gaps → concepts` | `concepts.linked_ideas` содержит slug идеи |
+| `ideas.origin_gaps → topics` | `topics.linked_ideas` содержит slug идеи |
+| `experiments.linked_idea → ideas` | `ideas.linked_experiments` содержит slug эксперимента |
+| `methods.source_papers → papers` | `papers ## Related` содержит slug метода |
+| `methods.parent_methods ↔ methods.child_methods` | взаимность |
 
-### Step 5: Graph Edge Consistency (automated coverage)
+### Шаг 5: Согласованность рёбер графа (автоматическое покрытие)
 
-1. **JSON format validity**: every line is valid JSON
-2. **Required fields**: each edge has from, to, type
-3. **Edge type validity**: semantic edges use the current endpoint-aware type sets; legacy paper-paper / paper-concept types produce migration warnings
-4. **Edge confidence**: `/ingest` paper-paper and paper-concept semantic edges use `confidence: high|medium|low`
-5. **Citation layer**: `graph/citations.jsonl` rows use `type: cites`, valid source/date, paper endpoints, and no confidence field
-6. **Dangling nodes**: wiki pages referenced by from/to must exist
+1. **Валидность JSON-формата**: каждая строка — корректный JSON
+2. **Обязательные поля**: каждое ребро имеет from, to, type
+3. **Валидность типа ребра**: семантические рёбра используют текущие типизированные наборы конечных точек; устаревшие типы paper-paper / paper-concept генерируют предупреждения о миграции
+4. **Уверенность рёбер**: семантические рёбра `/ingest` paper-paper и paper-concept используют `confidence: high|medium|low`
+5. **Слой цитат**: строки `graph/citations.jsonl` используют `type: cites`, корректные source/date, конечные точки статей и не содержат поле confidence
+6. **Висячие узлы**: wiki-страницы, на которые ссылаются from/to, должны существовать
 
-### Step 6: Content Quality (LLM-assisted)
+### Шаг 6: Качество содержимого (с помощью LLM)
 
-Items detectable by the automated tool:
-1. Papers with importance=5 have no concept page referencing them
-2. Concepts with maturity=stable have only 1 key_paper
-3. Topics have empty `## Open problems` sections (also flag empty `### Known gaps` / `### Methodological gaps` subsections)
+Элементы, обнаруживаемые автоматическим инструментом:
+1. Статей с importance=5, на которые не ссылается ни одна страница концепции
+2. Концепций с maturity=stable, имеющих только 1 key_paper
+3. Тем с пустыми разделами `## Open problems` (также отмечайте пустые подразделы `### Known gaps` / `### Methodological gaps`)
 
-Additional LLM judgments (require reading content):
-1. **Concept near-duplicate detection**: scan all concept page titles + aliases and assess whether any pairs are semantically identical or highly similar (e.g. "attention mechanism" and "self-attention"). Output merge recommendations for suspected duplicates.
-2. **Method near-duplicate detection**: same exercise across `wiki/methods/*.md`, comparing `name` + `tags` + `## Mechanism` summaries.
-3. Contradictory statement detection (inconsistent descriptions of the same fact across different pages)
-4. SOTA records not updated in over 6 months
-5. People `## Recent work` not updated in over 6 months
-6. Idea novelty_score inconsistent with the strength of its `## Novelty argument` (low score + bold argument, or high score + thin argument)
-7. High-priority idea stuck in proposed status for a long time without `linked_experiments`
+Дополнительные суждения LLM (требуют чтения содержимого):
+1. **Обнаружение близких дубликатов концепций**: сканируйте заголовки + aliases всех страниц концепций и оценивайте, не являются ли какие-либо пары семантически идентичными или高度 схожими (например, "attention mechanism" и "self-attention"). Выводите рекомендации по слиянию для предполагаемых дубликатов.
+2. **Обнаружение близких дубликатов методов**: аналогичная проверка в `wiki/methods/*.md`, сравнение `name` + `tags` + сводки `## Mechanism`.
+3. Обнаружение противоречивых утверждений (несогласованные описания одного и того же факта на разных страницах)
+4. Записи SOTA, не обновлявшиеся более 6 месяцев
+5. Раздел `## Recent work` у людей, не обновлявшийся более 6 месяцев
+6. novelty_score идеи, не согласованный с силой её `## Novelty argument` (низкая оценка + смелое утверждение, или высокая оценка + слабое утверждение)
+7. Высокоприоритетная идея, застрявшая в статусе proposed без `linked_experiments`
 
-### Step 7: Generate Report
+### Шаг 7: Генерация отчёта
 
-Output sorted by priority:
+Вывод, отсортированный по приоритету:
 
 ```
-## Lint Report — YYYY-MM-DD
+## Отчёт Lint — YYYY-MM-DD
 
-**Summary**: N 🔴, M 🟡, K 🔵
+**Сводка**: N 🔴, M 🟡, K 🔵
 
-### 🔴 Fix Immediately
-1. [file] — {issue description}
+### 🔴 Исправить немедленно
+1. [файл] — {описание проблемы}
 
-### 🟡 Recommended Fixes
-1. [file] — {issue description}
+### 🟡 Рекомендованные исправления
+1. [файл] — {описание проблемы}
 
-### 🔵 Optional Improvements
-1. [file] — {issue description}
+### 🔵 Необязательные улучшения
+1. [файл] — {описание проблемы}
 ```
 
-Classification:
-- **🔴 Fix Immediately**: broken links, missing required fields, invalid enum values, failed idea without failure_reason, invalid JSON in edges, novelty_score out of range
-- **🟡 Recommended Fixes**: xref asymmetry, dangling graph edges, broken `linked_idea` references, unknown edge types
-- **🔵 Optional Improvements**: orphan pages, quality suggestions, empty sections
+Классификация:
+- **🔴 Исправить немедленно**: битые ссылки, отсутствующие обязательные поля, невалидные значения enum, провалившаяся идея без failure_reason, невалидный JSON в рёбрах, novelty_score вне диапазона
+- **🟡 Рекомендованные исправления**: асимметрия xref, висячие рёбра графа, битые ссылки `linked_idea`, неизвестные типы рёбер
+- **🔵 Необязательные улучшения**: страницы-сироты, предложения по улучшению качества, пустые разделы
 
-Append log:
+Добавление в журнал:
 ```bash
-python3 tools/research_wiki.py log wiki/ "check | report: N 🔴, M 🟡, K 🔵"
+python3 tools/research_wiki.py log wiki/ "check | отчёт: N 🔴, M 🟡, K 🔵"
 ```
 
-## Constraints
+## Ограничения
 
-- **Report-only by default**: without `--fix`, only reports, no modifications
-- **`--fix` only repairs deterministic issues**: xref reverse-link completion, missing fields filled with safe default values. Non-deterministic issues output recommendations (`--suggest`) for user approval
-- **raw/ is read-only**: do not modify files under `raw/`
-- **graph/ is read-only**: lint does not modify graph files, checks consistency only
-- **LLM judgments labeled by source**: automated checks and LLM judgments are clearly distinguished in the report
-- **Idempotent**: running multiple times produces the same result (unless wiki content changes)
+- **По умолчанию только отчёт**: без `--fix` только отчёты, без модификаций
+- **`--fix` исправляет только детерминированные проблемы**: завершение обратных ссылок xref, заполнение отсутствующих полей безопасными значениями по умолчанию. Недетерминированные проблемы выводят рекомендации (`--suggest`) для согласования пользователем
+- **raw/ только для чтения**: не изменяйте файлы в `raw/`
+- **graph/ только для чтения**: lint не изменяет файлы графа, только проверяет согласованность
+- **Суждения LLM помечены источником**: автоматические проверки и суждения LLM чётко разграничены в отчёте
+- **Идемпотентность**: повторный запуск даёт тот же результат (если содержимое wiki не изменилось)
 
-## Error Handling
+## Обработка ошибок
 
-- **wiki/ does not exist**: report error and suggest running `/init`
-- **graph files do not exist**: skip the missing graph-file checks, note in report
-- **Partial directory missing**: skip checks for missing directories, list missing directories in report
+- **wiki/ не существует**: сообщите об ошибке и предложите запустить `/init`
+- **Файлы графа не существуют**: пропустите проверки отсутствующих файлов графа, отметьте в отчёте
+- **Отсутствует часть директорий**: пропустите проверки для отсутствующих директорий, перечислите отсутствующие в отчёте
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/lint.py --wiki-dir wiki/ [--json] [--fix] [--dry-run] [--suggest]` — automated structural check + fix (core dependency)
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
-- `python3 tools/research_wiki.py stats wiki/` — get statistics (optional, for the report)
+### Инструменты (через Bash)
+- `python3 tools/lint.py --wiki-dir wiki/ [--json] [--fix] [--dry-run] [--suggest]` — автоматическая структурная проверка + исправление (основная зависимость)
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
+- `python3 tools/research_wiki.py stats wiki/` — получение статистики (опционально, для отчёта)

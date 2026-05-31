@@ -1,320 +1,321 @@
 ---
-description: Experiment verdict gate — Review LLM independently judges results → 4 verdict paths → auto-update the linked idea's status / failure_reason and graph edges
+name: exp-eval
+description: Ворота вердикта по экспериментам — Review LLM независимо оценивает результаты → 4 пути вердикта → авто-обновление статуса связанной идеи / failure_reason и графовых рёбер
 argument-hint: <experiment-slug> [--auto]
 ---
 
 # /exp-eval
 
-> Convert completed experiment results into wiki knowledge updates.
-> Review LLM acts as an impartial judge (following cross-model-review), independently evaluating how experimental results affect the linked idea's hypothesis.
-> Four verdict paths: supported → idea validated / partially_supported → supplementary experiments /
-> not_supported → idea failed / inconclusive → debug.
-> Auto-updates the linked idea's `status`, `failure_reason`, and graph edges.
+> Преобразование завершённых результатов экспериментов в обновления знаний wiki.
+> Review LLM выступает в роли независимого судьи (следуя cross-model-review), независимо оценивая, как результаты экспериментов влияют на гипотезу связанной идеи.
+> Четыре пути вердикта: supported → идея валидирована / partially_supported → дополнительные эксперименты /
+> not_supported → идея провалена / inconclusive → отладка.
+> Автоматически обновляет `status`, `failure_reason` и графовые рёбра связанной идеи.
 
-## Inputs
+## Входы
 
-- `experiment`: slug from `wiki/experiments/` (status must be `completed`)
-- `--auto` (optional): automatic mode — do not pause for user confirmation before wiki updates (used when called by /research)
+- `experiment`: slug из `wiki/experiments/` (статус должен быть `completed`)
+- `--auto` (опционально): автоматический режим — без паузы для подтверждения пользователя перед обновлениями wiki (используется при вызове из /research)
 
-## Outputs
+## Выходы
 
-- `wiki/ideas/{linked-idea}.md` — updated `status`, `failure_reason`, `date_resolved`
-- `wiki/experiments/{slug}.md` — `## Idea updates` section filled in (records the linked idea's status transition; replaces the legacy `## Claim updates` heading)
-- `wiki/graph/edges.jsonl` — new `supports` / `invalidates` edges added (experiment → idea)
-- `wiki/graph/context_brief.md` — rebuilt
-- `wiki/graph/open_questions.md` — rebuilt
-- `wiki/log.md` — appended log entry
-- **VERDICT_REPORT** (printed to terminal) — verdict result, wiki change summary, next step suggestions
+- `wiki/ideas/{linked-idea}.md` — обновлённые `status`, `failure_reason`, `date_resolved`
+- `wiki/experiments/{slug}.md` — раздел `## Idea updates` заполнен (фиксирует переход статуса связанной идеи; заменяет устаревший заголовок `## Claim updates`)
+- `wiki/graph/edges.jsonl` — добавлены новые рёбра `supports` / `invalidates` (experiment → idea)
+- `wiki/graph/context_brief.md` — пересобран
+- `wiki/graph/open_questions.md` — пересобран
+- `wiki/log.md` — добавлена запись в журнал
+- **ОТЧЁТ_О_ВЕРДИКТЕ** (выводится в терминал) — результат вердикта, сводка изменений wiki, предложения по дальнейшим шагам
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/experiments/{slug}.md` — experiment results: `outcome`, `key_result`, `metrics`, full Results section, `linked_idea`
-- `wiki/ideas/{linked-idea}.md` — linked idea current state: `status`, `## Hypothesis`, `## Risks`
-- `wiki/experiments/*.md` — sibling experiments with the same `linked_idea` (aggregate assessment)
-- `wiki/graph/context_brief.md` — global context
-- `.claude/skills/shared-references/cross-model-review.md` — reviewer independence principle
+### Чтение
+- `wiki/experiments/{slug}.md` — результаты эксперимента: `outcome`, `key_result`, `metrics`, полный раздел Results, `linked_idea`
+- `wiki/ideas/{linked-idea}.md` — текущее состояние связанной идеи: `status`, `## Hypothesis`, `## Risks`
+- `wiki/experiments/*.md` — сопоставимые эксперименты с тем же `linked_idea` (агрегированная оценка)
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `.claude/skills/shared-references/cross-model-review.md` — принцип независимости рецензента
 
-### Writes
-- `wiki/ideas/{linked-idea}.md` — update `status`, `failure_reason`, `date_resolved`
-- `wiki/experiments/{slug}.md` — fill in `## Idea updates` section
-- `wiki/graph/edges.jsonl` — add `supports` / `invalidates` edges (experiment → idea)
-- `wiki/graph/context_brief.md` — rebuild
-- `wiki/graph/open_questions.md` — rebuild
-- `wiki/log.md` — append operation log
+### Запись
+- `wiki/ideas/{linked-idea}.md` — обновление `status`, `failure_reason`, `date_resolved`
+- `wiki/experiments/{slug}.md` — заполнение раздела `## Idea updates`
+- `wiki/graph/edges.jsonl` — добавление рёбер `supports` / `invalidates` (experiment → idea)
+- `wiki/graph/context_brief.md` — пересборка
+- `wiki/graph/open_questions.md` — пересборка
+- `wiki/log.md` — добавление в журнал операций
 
-### Graph edges created
-- `supports`: experiment → idea (experiment supports the idea's hypothesis) — verdict = supported or partially_supported
-- `invalidates`: experiment → idea (experiment refutes the idea's hypothesis) — verdict = not_supported
+### Создаваемые графовые рёбра
+- `supports`: experiment → idea (эксперимент поддерживает гипотезу идеи) — вердикт = supported или partially_supported
+- `invalidates`: experiment → idea (эксперимент опровергает гипотезу идеи) — вердикт = not_supported
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**:
-1. Confirm working directory is the wiki project root (directory containing `wiki/`, `raw/`, `tools/`)
-2. Confirm experiment status == `completed` (incomplete experiments cannot be evaluated)
+**Предусловие**:
+1. Убедитесь, что рабочая директория — корень проекта wiki (директория, содержащая `wiki/`, `raw/`, `tools/`)
+2. Убедитесь, что статус эксперимента == `completed` (незавершённые эксперименты не могут быть оценены)
 
-### Step 1: Load Context
+### Шаг 1: Загрузка контекста
 
-1. **Read experiment page** `wiki/experiments/{slug}.md`:
+1. **Чтение страницы эксперимента** `wiki/experiments/{slug}.md`:
    - `outcome` (succeeded/failed/inconclusive)
    - `key_result`
-   - `linked_idea` slug (mandatory; refuse to proceed if missing)
-   - `metrics` and full `## Results` section
+   - slug `linked_idea` (обязательно; откажитесь, если отсутствует)
+   - `metrics` и полный раздел `## Results`
    - `hypothesis`
 
-2. **Read linked idea** `wiki/ideas/{linked-idea}.md`:
-   - Current `status`
+2. **Чтение связанной идеи** `wiki/ideas/{linked-idea}.md`:
+   - Текущий `status`
    - `## Hypothesis`, `## Approach sketch`, `## Risks`, `## Novelty argument`
 
-3. **Load sibling experiments** (same `linked_idea`):
-   - Glob `wiki/experiments/*.md`, filter `linked_idea == this idea`
-   - Summarize their outcomes (the verdict considers the whole evidence portfolio, not just this one experiment)
+3. **Загрузка сопоставимых экспериментов** (с тем же `linked_idea`):
+   - Glob `wiki/experiments/*.md`, фильтр `linked_idea == эта идея`
+   - Сводка их результатов (вердикт учитывает весь портфоль доказательств, а не только этот эксперимент)
 
-4. **Read global context**: `wiki/graph/context_brief.md`
+4. **Чтение глобального контекста**: `wiki/graph/context_brief.md`
 
-5. **Read cross-model-review.md**: confirm Review LLM independence principle
+5. **Чтение cross-model-review.md**: подтверждение принципа независимости Review LLM
 
-### Step 2: Review LLM Verdict (Cross-Model Verdict)
+### Шаг 2: Вердикт Review LLM (межмодельный вердикт)
 
-**Follow cross-model-review.md**: do not send Claude's pre-judgment to Review LLM.
+**Следуйте cross-model-review.md**: не отправляйте предварительное суждение Claude в Review LLM.
 
 ```
 mcp__llm-review__chat:
-  system: "You are an impartial scientific judge evaluating whether experimental
-           results support or refute a research hypothesis. Be rigorous and objective.
-           Consider: statistical significance, effect size, experimental validity,
-           potential confounds, and whether the results generalize beyond the
-           specific setup tested."
+  system: "Вы — независимый научный судья, оценивающий, подтверждают или опровергают ли
+           экспериментальные результаты исследовательскую гипотезу. Будьте строги и объективны.
+           Учитывайте: статистическую значимость, размер эффекта, экспериментальную валидность,
+           потенциальные смешивающие факторы и обобщаемость результатов за пределами
+           протестированной конкретной настройки."
   message: |
-    ## Idea Hypothesis Under Test
-    Title: {idea title}
-    Hypothesis: {idea ## Hypothesis section}
-    Novelty argument: {idea ## Novelty argument section}
-    Current status: {idea status}
+    ## Гипотеза идеи, подлежащая проверке
+    Название: {название идеи}
+    Гипотеза: {раздел ## Hypothesis идеи}
+    Аргумент о новизне: {раздел ## Novelty argument идеи}
+    Текущий статус: {статус идеи}
 
-    ## Experiment
-    Title: {experiment title}
-    Hypothesis: {experiment hypothesis}
-    Setup: {model, dataset, hardware, framework}
-    Metrics: {metrics list}
+    ## Эксперимент
+    Название: {название эксперимента}
+    Гипотеза: {гипотеза эксперимента}
+    Настройка: {модель, набор данных, оборудование, фреймворк}
+    Метрики: {список метрик}
 
-    ## Results
-    {full Results section from experiment page}
+    ## Результаты
+    {полный раздел Results со страницы эксперимента}
 
-    ## Key Finding
+    ## Ключевой вывод
     {key_result}
 
-    ## Sibling Experiments on This Idea
-    {summary of other experiments' outcomes that share the same linked_idea, if any}
+    ## Сопоставимые эксперименты над этой идеей
+    {сводка результатов других экспериментов с тем же linked_idea, если есть}
 
-    ## Your Task
-    Provide your verdict:
-    1. **Verdict**: One of: supported / partially_supported / not_supported / inconclusive
-    2. **Evidence strength**: weak / moderate / strong
-    3. **Idea status recommendation**: keep current / advance to validated / mark failed
-    4. **Key reasoning**: 2-3 sentences explaining your verdict
-    5. **Concerns**: Any methodological concerns or limitations
-    6. **Suggested next steps**: What would strengthen or clarify this result?
+    ## Ваша задача
+    Предоставьте вердикт:
+    1. **Вердикт**: Один из: supported / partially_supported / not_supported / inconclusive
+    2. **Сила доказательств**: weak / moderate / strong
+    3. **Рекомендация по статусу идеи**: сохранить текущий / продвинуть до validated / пометить как failed
+    4. **Ключевые рассуждения**: 2-3 предложения, объясняющих вердикт
+    5. **Опасения**: любые методологические опасения или ограничения
+    6. **Предложенные следующие шаги**: что усилит или прояснит этот результат?
 ```
 
-Record Review LLM's verdict.
+Зафиксируйте вердикт Review LLM.
 
-### Step 3: Claude Synthesis
+### Шаг 3: Синтез Claude
 
-1. **Form Claude's independent verdict** (after reading Review LLM's verdict, Claude also analyzes independently):
-   - Based on experimental results, the idea's hypothesis, and aggregate evidence from sibling experiments
-   - Form Claude's own verdict and idea-status recommendation
+1. **Формирование собственного вердикта Claude** (после чтения вердикта Review LLM, Claude также анализирует независимо):
+   - На основе результатов эксперимента, гипотезы идеи и агрегированных доказательств от сопоставимых экспериментов
+   - Формирование собственного вердикта и рекомендации по статусу идеи
 
-2. **Synthesize both verdicts** (follow cross-model-review.md composing rules):
-   - **Both agree** (same verdict): use that verdict, high certainty
-   - **Both disagree**:
-     - Explicitly flag the disagreement
-     - Take the more conservative verdict (supported > partially_supported > not_supported)
-     - Detail the disagreement reason in the report
-   - **Fatal findings take priority**: if either party finds a methodological issue (data leakage, unfair comparison), that finding takes precedence
+2. **Синтез обоих вердиктов** (следуйте правилам составления из cross-model-review.md):
+   - **Оба согласны** (одинаковый вердикт): используйте этот вердикт, высокая уверенность
+   - **Оба не согласны**:
+     - Явно отметьте расхождение
+     - Возьмите более консервативный вердикт (supported > partially_supported > not_supported)
+     - Подробно опишите причину расхождения в отчёте
+   - **Фатальные находки имеют приоритет**: если одна из сторон находит методологическую проблему (утечка данных, нечестное сравнение), эта находка имеет преимущественную силу
 
-3. **Determine final verdict**: verdict + evidence_strength + idea_status_change
+3. **Определение окончательного вердикта**: вердикт + сила_доказательств + изменение_статуса_идеи
 
-### Step 4: Update Wiki Based on Verdict
+### Шаг 4: Обновление wiki на основе вердикта
 
-**If `--auto` is not set**: display verdict and planned changes first, wait for user confirmation.
+**Если `--auto` не задан**: сначала покажите вердикт и планируемые изменения, дождитесь подтверждения пользователя.
 
-#### Path A: SUPPORTED (experiment supports the idea's hypothesis)
+#### Путь A: SUPPORTED (эксперимент подтверждает гипотезу идеи)
 
-1. **Update idea**:
-   - If the idea covers a single hypothesis and this experiment is the main experiment block, transition the idea to `validated`:
+1. **Обновление идеи**:
+   - Если идея охватывает одну гипотезу и этот эксперимент является основным блоком, переведите идею в `validated`:
      ```bash
      python3 tools/research_wiki.py transition wiki/ideas/{linked-idea}.md --to validated
      ```
-   - Otherwise leave the idea in its current lifecycle state (`tested` if it had previously been; `in_progress` if not).
+   - Иначе оставьте идею в текущем жизненном цикле (`tested` если ранее был; `in_progress` если нет).
 
-2. **Add graph edge**:
+2. **Добавление графового ребра**:
    ```bash
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "experiments/{slug}" --to "ideas/{linked-idea}" \
      --type supports --evidence "{key_result}"
    ```
 
-3. **Suggest next steps**: `/paper-plan {linked-idea}` or continue ablation/robustness experiments
+3. **Предложение следующих шагов**: `/paper-plan {linked-idea}` или продолжение экспериментов абляции/робастности
 
-#### Path B: PARTIALLY_SUPPORTED (partial support)
+#### Путь B: PARTIALLY_SUPPORTED (частичная поддержка)
 
-1. **Update idea**:
-   - Lifecycle stays at the current state (`in_progress` or `tested`)
+1. **Обновление идеи**:
+   - Жизненный цикл остаётся на текущем уровне (`in_progress` или `tested`)
 
-2. **Add graph edge**:
+2. **Добавление графового ребра**:
    ```bash
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "experiments/{slug}" --to "ideas/{linked-idea}" \
-     --type supports --evidence "Partially supported: {limitation}"
+     --type supports --evidence "Частично подтверждено: {ограничение}"
    ```
 
-3. **Suggest supplementary experiments**:
-   - Specify what evidence is missing
-   - Suggest using `/exp-design --linked-idea {linked-idea}` to design supplementary experiments
-   - If Review LLM-flagged concerns are addressable by experiment, suggest concrete experiment direction
+3. **Предложение дополнительных экспериментов**:
+   - Уточните, каких доказательств не хватает
+   - Предложите использовать `/exp-design --linked-idea {linked-idea}` для проектирования дополнительных экспериментов
+   - Если опасения Review LLM устранимы экспериментом, предложите конкретное направление
 
-#### Path C: NOT_SUPPORTED (experiment refutes the idea's hypothesis)
+#### Путь C: NOT_SUPPORTED (эксперимент опровергает гипотезу идеи)
 
-1. **Update idea**:
-   - Transition to `failed`:
+1. **Обновление идеи**:
+   - Перевод в `failed`:
      ```bash
-     python3 tools/research_wiki.py transition wiki/ideas/{linked-idea}.md --to failed --reason "<concrete reason>"
+     python3 tools/research_wiki.py transition wiki/ideas/{linked-idea}.md --to failed --reason "<конкретная причина>"
      ```
-     `transition` requires a non-empty `--reason`; supply the synthesized failure reason here. The `transition` command writes `failure_reason` and `date_resolved` automatically.
-   - Note: `failure_reason` is anti-repetition memory — it must state the concrete reason, not vague "did not work".
+     `transition` требует непустой `--reason`; укажите синтезированную причину провала. Команда `transition` автоматически записывает `failure_reason` и `date_resolved`.
+   - Примечание: `failure_reason` — это память предотвращения повторений — она должна указывать конкретную причину, а не расплывчатое "не сработало".
 
-2. **Add graph edge**:
+2. **Добавление графового ребра**:
    ```bash
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "experiments/{slug}" --to "ideas/{linked-idea}" \
-     --type invalidates --evidence "{failure_reason}"
+     --type invalidates --evidence "{причина_провала}"
    ```
 
-3. **Suggest next steps**:
-   - Analyze the failure reason
-   - Consider pivoting (new idea addressing the same gap while avoiding the known failure)
-   - Suggest `/ideate` to generate alternatives
+3. **Предложение следующих шагов**:
+   - Анализ причины провала
+   - Рассмотрите пивот (новая идея, устраняющая тот же пробел и избегающая известного провала)
+   - Предложите `/ideate` для генерации альтернатив
 
-#### Path D: INCONCLUSIVE (results are uncertain)
+#### Путь D: INCONCLUSIVE (результаты неопределённы)
 
-1. **Do not modify idea status**: insufficient evidence to make a judgment
+1. **Не изменяйте статус идеи**: недостаточно доказательств для вывода
 
-2. **Update experiment page**: outcome is already inconclusive (set by /exp-run)
+2. **Обновление страницы эксперимента**: outcome уже inconclusive (установлено /exp-run)
 
-3. **Suggest debugging**:
-   - Data issue? Implementation bug? Wrong metric?
-   - Too much variance? More seeds needed?
-   - Experiment setup not aligned with the idea's hypothesis?
+3. **Предложение отладки**:
+   - Проблема данных? Баг реализации? Неправильная метрика?
+   - Слишком высокая дисперсия? Нужно больше сидов?
+   - Настройка эксперимента не согласована с гипотезой идеи?
 
-4. **Idea status unchanged**: keep current status
+4. **Статус идеи неизменён**: сохраните текущий статус
 
-#### All Paths (common steps)
+#### Все пути (общие шаги)
 
-1. **Fill in the `## Idea updates` section of the experiment page** (records changes to the linked idea, not a separate claim entity):
+1. **Заполнение раздела `## Idea updates` на странице эксперимента** (фиксирует изменения связанной идеи, а не отдельную сущность claim):
    ```markdown
-   ## Idea updates
-   - **Verdict**: {supported/partially_supported/not_supported/inconclusive}
-   - **Linked idea**: [[{linked-idea}]] status {old} → {new}
-   - **Judge agreement**: {Claude and Review LLM agreed / disagreed on ...}
-   - **Date**: YYYY-MM-DD
+   ## Обновления идеи
+   - **Вердикт**: {supported/partially_supported/not_supported/inconclusive}
+   - **Связанная идея**: [[{linked-idea}]] статус {старый} → {новый}
+   - **Согласие судей**: {Claude и Review LLM согласились / не согласились в ...}
+   - **Дата**: YYYY-MM-DD
    ```
 
-2. **Update index.md** (if idea status changed)
+2. **Обновление index.md** (если статус идеи изменился)
 
-3. **Rebuild derived data**:
+3. **Пересборка производных данных**:
    ```bash
    python3 tools/research_wiki.py rebuild-context-brief wiki/
    python3 tools/research_wiki.py rebuild-open-questions wiki/
    ```
 
-4. **Append log**:
+4. **Добавление в журнал**:
    ```bash
    python3 tools/research_wiki.py log wiki/ \
-     "exp-eval | {slug} → ideas/{linked-idea} | verdict: {verdict} | idea status: {old}→{new}"
+     "exp-eval | {slug} → ideas/{linked-idea} | вердикт: {verdict} | статус идеи: {старый}→{новый}"
    ```
 
-5. **Print VERDICT_REPORT to terminal**:
+5. **Вывод ОТЧЁТА_О_ВЕРДИКТЕ в терминал**:
    ```markdown
-   # Verdict Report: {experiment title}
+   # Отчёт о вердикте: {название эксперимента}
 
-   ## Verdict: {SUPPORTED / PARTIALLY_SUPPORTED / NOT_SUPPORTED / INCONCLUSIVE}
+   ## Вердикт: {SUPPORTED / PARTIALLY_SUPPORTED / NOT_SUPPORTED / INCONCLUSIVE}
 
-   ## Judge Assessment
-   | | Claude | Review LLM | Final |
-   |---|-------|------|-------|
-   | Verdict | {verdict} | {verdict} | {verdict} |
-   | Idea status rec | {rec} | {rec} | {rec} |
-   | Evidence strength | {strength} | {strength} | {strength} |
+   ## Оценка судей
+   | | Claude | Review LLM | Итоговый |
+   |---|--------|------------|----------|
+   | Вердикт | {verdict} | {verdict} | {verdict} |
+   | Рекомендация по статусу | {rec} | {rec} | {rec} |
+   | Сила доказательств | {strength} | {strength} | {strength} |
 
-   ## Key Reasoning
-   {2-3 sentences from Review LLM + Claude synthesis}
+   ## Ключевые рассуждения
+   {2-3 предложения от Review LLM + синтез Claude}
 
-   ## Wiki Changes
-   | Entity | Field | Before | After |
-   |--------|-------|--------|-------|
-   | ideas/{slug} | status | {old} | {new} |
+   ## Изменения в wiki
+   | Сущность | Поле | До | После |
+   |----------|------|-----|-------|
+   | ideas/{slug} | status | {старый} | {новый} |
 
-   ## Graph Edges Added
+   ## Добавленные графовые рёбра
    - experiments/{slug} → ideas/{linked-idea} (supports/invalidates)
 
-   ## Concerns
-   {methodological concerns from Review LLM}
+   ## Опасения
+   {методологические опасения от Review LLM}
 
-   ## Next Steps
-   - {path-specific suggestions}
+   ## Следующие шаги
+   - {предложения, специфичные для пути}
 
-   ## Wiki Growth
-   | Metric | Before | After | Delta |
-   |--------|--------|-------|-------|
-   | Ideas validated | {before} | {after} | +{delta} |
-   | Ideas failed | {before} | {after} | +{delta} |
-   | Edges | {before} | {after} | +{delta} |
-   | Maturity | {level} | {level} | {unchanged/upgraded} |
-   (Data from comparing `python3 tools/research_wiki.py maturity wiki/ --json` calls at the start of Step 1 and end of Step 4.)
+   ## Рост wiki
+   | Метрика | До | После | Дельта |
+   |---------|-----|-------|--------|
+   | Идеи валидированы | {до} | {после} | +{дельта} |
+   | Идеи провалены | {до} | {после} | +{дельта} |
+   | Рёбра | {до} | {после} | +{дельта} |
+   | Зрелость | {уровень} | {уровень} | {без_изменений/обновлено} |
+   (Данные из сравнения вызовов `python3 tools/research_wiki.py maturity wiki/ --json` в начале шага 1 и конце шага 4.)
    ```
 
-## Constraints
+## Ограничения
 
-- **Only process completed experiments**: experiments with status != completed are refused; prompt user to use /exp-run first.
-- **`linked_idea` is mandatory**: refuse to evaluate any experiment whose `linked_idea` is empty (the new schema enforces this; if you encounter such a page it is a pre-refactor artifact and must be fixed manually).
-- **Reviewer independence**: strictly follow cross-model-review.md — do not send Claude's pre-judgment to Review LLM.
-- **`failure_reason` must be specific**: the not_supported path's `failure_reason` cannot be vague (e.g. "experiment failed") — must state the concrete reason. `transition --reason` rejects an empty string.
-- **Idea lifecycle is forward-only**: `proposed → in_progress → tested → validated/failed`. Use `tools/research_wiki.py transition` (not direct frontmatter writes) so the lifecycle validator runs.
-- **Graph edges via tools/research_wiki.py**: do not manually edit `edges.jsonl`.
-- **Conservative principle**: when Claude and Review LLM verdicts disagree, use the more conservative verdict.
-- **Assess using all sibling experiments**: consider not just the current experiment but also other experiments sharing the same `linked_idea`.
+- **Обрабатывайте только завершённые эксперименты**: эксперименты со статусом != completed отклоняются; предложите пользователю сначала использовать /exp-run.
+- **`linked_idea` обязателен**: откажитесь от оценки любого эксперимента с пустым `linked_idea` (новая схема это требует; если вы встречаете такую страницу — это артефакт до рефакторинга и должен быть исправлен вручную).
+- **Независимость рецензента**: строго следуйте cross-model-review.md — не отправляйте предварительное суждение Claude в Review LLM.
+- **`failure_reason` должен быть конкретным**: `failure_reason` пути not_supported не может быть расплывчатым (например, "эксперимент провален") — должна быть указана конкретная причина. `transition --reason` отклоняет пустую строку.
+- **Жизненный цикл идеи только вперёд**: `proposed → in_progress → tested → validated/failed`. Используйте `tools/research_wiki.py transition` (а не прямую запись frontmatter) для запуска валидатора жизненного цикла.
+- **Графовые рёбра через tools/research_wiki.py**: не редактируйте вручную `edges.jsonl`.
+- **Консервативный принцип**: когда вердикты Claude и Review LLM расходятся, используйте более консервативный.
+- **Оценивайте по всем сопоставимым экспериментам**: учитывайте не только текущий эксперимент, но и другие эксперименты с тем же `linked_idea`.
 
-## Error Handling
+## Обработка ошибок
 
-- **Experiment not found**: prompt user to check slug, list candidates in `wiki/experiments/` with status=completed.
-- **Experiment not completed**: report status, suggest running `/exp-run {slug}` or `/exp-run {slug} --check`.
-- **`linked_idea` missing**: refuse to proceed; instruct the user to run `/edit` to set the experiment's `linked_idea`.
-- **Linked idea page does not exist**: report a dangling reference; refuse to update — recommend `/edit` or `/ideate` to create the idea page first.
-- **Review LLM unavailable**: fall back to Claude single-model verdict, note "single-model verdict, cross-model verification unavailable" in report, suggest user confirm later.
-- **Idea was modified by another experiment**: re-read the latest state before applying transitions; do not overwrite a more advanced lifecycle state with a lower one.
-- **Results data missing**: if the experiment page's Results section is empty, prompt user to run `/exp-run {slug} --check` first.
+- **Эксперимент не найден**: предложите пользователю проверить slug, перечислите кандидатов в `wiki/experiments/` со статусом=completed.
+- **Эксперимент не завершён**: сообщите статус, предложите запустить `/exp-run {slug}` или `/exp-run {slug} --check`.
+- **`linked_idea` отсутствует**: откажитесь; инструктируйте пользователя запустить `/edit` для установки `linked_idea` эксперимента.
+- **Страница связанной идеи не существует**: сообщите о висячей ссылке; откажитесь от обновления — предложите `/edit` или `/ideate` для создания страницы идеи.
+- **Review LLM недоступен**: переход к вердикту Claude в режиме одной модели, в отчёте отмечается "вердикт одной модели, межмодельная верификация недоступна", предложите пользователю подтвердить позже.
+- **Идея была изменена другим экспериментом**: перечитайте最新ее состояние перед применением переходов; не перезаписывайте более продвинутый жизненный цикл меньшим.
+- **Отсутствуют данные результатов**: если раздел Results страницы эксперимента пуст, предложите пользователю сначала запустить `/exp-run {slug} --check`.
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to validated|failed [--reason "..."]` — advance idea lifecycle
-- `python3 tools/research_wiki.py add-edge wiki/ ...` — add graph edge
-- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — rebuild query_pack
-- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — rebuild gap_map
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py transition wiki/ideas/{slug}.md --to validated|failed [--reason "..."]` — продвижение жизненного цикла идеи
+- `python3 tools/research_wiki.py add-edge wiki/ ...` — добавление графового ребра
+- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — пересборка query_pack
+- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — пересборка gap_map
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
 
-### MCP Servers
-- `mcp__llm-review__chat` — Step 2 Review LLM independent verdict
+### MCP-серверы
+- `mcp__llm-review__chat` — Шаг 2 независимый вердикт Review LLM
 
 ### Claude Code Native
-- `Read` — read wiki pages
-- `Glob` — find sibling experiments sharing the same `linked_idea`
-- `Edit` — update wiki pages
+- `Read` — чтение wiki-страниц
+- `Glob` — поиск сопоставимых экспериментов с тем же `linked_idea`
+- `Edit` — обновление wiki-страниц
 
-### Shared References
-- `.claude/skills/shared-references/cross-model-review.md` — Review LLM independence principle (required reading)
+### Общие справочники
+- `.claude/skills/shared-references/cross-model-review.md` — принцип независимости Review LLM (обязательное чтение)
 
-### Called by
-- `/research` Stage 4 (verdict and iteration stage)
-- User directly
+### Вызывается из
+- `/research` Стадия 4 (вердикт и итерация)
+- Пользователь напрямую

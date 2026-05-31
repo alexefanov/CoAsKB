@@ -1,60 +1,60 @@
 ---
 name: edit
-description: Add or remove raw sources, or update wiki content, per user request
-argument-hint: "[request]"
+description: Добавление или удаление сырых источников или обновление содержимого wiki по запросу пользователя
+argument-hint: "[запрос]"
 ---
 
 # /edit
 
-> Add or remove raw sources, or update wiki content, per user request.
+> Добавление или удаление сырых источников или обновление содержимого wiki по запросу пользователя.
 
-## Trigger
+## Триггер
 
-User manual: `/edit <user request>`
+Ручной запуск: `/edit <запрос пользователя>`
 
-## Inputs
+## Входы
 
-User request, for example:
-- "Download this paper to raw/papers/"
-- "Delete raw/papers/xxx.pdf"
-- "Update the SOTA tracker in topics/efficient-llm-adaptation"
-- "Add a new variant to concepts/lora"
+Запрос пользователя, например:
+- "Скачайте эту статью в raw/papers/"
+- "Удалите raw/papers/xxx.pdf"
+- "Обновите трекер SOTA в topics/efficient-llm-adaptation"
+- "Добавьте новый вариант в concepts/lora"
 
-## Outputs
+## Выходы
 
-Updated wiki files, `index.md`, `log.md`
+Обновлённые файлы wiki, `index.md`, `log.md`
 
-## Steps
+## Шаги
 
-### STEP 1: Parse User Intent
+### ШАГ 1: Анализ намерения пользователя
 
-1. **Add raw sources**:
-   - If the user provides a local path: copy to the corresponding directory under `raw/`
-   - If the user provides an arXiv URL: download to `raw/papers/`
-   - If the user provides a web URL: fetch content with markdownify and save to `raw/web/`
-2. **Delete raw sources**:
-   - Confirm then execute deletion
-3. **Update wiki**:
-   - Read the relevant pages and modify content per user instructions
+1. **Добавление сырых источников**:
+   - Если пользователь указывает локальный путь: скопируйте в соответствующую директорию в `raw/`
+   - Если пользователь указывает URL arXiv: скачайте в `raw/papers/`
+   - Если пользователь указывает URL веб-страницы: извлеките содержимое с markdownify и сохраните в `raw/web/`
+2. **Удаление сырых источников**:
+   - Подтвердите, затем выполните удаление
+3. **Обновление wiki**:
+   - Прочитайте соответствующие страницы и измените содержимое по инструкциям пользователя
 
-### STEP 2: Execute Updates
+### ШАГ 2: Выполнение обновлений
 
-1. Newly added raw sources can later be incorporated into the wiki via `/ingest`
-2. Direct wiki modifications: update the specified fields/content in specific pages per user instructions
-3. When writing forward links, simultaneously write reverse links
+1. Вновь добавленные сырые источники впоследствии могут быть включены в wiki через `/ingest`
+2. Прямые изменения wiki: обновите указанные поля/содержимое на конкретных страницах по инструкциям пользователя
+3. При записи прямых ссылок одновременно записывайте обратные ссылки
 
-### STEP 3: Update Navigation
+### ШАГ 3: Обновление навигации
 
-1. `EDIT wiki/index.md`: update relevant entries
-2. `APPEND wiki/log.md`: `## [{date}] update | {description}`
+1. `EDIT wiki/index.md`: обновите соответствующие записи
+2. `APPEND wiki/log.md`: `## [{дата}] обновление | {описание}`
 
-### STEP 4: Report
+### ШАГ 4: Отчёт
 
-- List all changes made
-- Suggest follow-up actions (e.g. ingest newly added raw sources if applicable)
+- Перечислите все внесённые изменения
+- Предложите дальнейшие действия (например, загрузка вновь добавленных сырых источников, если применимо)
 
-## Constraints
+## Ограничения
 
-- `raw/` is read-only for existing files (this skill may add files to `raw/`, but must not modify existing ones)
-- Wiki modifications must follow template structure
-- Bidirectional links must be kept in sync
+- `raw/` только для чтения для существующих файлов (этот навык может добавлять файлы в `raw/`, но не должен изменять существующие)
+- Изменения wiki должны соответствовать шаблонной структуре
+- Двунаправленные ссылки должны поддерживаться в синхронности

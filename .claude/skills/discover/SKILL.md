@@ -1,56 +1,57 @@
 ---
-description: Build a ranked shortlist of candidate papers (anchor-driven, topic-driven, or derived from current wiki state) that the user — or an upstream skill — may decide to feed into `/ingest`. Use whenever the user asks "what should I read next", "find papers similar to this one", "recommend related work", "what's around this topic", or whenever `/ingest` is invoked with `--discover`. Does not ingest; only proposes.
+name: discover
+description: Построение ранжированного короткого списка кандидатов статей (якорный, темный или производный от текущего состояния wiki), которые пользователь — или вышестоящий навык — может решить передать в `/ingest`. Используйте, когда пользователь спрашивает "что мне читать дальше", "найдите статьи, похожие на эту", "порекомендуйте связанную работу", "что есть вокруг этой темы" или когда `/ingest` вызывается с `--discover`. Не загружает; только предлагает.
 argument-hint: "(--anchor <id> [--anchor <id>] [--negative <id>] | --topic <str> | --from-wiki | --venue <slug> --year <int>) [--limit N]"
 ---
 
 # /discover
 
-> Produce a ranked shortlist of paper candidates from one of four seed modes. Surface them to the user (or to the calling skill) with rationales. Never auto-ingest — `/discover` is a proposal stage, `/ingest` is the action stage.
+> Создаёт ранжированный короткий список кандидатов статей из одного из четырёх режимов формирования набора данных. Предоставляет их пользователю (или вызывающему навыку) с обоснованиями. Никогда не выполняет авто-загрузку — `/discover` — этап предложения, `/ingest` — этап действия.
 
-Use these local references on demand:
+Используйте эти локальные справочники по мере необходимости:
 
-- `references/seed-modes.md` — when to pick anchor / topic / wiki / venue mode and how to translate the user's phrasing into one
-- `references/ranking-signals.md` — what `tools/discover.py` scores on.
-- `references/wiki-dedup.md` — how candidates are filtered against `wiki/papers/` and what to do with matches
+- `references/seed-modes.md` — когда выбирать режим якоря / темы / wiki / площадки и как преобразовать формулировку пользователя
+- `references/ranking-signals.md` — по каким критериям `tools/discover.py` оценивает
+- `references/wiki-dedup.md` — как кандидаты фильтруются по `wiki/papers/` и что делать при совпадениях
 
-## Inputs
+## Входы
 
-- `--anchor <id>` (repeatable): one or more anchor paper IDs (arXiv IDs preferred; S2 paperIds also accepted). Drives the **anchor mode** — the primary use case, including the post-`/ingest` "what to read next" flow.
-- `--negative <id>` (repeatable, optional): IDs to push recommendations away from. Only meaningful with `--anchor`.
-- `--topic "<str>"`: a topic / query string. Drives the **topic mode** — lighter alternative to `/init`'s planner.
-- `--from-wiki`: derive seeds automatically from the wiki's most recently modified papers. Drives the **wiki mode**.
-- `--venue <slug>` + `--year <int>`: venue slug and year (e.g. `neurips` `2024`). Drives the **venue mode** — ranks papers from that venue/year by relevance to the existing wiki.
-- `--limit N` (optional, default 10): max shortlist size.
+- `--anchor <id>` (многократно): один или несколько ID якорных статей (предпочтительно arXiv ID; также принимаются S2 paperIds). Управляет **якорным режимом** — основным вариантом использования, включая послепроцессный `/ingest` "что читать дальше".
+- `--negative <id>` (многократно, опционально): ID для отталкивания рекомендаций. Имеет смысл только с `--anchor`.
+- `--topic "<строка>"`: тема / строка запроса. Управляет **тематическим режимом** — более лёгкая альтернатива планировщику `/init`.
+- `--from-wiki`: автоматически формирует набор данных из недавно изменённых статей wiki. Управляет **режимом wiki**.
+- `--venue <slug>` + `--year <int>`: slug площадки и год (например, `neurips` `2024`). Управляет **режимом площадки** — ранжирует статьи с этой площадки/года по релевантности к существующей wiki.
+- `--limit N` (опционально, по умолчанию 10): максимальный размер короткого списка.
 
-Exactly one of `--anchor`, `--topic`, `--from-wiki`, or `--venue` must be given.
+Только один из `--anchor`, `--topic`, `--from-wiki` или `--venue` должен быть указан.
 
-## Outputs
+## Выходы
 
-- `.checkpoints/discover-{seed-slug}-{YYYY-MM-DD}.json` — full shortlist payload, machine-readable; the seed slug is derived from the first anchor or the topic
-- a human-readable markdown summary printed to the user with rationale per candidate
-- `wiki/log.md` — one append line via `tools/research_wiki.py log`.
+- `.checkpoints/discover-{seed-slug}-{YYYY-MM-DD}.json` — полный полезный нагрузка короткого списка, машиночитаемый; slug формируется из первого якоря или темы
+- человекочитаемая сводка в формате markdown, выводимая пользователю с обоснованием для каждого кандидата
+- `wiki/log.md` — одна строка дополнения через `tools/research_wiki.py log`.
 
-`/discover` does not write anywhere else in `wiki/` and does not touch `raw/`.
+`/discover` не записывает больше никуда в `wiki/` и не трогает `raw/`.
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
+### Чтение
 
-- `wiki/papers/*.md` — frontmatter `arxiv` (or legacy `arxiv_id`) for dedup against already-ingested papers
-- `wiki/papers/*.md` modification times — for `--from-wiki` anchor selection
-- `wiki/papers/*.md`, `wiki/concepts/*.md`, `wiki/topics/*.md` — titles and body text for venue-mode relevance scoring
+- `wiki/papers/*.md` — frontmatter `arxiv` (или устаревший `arxiv_id`) для дедупликации с уже загруженными статьями
+- `wiki/papers/*.md` время модификации — для выбора якорей в `--from-wiki`
+- `wiki/papers/*.md`, `wiki/concepts/*.md`, `wiki/topics/*.md` — заголовки и текст для оценки релевантности в режиме площадки
 
-### Writes
+### Запись
 
-- `wiki/log.md` — APPEND via `tools/research_wiki.py log`
+- `wiki/log.md` — ДОПОЛНИТЬ через `tools/research_wiki.py log`
 
-### Graph edges created
+### Создаваемые графовые рёбра
 
-- none. Graph mutations belong to `/ingest`, not `/discover`.
+- нет. Мутации графа принадлежат `/ingest`, а не `/discover`.
 
-## Workflow
+## Рабочий процесс
 
-**Pre-condition**: working directory contains `wiki/`, `raw/`, and `tools/`. Resolve the Python interpreter once and reuse it:
+**Предусловие**: рабочая директория содержит `wiki/`, `raw/` и `tools/`. Определите интерпретатор Python один раз и переиспользуйте:
 
 ```bash
 if [ -x .venv/bin/python ]; then
@@ -63,18 +64,18 @@ fi
 export PYTHON_BIN
 ```
 
-### Step 1: Pick the seed mode
+### Шаг 1: Выбор режима формирования набора данных
 
-Translate the user's request into exactly one of `from-anchors`, `from-topic`, `from-wiki`, or `from-venue`. The decision rule lives in `references/seed-modes.md`; the short version:
+Преобразуйте запрос пользователя ровно в один из `from-anchors`, `from-topic`, `from-wiki` или `from-venue`. Правило решения содержится в `references/seed-modes.md`; краткая версия:
 
-- the user named one or more specific papers, or this is a post-`/ingest` `--discover` follow-up → **anchors**
-- the user gave a topic / direction / keywords → **topic**
-- the user asked open-ended "what should I read next" with no anchor and no topic → **wiki**
-- the user asked for papers from a specific venue and year → **venue**
+- пользователь назвал одну или несколько конкретных статей, или это послепроцессный `--discover` после `/ingest` → **якоря**
+- пользователь дал тему / направление / ключевые слова → **тема**
+- пользователь задал открытый вопрос "что читать дальше" без якоря и темы → **wiki**
+- пользователь попросил статьи с конкретной площадки и года → **площадка**
 
-If the user supplied negatives ("not these"), include them via `--negative` in anchor mode only.
+Если пользователь указал негативы ("не эти"), включите их через `--negative` только в якорном режиме.
 
-### Step 2: Run the discovery tool
+### Шаг 2: Запуск инструмента обнаружения
 
 ```bash
 "$PYTHON_BIN" tools/discover.py from-anchors \
@@ -85,76 +86,76 @@ If the user supplied negatives ("not these"), include them via `--negative` in a
   --markdown
 ```
 
-For venue mode, always pass `--wiki-root` so the tool can compute relevance against existing content. Venue mode requires a non-sparse wiki (the tool will fail clearly if the wiki is too empty).
+Для режима площадки всегда передавайте `--wiki-root`, чтобы инструмент мог вычислить релевантность по отношению к существующему содержимому. Режим площадки требует не-пустой wiki (инструмент отчётливо завершится с ошибкой, если wiki слишком пуста).
 
-Or for topic / wiki modes:
+Или для тематического / wiki режимов:
 
 ```bash
 "$PYTHON_BIN" tools/discover.py from-topic "<query>" --wiki-root wiki --limit 10 --output-checkpoint .checkpoints/ --markdown
 "$PYTHON_BIN" tools/discover.py from-wiki --wiki-root wiki --limit 10 --output-checkpoint .checkpoints/ --markdown
 ```
 
-Anchor (and wiki) mode run three S2 channels per anchor by default — `recommend` + `references` + `citations`. This is what makes `/discover` meaningfully different from `/daily-arxiv`: references surface older canonical work the anchor built on, citations surface high-impact follow-ups. Pass `--no-citation-expand` only if API cost forces the narrower recommend-only path; the quality regression is sharp.
+Якорный (и wiki) режим по умолчанию запускают три канала S2 на якорь — `recommend` + `references` + `citations`. Именно это делает `/discover` существенно отличающимся от `/daily-arxiv`: references извлекают старую каноническую работу, на которой основывался якорь, citations — высокоцитируемые продолжения. Передавайте `--no-citation-expand` только если стоимость API вынуждает сузить путь только до recommend; регресс качества резкий.
 
-The tool handles candidate gathering, wiki dedup, ranking, and writes the checkpoint. Always pass `--wiki-root wiki` so already-ingested papers are filtered out — surfacing duplicates wastes the user's review time.
+Инструмент обрабатывает сбор кандидатов, дедупликацию wiki, ранжирование и запись чекпоинта. Всегда передавайте `--wiki-root wiki`, чтобы уже загруженные статьи отфильтровывались — показ дубликатов тратит время пользователя на проверку.
 
-If S2 is unavailable in topic mode, the tool will continue with whatever sources responded; check the output and report degraded discovery to the user. If every channel fails, abort with a clear message rather than emitting an empty shortlist as if it were a real recommendation.
+Если S2 недоступен в тематическом режиме, инструмент продолжит с теми источниками, которые ответили; проверьте вывод и сообщите о деградации обнаружения. Если все каналы завершились ошибкой, прервитесь с понятным сообщением, а не выводите пустой список как настоящую рекомендацию.
 
-### Step 3: Present the shortlist
+### Шаг 3: Предоставление короткого списка
 
-Show the markdown output to the user. For each candidate, the user needs enough to decide whether to ingest:
+Покажите пользователю вывод в формате markdown. Для каждого кандидата пользователю нужна достаточная информация для решения о загрузке:
 
-- title and arXiv ID (or S2 paperId fallback)
-- one-line rationale (already produced by the tool: anchor count, influential citations, year)
-- TLDR if the tool surfaced one (topic-mode candidates often have it; anchor-mode usually does not — the recommendations endpoint does not return TLDRs)
+- заголовок и arXiv ID (или запасной S2 paperId)
+- краткое обоснование в одну строку (уже сгенерированное инструментом: количество якорей, влиятельные цитаты, год)
+- TLDR, если инструмент его показал (кандидаты тематического режима часто имеют его; якорный — обычно нет; эндпоинт рекомендаций не возвращает TLDR)
 
-Append a short "next step" hint:
+Добавьте краткую подсказку "следующий шаг":
 
 ```
-To ingest a candidate: /ingest https://arxiv.org/abs/<arxiv-id>
+Для загрузки кандидата: /ingest https://arxiv.org/abs/<arxiv-id>
 ```
 
-**Do not ingest anything yourself. The user picks.**
+**Не загружайте ничего сами. Выбирает пользователь.**
 
-### Step 4: Log
+### Шаг 4: Журнал
 
 ```bash
 "$PYTHON_BIN" tools/research_wiki.py log wiki "discover | mode=<anchors|topic|wiki> | seed=<short-desc> | shortlist=<N>"
 ```
 
-Skip this step for `from-venue`; venue discovery must not write to `wiki/` or `raw/`.
+Пропустите этот шаг для `from-venue`; обнаружение площадки не должно записывать в `wiki/` или `raw/`.
 
-## Internal Callers
+## Внутренние вызывающие
 
-`/discover` is designed to be invoked both by users (manually) and by other skills (as a subroutine).
+`/discover` разработан для вызова как пользователями (вручную), так и другими навыками (как подпрограмма).
 
-### From `/ingest --discover`
+### Из `/ingest --discover`
 
-When `/ingest` is invoked with the optional `--discover` flag (default off), it calls `/discover` after the final report, with the just-ingested paper's arXiv ID as the single anchor. The shortlist is appended to `/ingest`'s report under a "Related papers you may want to ingest next" heading. `/ingest` never auto-ingests anything from this list.
+Когда `/ingest` вызывается с опциональным флагом `--discover` (по умолчанию выключен), он вызывает `/discover` после финального отчёта, используя arXiv ID только что загруженной статьи как единственный якорь. Короткий список добавляется к отчёту `/ingest` под заголовком "Связанные статьи, которые вы, возможно, захотите загрузить дальше". `/ingest` никогда не загружает автоматически ничего из этого списка.
 
-## Constraints
+## Ограничения
 
-- **Never auto-ingest**: `/discover` returns a shortlist and stops. Even when called by `/ingest --discover`, the caller surfaces results and the user decides what to ingest.
-- **No content writes to `wiki/`**: paper pages, concepts, methods, graph edges all belong to `/ingest`. Anchor/topic/wiki runs may append `wiki/log.md`; `from-venue` must not write to `wiki/` at all.
-- **No writes to `raw/`**: `/discover` does not download papers. The user runs `/ingest <arxiv-url>` afterwards if they want a candidate.
-- **Always dedupe against the wiki**: pass `--wiki-root wiki` so the shortlist contains only papers not yet in the wiki. Surfacing duplicates is the most common low-quality failure mode.
-- **Ranking is discovery-specific**: do not import or duplicate `tools/init_discovery.py`'s scoring helpers. The two skills have different objectives — `/init` wants broad foundational coverage; `/discover` wants relevant *next reads*. See `references/ranking-signals.md`.
-- **Three-channel anchor gather**: by default, anchor mode pulls from S2 `recommend` + `references` + `citations` per anchor. Removing the citation channels (via `--no-citation-expand`) collapses the result into a recency-biased semantic cluster that overlaps heavily with `/daily-arxiv`. Keep all three on unless API cost is a hard constraint. See `references/ranking-signals.md`.
-- **Some S2 endpoints have a flatter field set**: `/citations`, `/references`, and `/recommendations/*` reject nested selectors — no `authors.hIndex`, no `tldr`. `/paper/{id}` and `/paper/search` do accept them, so topic-mode candidates carry full enrichment; anchor-mode candidates that entered only via citations/references/recommend do not. That is a real API constraint, not a bug.
-- **Rate limits apply**: each anchor in anchor mode costs up to three S2 calls (recommend + references + citations). Default per-anchor limit is 50 for recs and 30 each for references/citations. Multi-anchor runs multiply accordingly; with an API key (1 req/sec) a 3-anchor run takes ~10 seconds.
+- **Никогда не выполняйте авто-загрузку**: `/discover` возвращает короткий список и останавливается. Даже при вызове через `/ingest --discover`, вызывающий показывает результаты, а пользователь решает, что загружать.
+- **Нет записи содержимого в `wiki/`**: страницы статей, концепции, методы, рёбра графа — всё принадлежит `/ingest`. Запуски якорь/тема/wiki могут дополнять `wiki/log.md`; `from-venue` вообще не должен писать в `wiki/`.
+- **Нет записи в `raw/`**: `/discover` не скачивает статьи. Пользователь запускает `/ingest <arxiv-url>` после, если хочет кандидата.
+- **Всегда дедуплицируйте по wiki**: передавайте `--wiki-root wiki`, чтобы в коротком списке были только статьи, ещё отсутствующие в wiki. Показ дубликатов — самая распространённая причина низкого качества.
+- **Ранжирование специфично для обнаружения**: не импортируйте и не дублируйте вспомогательные функции оценки из `tools/init_discovery.py`. У двух навыков разные цели — `/init` хочет широкое базовое покрытие; `/discover` хочет релевантные *следующие чтения*. См. `references/ranking-signals.md`.
+- **Трёхканальный сбор якорей**: по умолчанию якорный режим берёт из S2 `recommend` + `references` + `citations` на каждый якорь. Удаление каналов цитат (через `--no-citation-expand`) сворачивает результат в семантический кластер со смещением к новизне, который сильно пересекается с `/daily-arxiv`. Сохраняйте все три, если стоимость API не является жёстким ограничением. См. `references/ranking-signals.md`.
+- **Некоторые эндпоинты S2 имеют более плоский набор полей**: `/citations`, `/references` и `/recommendations/*` отклоняют вложенные селекторы — нет `authors.hIndex`, нет `tldr`. `/paper/{id}` и `/paper/search` их принимают, поэтому кандидаты тематического режима несут полное обогащение; кандидаты якорного режима, попавшие только через citations/references/recommend, — нет. Это реальное ограничение API, а не баг.
+- **Действуют ограничения частоты**: каждый якорь в якорном режиме стоит до трёх вызовов S2 (recommend + references + citations). Лимит по умолчанию на якорь — 50 для рекомендаций и по 30 для references/citations. Многоякорные запуски умножаются соответственно; с API-ключём (1 запрос/сек) трёхякорный запуск занимает ~10 секунд.
 
-## Error Handling
+## Обработка ошибок
 
-- **All seed channels fail**: report the failure, write no shortlist, and do not log a successful run.
-- **S2 unavailable, DeepXiv available (topic mode)**: continue with DeepXiv only; note the degradation in the report.
-- **S2 returns zero recommendations for an anchor**: keep going with the remaining anchors; if all anchors return zero, treat as total failure.
-- **`--from-wiki` finds no anchorable papers** (`wiki/papers/` empty or all missing `arxiv_id`): tell the user the wiki is too sparse for wiki-mode discovery and suggest topic mode.
-- **`from-venue` with a sparse wiki** (too few terms extracted from wiki content): fail clearly and suggest ingesting papers or using topic mode. Venue mode relies on existing wiki content for relevance; without it the ranking would be arbitrary.
-- **Anchor ID is malformed or unknown**: S2 will return 404; surface the bad ID in the report and continue with any remaining anchors.
+- **Все каналы набора данных завершились ошибкой**: сообщите об ошибке, не записывайте короткий список и не фиксируйте успешный запуск в журнале.
+- **S2 недоступен, DeepXiv доступен (тематический режим)**: продолжите только с DeepXiv; отметьте деградацию в отчёте.
+- **S2 возвращает ноль рекомендаций для якоря**: продолжите с оставшимися якорями; если все возвращают ноль, считайте полным отказом.
+- **`--from-wiki` не находит якорных статей** (`wiki/papers/` пуст или все без `arxiv_id`): сообщите, что wiki слишком разрежена для wiki-режима, и предложите тематический режим.
+- **`from-venue` с разреженной wiki** (мало термолов, извлечённых из содержимого): отчётливо завершитесь с ошибкой и предложите загрузить статьи или использовать тематический режим. Режим площадки опирается на существующее содержимое wiki для релевантности; без него ранжирование будет произвольным.
+- **ID якоря сформирован неправильно или неизвестен**: S2 вернёт 404; покажите бракованный ID в отчёте и продолжите с оставшимися якорями.
 
-## Dependencies
+## Зависимости
 
-### Tools (via Bash)
+### Инструменты (через Bash)
 
 - `"$PYTHON_BIN" tools/discover.py from-anchors --id <id> [--id <id>...] [--negative <id>...] --wiki-root wiki --limit <N> --output-checkpoint .checkpoints/ --markdown`
 - `"$PYTHON_BIN" tools/discover.py from-topic "<query>" --wiki-root wiki --limit <N> --output-checkpoint .checkpoints/ --markdown`
@@ -162,13 +163,13 @@ When `/ingest` is invoked with the optional `--discover` flag (default off), it 
 - `"$PYTHON_BIN" tools/discover.py from-venue --venue <slug> --year <int> --wiki-root wiki --limit <N> --output-checkpoint .checkpoints/ --markdown`
 - `"$PYTHON_BIN" tools/research_wiki.py log wiki "<message>"`
 
-### Skills
+### Навыки
 
-- `/ingest` — caller via `--discover` flag; also the action the user takes on a chosen candidate
-- `/init` — independent planner; does not call `/discover`
+- `/ingest` — вызывающий через флаг `--discover`; также действие, которое выполняет пользователь над выбранным кандидатом
+- `/init` — независимый планировщик; не вызывает `/discover`
 
-### External APIs
+### Внешние API
 
-- Semantic Scholar — recommendations (`/recommendations/v1/papers/forpaper/{id}`, `POST /recommendations/v1/papers/`), search, paper detail (via `tools/fetch_s2.py`)
-- DeepXiv — search fallback in topic mode (via `tools/fetch_deepxiv.py`, optional; graceful fallback when unavailable)
-- Paper Copilot — public GitHub raw JSON (`papercopilot/paperlists`) for venue/year paper lists. Live-site scraping is not used; do not vendor the dataset. Venue normalization should preserve documented relevance fields such as title, abstract, TLDR, keywords / primary area / topic, track, status, citations, ratings, reviews, and paper URLs when present.
+- Semantic Scholar — рекомендации (`/recommendations/v1/papers/forpaper/{id}`, `POST /recommendations/v1/papers/`), поиск, детали статьи (через `tools/fetch_s2.py`)
+- DeepXiv — резервный поиск в тематическом режиме (через `tools/fetch_deepxiv.py`, опционально; корректный fallback при недоступности)
+- Paper Copilot — публичный JSON из GitHub (`papercopilot/paperlists`) для списков статей по площадке/году. Скрапинг живого сайта не используется; не венчурьте набор данных. Нормализация площадки должна сохранять задокументированные релевантные поля, такие как title, abstract, TLDR, keywords / primary area / topic, track, status, citations, ratings, reviews и URL статей при наличии.

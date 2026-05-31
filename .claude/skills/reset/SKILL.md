@@ -1,112 +1,113 @@
 ---
-description: Reset wiki state to a clean scaffold by scope (wiki / raw / log / checkpoints / all). Useful during development or carefree restarts after a botched setup.
+name: reset
+description: Сброс состояния wiki до чистого каркаса по областям (wiki / raw / log / checkpoints / all). Полезно при разработке или беззаботном перезапуске после неудачной настройки.
 argument-hint: "--scope wiki|raw|log|checkpoints|all"
 ---
 
 # /reset
 
-> Resets the wiki to a clean scaffold by scope. Designed for development iteration and recovery after a failed setup — not a routine operation.
+> Сброс wiki до чистого каркаса по областям. Разработан для итераций разработки и восстановления после неудачной настройки — не для рутинных операций.
 
-## Trigger
+## Триггер
 
-Manual: `/reset --scope wiki` / `--scope raw` / `--scope log` / `--scope checkpoints` / `--scope all`. Multiple scopes may be combined comma-separated: `--scope wiki,log`.
+Ручной запуск: `/reset --scope wiki` / `--scope raw` / `--scope log` / `--scope checkpoints` / `--scope all`. Несколько областей могут быть объединены через запятую: `--scope wiki,log`.
 
-## Inputs
+## Входы
 
-- `--scope` *(required)*: one of
-  - `wiki` — delete every `*.md` under `wiki/<entity>/` and `wiki/outputs/`, plus `wiki/index.md`, `wiki/log.md`, and `wiki/graph/` files. Preserves `.gitkeep` and `wiki/CLAUDE.md`.
-  - `raw` — delete every entry under `raw/papers/`, `raw/discovered/`, `raw/tmp/`, `raw/notes/`, `raw/web/` (except `.gitkeep`).
-  - `log` — reset `wiki/log.md` to the empty header.
-  - `checkpoints` — clear batch state via `research_wiki.py checkpoint-clear`.
-  - `all` — every scope above.
+- `--scope` *(обязательно)*: одно из
+  - `wiki` — удаление каждого `*.md` в `wiki/<entity>/` и `wiki/outputs/`, плюс `wiki/index.md`, `wiki/log.md` и файлы `wiki/graph/`. Сохраняет `.gitkeep` и `wiki/CLAUDE.md`.
+  - `raw` — удаление каждого элемента в `raw/papers/`, `raw/discovered/`, `raw/tmp/`, `raw/notes/`, `raw/web/` (кроме `.gitkeep`).
+  - `log` — сброс `wiki/log.md` до пустого заголовка.
+  - `checkpoints` — очистка пакетного состояния через `research_wiki.py checkpoint-clear`.
+  - `all` — все области выше.
 
-## Outputs
+## Выходы
 
-- Cleared / reset files on disk.
-- Console summary of deleted files and reset files.
+- Очищенные / сброшенные файлы на диске.
+- Сводка в консоли о удалённых и сброшенных файлах.
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- All `wiki/<entity>/*.md` (to enumerate the deletion plan).
-- `raw/<sub>/*` (to enumerate raw deletions).
+### Чтение
+- Все `wiki/<entity>/*.md` (для перечисления плана удаления).
+- `raw/<sub>/*` (для перечисления удалений raw).
 
-### Writes
-- Deletes `wiki/<entity>/*.md` (preserves `.gitkeep`).
-- Rewrites `wiki/index.md`, `wiki/graph/*`, optionally `wiki/log.md`.
-- Deletes `raw/<sub>/*` (except `.gitkeep`).
+### Запись
+- Удаление `wiki/<entity>/*.md` (сохраняет `.gitkeep`).
+- Перезапись `wiki/index.md`, `wiki/graph/*`, опционально `wiki/log.md`.
+- Удаление `raw/<sub>/*` (кроме `.gitkeep`).
 
-## Workflow
+## Рабочий процесс
 
-**Pre-conditions**: working directory contains `wiki/`, `tools/`. Set `WIKI_ROOT=wiki/`.
+**Предусловия**: рабочая директория содержит `wiki/`, `tools/`. Установите `WIKI_ROOT=wiki/`.
 
-### Step 1: Build the deletion plan (dry-run)
+### Шаг 1: Построение плана удаления (dry-run)
 
 ```bash
 python3 tools/reset_wiki.py --scope <scope>
 ```
 
-This prints a JSON plan listing every file that would be deleted or reset, **without modifying anything**. Display the plan to the user grouped by scope (wiki entity dirs, raw subdirs, log, checkpoints).
+Это выводит JSON-план, перечисляющий каждый файл, который будет удалён или сброшен, **без изменения чего-либо**. Покажите план пользователю, сгруппированный по областям (директории сущностей wiki, поддиректории raw, журнал, чекпоинты).
 
-### Step 2: Confirm with the user
+### Шаг 2: Подтверждение пользователя
 
-Print the plan summary and ask for explicit confirmation:
+Покажите сводку плана и запросите явного подтверждения:
 
 ```
-About to delete N files and reset M files. Continue? [y/N]
+Будет удалено N файлов и сброшено M файлов. Продолжить? [y/N]
 ```
 
-If the user says no, exit. **Never proceed without explicit approval** — `/reset` is destructive and `raw/` deletions are not tracked by git.
+Если пользователь говорит нет, выйдите. **Никогда не продолжайте без явного согласия** — `/reset` деструктивен, а удаления в `raw/` не отслеживаются git.
 
-### Step 3: Execute
+### Шаг 3: Выполнение
 
 ```bash
 python3 tools/reset_wiki.py --scope <scope> --yes
 ```
 
-The tool prints a JSON status report (`{deleted_files, reset_files}`).
+Инструмент выводит JSON-отчёт о статусе (`{deleted_files, reset_files}`).
 
-### Step 4: Log (unless `log` scope was reset)
+### Шаг 4: Журнал (если область `log` не сброшена)
 
-If the executed scope did not include `log`, append a log entry so future sessions can see the reset happened:
+Если выполняемая область не включала `log`, добавьте запись в журнал, чтобы будущие сессии видели, что произошёл сброс:
 
 ```bash
-python3 tools/research_wiki.py log wiki/ "reset | scope: <scope>"
+python3 tools/research_wiki.py log wiki/ "reset | область: <scope>"
 ```
 
-### Step 5: Report
+### Шаг 5: Отчёт
 
-Print the result and suggest next steps:
+Выведите результат и предложите следующие шаги:
 
 ```
-## Reset complete — scope: <scope>
+## Сброс завершён — область: <scope>
 
-Deleted: N files
-Reset:   M files
+Удалено: N файлов
+Сброшено: M файлов
 
-Next steps:
-- /init       — bootstrap wiki from raw/
-- /prefill    — seed foundational background
-- /ingest     — add a single source manually
+Следующие шаги:
+- /init       — загрузка wiki из raw/
+- /prefill    — заполнение фундаментальных фоновых знаний
+- /ingest     — ручное добавление одного источника
 ```
 
-## Constraints
+## Ограничения
 
-- **Confirm before destructive action**: never call `--yes` without showing the plan and asking the user.
-- **Preserves**: `.gitkeep` placeholders, `wiki/CLAUDE.md`, `.claude/` (skills are never touched).
-- **`raw/` deletes are irreversible**: PDFs are not in git history. Warn the user before executing `raw` or `all` scopes.
-- **`/reset` does not touch `tools/`, `mcp-servers/`, `i18n/`, `.env`, or git state.**
-- **Scope is required**: no default action (`/reset` with no flag prompts for scope rather than guessing).
+- **Подтверждение перед деструктивным действием**: никогда не вызывайте `--yes`, не показав план и не спросив пользователя.
+- **Сохраняет**: заглушки `.gitkeep`, `wiki/CLAUDE.md`, `.claude/` (навыки никогда не затрагиваются).
+- **Удаления в `raw/` необратимы**: PDF не в истории git. Предупредите пользователя перед выполнением областей `raw` или `all`.
+- **`/reset` не трогает `tools/`, `mcp-servers/`, `i18n/`, `.env` или состояние git.**
+- **Область обязательна**: нет действия по умолчанию (`/reset` без флага запрашивает область, а не угадывает).
 
-## Error Handling
+## Обработка ошибок
 
-- **Unknown scope**: print valid scopes and exit nonzero.
-- **Missing wiki directory**: report and suggest running `/init`.
-- **`checkpoint-clear` failure**: log a warning but do not fail other scopes.
+- **Неизвестная область**: выведите допустимые области и завершитесь с ненулевым кодом.
+- **Отсутствует директория wiki**: сообщите и предложите запустить `/init`.
+- **Ошибка `checkpoint-clear`**: запишите предупреждение, но не завершайте с ошибкой другие области.
 
-## Dependencies
+## Зависимости
 
-### Tools (via Bash)
-- `python3 tools/reset_wiki.py --scope <scope> [--yes] [--project-root .]` — deterministic destructive helper
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
-- `reset_wiki.py` clears `wiki/.checkpoints/*.json` directly for `checkpoints` scope (no CLI dispatch — the `checkpoint-clear` subcommand requires a specific `task_id`, while `/reset --scope checkpoints` semantics is "clear everything")
+### Инструменты (через Bash)
+- `python3 tools/reset_wiki.py --scope <scope> [--yes] [--project-root .]` — детерминированный деструктивный инструмент
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
+- `reset_wiki.py` очищает `wiki/.checkpoints/*.json` напрямую для области `checkpoints` (без CLI-диспетчеризации — подкоманда `checkpoint-clear` требует конкретного `task_id`, тогда как семантика `/reset --scope checkpoints` — "очистить всё")

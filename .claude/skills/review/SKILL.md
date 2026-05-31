@@ -1,284 +1,284 @@
 ---
-description: General-purpose cross-model review — Review LLM independently reviews any research artifact, outputs structured scores, wiki entity mapping, and improvement suggestions
+name: review
+description: Кросс-модельная проверка общего назначения — Review LLM независимо проверяет любой исследовательский артефакт, выводит структурированные баллы, маппинг сущностей wiki и предложения по улучшению
 argument-hint: <artifact-path-or-slug> [--difficulty standard|hard|adversarial] [--focus method|evidence|writing|completeness]
 ---
 
 # /review
 
-> Review any research artifact (idea, proposal, experiment plan, paper draft, method) using cross-model review.
-> Uses Review LLM as an independent reviewer. Outputs a structured score, actionable improvement suggestions,
-> and a mapping to wiki entities (which ideas/methods need strengthening, which gaps are discovered).
-> Supports three difficulty levels (standard / hard / adversarial) and four review focuses.
-> Can be used standalone or called by /ideate, /refine, /exp-design.
+> Проверка любого исследовательского артефакта (идея, предложение, план экспериментов, черновик статьи, метод) с использованием кросс-модельной проверки.
+> Использует Review LLM как независимого рецензента. Выводит структурированный балл, конкретные предложения по улучшению,
+> и маппинг к сущностям wiki (какие идеи/методы нуждаются в усилении, какие пробелы обнаружены).
+> Поддерживает три уровня сложности (standard / hard / adversarial) и четыре фокуса проверки.
+> Может использоваться отдельно или вызываться из /ideate, /refine, /exp-design.
 
-## Inputs
+## Входы
 
-- `artifact`: the artifact to review, one of:
-  - slug of a wiki page (e.g. `sparse-lora-for-edge-devices`, searched in ideas/experiments/methods/)
-  - file path (e.g. `wiki/outputs/paper-draft-v1.md`)
-  - free text (directly pasted proposal or idea description)
-- `--difficulty` (optional, default `standard`):
-  - `standard`: single-round review, delivers structured feedback
-  - `hard`: multi-round dialogue (up to 3 rounds), Claude rebuts each weakness
-  - `adversarial`: multi-round dialogue (up to 3 rounds), Review LLM additionally attempts to find fatal flaws, simulating the harshest reviewer
-- `--focus` (optional, default comprehensive review):
-  - `method`: focus on technical correctness, novelty, and feasibility of method design
-  - `evidence`: focus on sufficiency of evidence, experimental rigor, idea/method support
-  - `writing`: focus on clarity, structural organization, and argumentative logic
-  - `completeness`: focus on missing content (related work, ablations, baselines)
+- `artifact`: проверяемый артефакт, один из:
+  - slug wiki-страницы (например, `sparse-lora-for-edge-devices`, поиск в ideas/experiments/methods/)
+  - путь к файлу (например, `wiki/outputs/paper-draft-v1.md`)
+  - свободный текст (вставленное предложение или описание идеи)
+- `--difficulty` (опционально, по умолчанию `standard`):
+  - `standard`: одноразовая проверка, структурированная обратная связь
+  - `hard`: многоходовый диалог (до 3 раундов), Claude возражает на каждую слабость
+  - `adversarial`: многоходовый диалог (до 3 раундов), Review LLM дополнительно пытается найти фатальные уязвимости, моделируя самого строгого рецензента
+- `--focus` (опционально, по умолчанию комплексная проверка):
+  - `method`: фокус на технической корректности, новизне и осуществимости дизайна метода
+  - `evidence`: фокус на достаточности доказательств, экспериментальной строгости, поддержке идеи/метода
+  - `writing`: фокус на ясности, структурной организации и аргументационной логике
+  - `completeness`: фокус на пропущенном содержимом (связанная работа, абляции, базовые методы)
 
-## Outputs
+## Выходы
 
-- **Review Report** (output to terminal):
-  - Overall Score (1-10)
-  - Strengths (list of positives)
-  - Weaknesses (list of issues, ranked by severity)
-  - Questions (reviewer questions)
-  - Actionable Suggestions (improvement suggestions ranked by priority)
-  - Wiki Entity Mapping (which ideas/methods need strengthening, which gaps were found)
-  - Verdict: `ready` / `needs-work` / `major-revision` / `rethink`
-- If `--difficulty >= hard`: additionally includes multi-round dialogue history and final revised score
-- This skill **does not directly modify the wiki**, but outputs a list of suggested wiki updates
+- **Отчёт о проверке** (вывод в терминал):
+  - Общий балл (1-10)
+  - Сильные стороны (список позитивов)
+  - Слабости (список проблем, ранжированных по серьёзности)
+  - Вопросы (вопросы рецензента)
+  - Конкретные предложения (предложения по улучшению, ранжированные по приоритету)
+  - Маппинг сущностей wiki (какие идеи/методы нуждаются в усилении, какие пробелы обнаружены)
+  - Вердикт: `ready` / `needs-work` / `major-revision` / `rethink`
+- Если `--difficulty >= hard`: дополнительно включает историю многоходового диалога и финальный скорректированный балл
+- Этот навык **не изменяет напрямую wiki**, но выводит список предложенных обновлений wiki
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/papers/*.md` — locate papers cited by the artifact, verify citation accuracy
-- `wiki/concepts/*.md` — understand technical concepts involved in the artifact
-- `wiki/methods/*.md` — check the current status of methods the artifact depends on
-- `wiki/experiments/*.md` — find related experiment results
-- `wiki/ideas/*.md` — if reviewing an idea, check its context
-- `wiki/graph/context_brief.md` — global context
-- `wiki/graph/open_questions.md` — check completeness against the gap map
-- `.claude/skills/shared-references/cross-model-review.md` — reviewer independence principle
+### Чтение
+- `wiki/papers/*.md` — поиск статей, цитируемых артефактом, проверка точности цитирования
+- `wiki/concepts/*.md` — понимание технических концепций, участвующих в артефакте
+- `wiki/methods/*.md` — проверка текущего статуса методов, от которых зависит артефакт
+- `wiki/experiments/*.md` — поиск связанных результатов экспериментов
+- `wiki/ideas/*.md` — если проверяется идея, проверка её контекста
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `wiki/graph/open_questions.md` — проверка полноты по карте пробелов
+- `.claude/skills/shared-references/cross-model-review.md` — принцип независимости рецензента
 
-### Writes
-- **None**. Review is a read-only query operation.
-  - Review results are output to terminal; the user or caller (e.g. /refine) decides whether to apply them.
+### Запись
+- **Нет**. Проверка — операция только для чтения.
+  - Результаты проверки выводятся в терминал; пользователь или вызывающий (например, /refine) решают, применять ли их.
 
-### Graph edges created
-- **None**.
+### Создаваемые графовые рёбра
+- **Нет**.
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`).
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`).
 
-### Step 1: Load Context
+### Шаг 1: Загрузка контекста
 
-1. **Parse artifact**:
-   - If slug: search sequentially in `wiki/ideas/`, `wiki/experiments/`, `wiki/methods/`, `wiki/papers/`, `wiki/outputs/` for `{slug}.md`
-   - If file path: read directly
-   - If free text: use directly
-2. **Determine artifact type**: idea / experiment / method / paper-draft / proposal / other
-3. **Load relevant wiki context**:
-   - Read `wiki/graph/context_brief.md` for global perspective
-   - Read `wiki/graph/open_questions.md` for knowledge gap list
-   - Load relevant wiki pages by artifact type:
-     - idea → its origin_gaps (concepts/topics), related papers
-     - experiment → its linked_idea, related experiments
-     - method → its source_papers and parent_methods
-     - paper-draft → all wiki pages it cites
-4. **Read cross-model-review.md**: confirm Review LLM independence principle
-5. **Build reviewer system prompt** (based on --focus):
+1. **Парсинг артефакта**:
+   - Если slug: последовательный поиск в `wiki/ideas/`, `wiki/experiments/`, `wiki/methods/`, `wiki/papers/`, `wiki/outputs/` для `{slug}.md`
+   - Если путь к файлу: прямое чтение
+   - Если свободный текст: используйте напрямую
+2. **Определение типа артефакта**: idea / experiment / method / paper-draft / proposal / другой
+3. **Загрузка релевантного контекста wiki**:
+   - Чтение `wiki/graph/context_brief.md` для глобальной перспективы
+   - Чтение `wiki/graph/open_questions.md` для списка пробелов в знаниях
+   - Загрузка релевантных wiki-страниц по типу артефакта:
+     - idea → её origin_gaps (концепции/темы), связанные статьи
+     - experiment → её linked_idea, связанные эксперименты
+     - method → её source_papers и parent_methods
+     - paper-draft → все wiki-статьи, на которые она ссылается
+4. Чтение cross-model-review.md: подтверждение принципа независимости Review LLM
+5. Построение системного промпта рецензента (на основе --focus):
 
-   **Base prompt (all focuses):**
+   **Базовый промпт (все фокусы):**
    ```
-   You are a senior ML researcher reviewing a research artifact.
-   Be thorough, specific, and constructive. For every weakness, suggest a concrete fix.
-   Score on a 1-10 scale where:
-   - 1-3: Fundamental flaws, not salvageable in current form
-   - 4-5: Significant issues but core idea may have merit
-   - 6-7: Solid work with clear areas for improvement
-   - 8-9: Strong work, minor issues only
-   - 10: Exceptional, publication-ready
-   ```
-
-   **Focus-specific additions:**
-   - `method`: additionally assess technical correctness, novelty of approach, feasibility, comparison to alternatives
-   - `evidence`: additionally assess experimental rigor, statistical significance, idea-evidence alignment, missing controls
-   - `writing`: additionally assess clarity, logical flow, notation consistency, figure quality, related work coverage
-   - `completeness`: additionally assess missing baselines, missing ablations, missing datasets, missing related work, reproducibility
-
-   **Adversarial addition (adversarial mode only):**
-   ```
-   Additionally: actively search for fatal flaws. A fatal flaw is anything that,
-   if true, would make the entire contribution invalid (incorrect proof, data leakage,
-   unfair comparison, published prior work). If you find one, flag it clearly.
+   Вы — старший ML-исследователь, проверяющий исследовательский артефакт.
+   Будьте внимательны, конкретны и конструктивны. Для каждой слабости предложите конкретное исправление.
+   Оценивайте по шкале 1-10, где:
+   - 1-3: Фундаментальные недостатки, не исправляемы в текущем виде
+   - 4-5: Серьёзные проблемы, но основная идея может иметь ценность
+   - 6-7: Крепкая работа с явными направлениями для улучшения
+   - 8-9: Сильная работа, только мелкие проблемы
+   - 10: Исключительная, готовая к публикации
    ```
 
-### Step 2: Review LLM Initial Review
+   **Дополнения для конкретных фокусов:**
+   - `method`: дополнительно оценивайте техническую корректность, новизну подхода, осуществимость, сравнение с альтернативами
+   - `evidence`: дополнительно оценивайте экспериментальную строгость, статистическую значимость, соответствие идея-доказательства, отсутствующие контрольные группы
+   - `writing`: дополнительно оценивайте ясность, логическую последовательность, согласованность обозначений, качество фигур, покрытие связанной работы
+   - `completeness`: дополнительно оценивайте отсутствующие базовые методы, абляции, наборы данных, связанную работу, воспроизводимость
 
-**Follow cross-model-review.md**: do not send any of Claude's pre-judgments to Review LLM.
+   **Дополнение для adversarial (только режим adversarial):**
+   ```
+   Дополнительно: активно ищите фатальные уязвимости. Фатальная уязвимость — это что угодно,
+   что, если верно, делает весь вклад недействительным (неправильное доказательство, утечка данных,
+   нечестное сравнение, опубликованная предшествующая работа). Если нашли, явно пометьте.
+   ```
+
+### Шаг 2: Начальная проверка Review LLM
+
+**Следуйте cross-model-review.md**: не отправляйте какие-либо предварительные суждения Claude в Review LLM.
 
 ```
 mcp__llm-review__chat:
-  system: {reviewer system prompt from Step 1}
+  system: {системный промпт рецензента из шага 1}
   message: |
-    ## Artifact to Review
-    {artifact full text}
+    ## Артефакт для проверки
+    {полный текст артефакта}
 
-    ## Context from Knowledge Base
-    {relevant wiki context: related ideas/methods with status, related experiments, gap map entries}
+    ## Контекст из базы знаний
+    {релевантный контекст wiki: связанные идеи/методы со статусом, связанные эксперименты, записи карты пробелов}
 
-    ## Review Instructions
-    Please provide:
-    1. **Strengths** (3-5 bullet points)
-    2. **Weaknesses** (ranked by severity, each with a concrete suggestion to fix)
-    3. **Questions** (things that are unclear or need clarification)
-    4. **Score** (1-10 with one-sentence justification)
-    5. **Verdict**: ready / needs-work / major-revision / rethink
-    6. **Idea-/method-level feedback**: For each idea or method referenced in the artifact, assess whether the evidence/justification is sufficient. List any ideas or methods that need stronger support.
-    7. **Knowledge gaps identified**: Any open questions or missing knowledge that would strengthen this work.
+    ## Инструкции по проверке
+    Пожалуйста, предоставьте:
+    1. **Сильные стороны** (3-5 тезисов)
+    2. **Слабости** (ранжированные по серьёзности, каждая с конкретным предложением исправления)
+    3. **Вопросы** (что непонятно или требует уточнения)
+    4. **Балл** (1-10 с однострочным обоснованием)
+    5. **Вердикт**: ready / needs-work / major-revision / rethink
+    6. **Обратная связь по идеям/методам**: Для каждой идеи или метода, указанного в артефакте, оцените, достаточно ли доказательств/обоснований. Перечислите идеи или методы, которым нужна более сильная поддержка.
+    7. **Обнаруженные пробелы в знаниях**: Любые открытые вопросы или пропущенные знания, которые укрепили бы эту работу.
 ```
 
-Record the `threadId` returned by Review LLM (for multi-round dialogue in Step 3).
+Зафиксируйте `threadId`, возвращённый Review LLM (для многоходового диалога в шаге 3).
 
-### Step 3: Multi-Round Dialogue (hard / adversarial mode)
+### Шаг 3: Многоходовый диалог (режим hard / adversarial)
 
-Skip this step if `--difficulty` is `standard`.
+Пропустите этот шаг, если `--difficulty` — `standard`.
 
-**Respond to each of Review LLM's weaknesses** (up to 3 rounds):
+**Ответьте на каждую слабость Review LLM** (до 3 раундов):
 
-**Round N (N = 1, 2, 3):**
+**Раунд N (N = 1, 2, 3):**
 
-1. Claude analyzes Review LLM's weaknesses and classifies each:
-   - **Rebuttal**: Claude has strong reasoning or wiki evidence to counter it → write a rebuttal
-   - **Acknowledge**: the weakness genuinely exists → acknowledge it and propose a fix
-   - **Clarify**: the weakness is based on a misunderstanding → provide clarification
+1. Claude анализирует слабости Review LLM и классифицирует каждую:
+   - **Возражение**: Claude имеет сильные рассуждения или доказательства из wiki для опровержения → напишите возражение
+   - **Признание**: слабость действительно существует → признайте и предложите исправление
+   - **Уточнение**: слабость основана на недопонимании → предоставьте разъяснение
 
-2. Send Claude's response to Review LLM:
+2. Отправьте ответ Claude в Review LLM:
    ```
    mcp__llm-review__chat-reply:
-     threadId: {from Step 2}
+     threadId: {из шага 2}
      message: |
-       Thank you for the review. Here are my responses:
+       Спасибо за проверку. Вот мои ответы:
 
-       {for each weakness: rebuttal / acknowledgment / clarification}
+       {для каждой слабости: возражение / признание / уточнение}
 
-       Please re-evaluate considering these responses. Update your score if warranted.
-       If --difficulty == adversarial: Also, please try harder to find any remaining
-       fatal flaws I may have missed.
+       Пожалуйста, переоцените с учётом этих ответов. Обновите балл при необходимости.
+       Если --difficulty == adversarial: также, пожалуйста, попробуйте найти любые оставшиеся
+       фатальные уязвимости, которые я мог упустить.
    ```
 
-3. Review LLM responds with a new assessment and revised score
+3. Review LLM отвечает с новой оценкой и скорректированным баллом
+4. Если изменение балла Review LLM < 0.5 и нет новых слабостей → остановите диалог (сошлось)
+5. Если достигнуты 3 раунда → остановите диалог
 
-4. If Review LLM's score change < 0.5 and no new weaknesses → stop dialogue (converged)
-5. If 3 rounds reached → stop dialogue
+### Шаг 4: Структурированный вывод
 
-### Step 4: Structured Output
-
-Synthesize Step 2 + Step 3 results into a structured Review Report:
+Синтез результатов шага 2 + шага 3 в структурированный отчёт о проверке:
 
 ```markdown
-# Review Report: {artifact title}
+# Отчёт о проверке: {название артефакта}
 
-## Meta
-- **Artifact type**: {idea / experiment / method / paper-draft / proposal}
-- **Difficulty**: {standard / hard / adversarial}
-- **Focus**: {method / evidence / writing / completeness / comprehensive}
-- **Reviewer**: Review LLM (configured in `.env`)
-- **Rounds**: {1 for standard, N for hard/adversarial}
+## Мета
+- **Тип артефакта**: {idea / experiment / method / paper-draft / proposal}
+- **Сложность**: {standard / hard / adversarial}
+- **Фокус**: {method / evidence / writing / completeness / comprehensive}
+- **Рецензент**: Review LLM (настроен в `.env`)
+- **Раунды**: {1 для standard, N для hard/adversarial}
 
-## Score: {final score}/10 — {verdict}
+## Балл: {итоговый балл}/10 — {вердикт}
 
-| Verdict | Meaning |
-|---------|---------|
-| ready | Ready to use or submit directly |
-| needs-work | Clear improvement points; usable after fixes |
-| major-revision | Core sections need significant revision |
-| rethink | Fundamental direction may be flawed; reconsider |
+| Вердикт | Значение |
+|---------|----------|
+| ready | Готов к использованию или подаче |
+| needs-work | Чёткие точки улучшения; используется после исправлений |
+| major-revision | Основные разделы нуждаются в существенной переработке |
+| rethink | Фундаментальное направление может быть ошибочным; пересмотрите |
 
-## Strengths
-1. {strength 1}
-2. {strength 2}
+## Сильные стороны
+1. {сильная сторона 1}
+2. {сильная сторона 2}
 ...
 
-## Weaknesses (by severity)
+## Слабости (по серьёзности)
 
-### Critical
-- {weakness}: {specific description} → **Fix**: {specific fix suggestion}
+### Критические
+- {слабость}: {конкретное описание} → **Исправление**: {конкретное предложение исправления}
 
-### Major
-- {weakness}: {specific description} → **Fix**: {specific fix suggestion}
+### Основные
+- {слабость}: {конкретное описание} → **Исправление**: {конкретное предложение исправления}
 
-### Minor
-- {weakness}: {specific description} → **Fix**: {specific fix suggestion}
+### Мелкие
+- {слабость}: {конкретное описание} → **Исправление**: {конкретное предложение исправления}
 
-## Questions
-1. {question}
+## Вопросы
+1. {вопрос}
 ...
 
-## Wiki Entity Mapping
+## Маппинг сущностей wiki
 
-### Ideas / methods needing stronger support
-| Entity | Signal | Issue | Suggested action |
-|--------|--------|-------|------------------|
-| [[idea-slug]] | novelty_score 2/5 | Novelty argument is thin | Run /novelty rerun |
-| [[method-slug]] | source_papers sparse | Missing source paper backing | Ingest the missing paper, then rerun /check |
+### Идеи / методы, нуждающиеся в более сильной поддержке
+| Сущность | Сигнал | Проблема | Предлагаемое действие |
+|----------|--------|----------|----------------------|
+| [[idea-slug]] | novelty_score 2/5 | Аргумент о новизне слаб | Повторный запуск /novelty |
+| [[method-slug]] | source_papers разрежены | Нет поддержки исходной статьёй | Загрузите недостающую статью, затем повторите /check |
 
-### Knowledge gaps identified
-| Gap | Related to | Suggested action |
-|-----|-----------|------------------|
-| {description} | [[slug]] | /ingest, /exp-run, or /query |
+### Обнаруженные пробелы в знаниях
+| Пробел | Связан с | Предлагаемое действие |
+|--------|----------|----------------------|
+| {описание} | [[slug]] | /ingest, /exp-run или /query |
 
-### Suggested wiki updates
-- `wiki/ideas/{slug}.md`: add risk factor from review
-- `wiki/methods/{slug}.md`: tighten Tradeoff profile / Limitations
-- `wiki/graph/open_questions.md`: will be updated on next rebuild
+### Предлагаемые обновления wiki
+- `wiki/ideas/{slug}.md`: добавьте фактор риска из проверки
+- `wiki/methods/{slug}.md`: усильте Tradeoff profile / Limitations
+- `wiki/graph/open_questions.md`: будет обновлён при следующей пересборке
 
-## Dialogue History (hard/adversarial only)
+## История диалога (только hard/adversarial)
 
-### Round 1
-**Review LLM**: {summary of initial review}
-**Claude**: {summary of rebuttals/acknowledgments}
+### Раунд 1
+**Review LLM**: {сводка начальной проверки}
+**Claude**: {сводка возражений/признаний}
 
-### Round 2
-**Review LLM**: {updated assessment}
+### Раунд 2
+**Review LLM**: {обновлённая оценка}
 ...
 
-## Actionable Items (ranked)
-1. [CRITICAL] {action item}
-2. [MAJOR] {action item}
-3. [MINOR] {action item}
+## Элементы действий (ранжированные)
+1. [КРИТИЧЕСКИЙ] {элемент действия}
+2. [ОСНОВНОЙ] {элемент действия}
+3. [МЕЛКИЙ] {элемент действия}
 ```
 
-## Constraints
+## Ограничения
 
-- **Reviewer independence**: strictly follow `shared-references/cross-model-review.md`; do not leak Claude's pre-judgments to Review LLM
-- **Do not modify wiki**: review only outputs suggestions; it does not directly modify any wiki pages. Wiki modifications are handled by the caller (e.g. /refine)
-- **Scores must have justification**: scores without a rationale are not accepted
-- **Weaknesses must have fixes**: every weakness must include a specific, actionable fix suggestion; vague criticism is not accepted
-- **Entity-level mapping is required**: output must include the Wiki Entity Mapping section, mapping review findings to specific wiki entities (ideas, methods, etc.)
-- **Adversarial mode must search for fatal flaws**: e.g. fully published identical work, incorrect proofs, data leakage
-- **Multi-round dialogue capped at 3 rounds**: prevents infinite loops; output current state if 3 rounds do not converge
-- **Use [[slug]] when referencing wiki pages**: all references to wiki pages use wikilink syntax
+- **Независимость рецензента**: строго следуйте `shared-references/cross-model-review.md`; не утечьте предварительные суждения Claude в Review LLM
+- **Не изменяйте wiki**: проверка только выводит предложения; не изменяет напрямую какие-либо wiki-страницы. Изменения wiki обрабатываются вызывающим (например, /refine)
+- **Баллы должны иметь обоснование**: баллы без обоснования не принимаются
+- **Слабости должны иметь исправления**: каждая слабость должна включать конкретное, осуществимое предложение исправления; расплывчатая критика не принимается
+- **Маппинг на уровне сущностей обязателен**: вывод должен включать раздел Маппинг сущностей wiki, сопоставляющий результаты проверки с конкретными сущностями wiki (идеи, методы и т.д.)
+- **Режим adversarial должен искать фатальные уязвимости**: например, полностью опубликованная идентичная работа, неправильные доказательства, утечка данных
+- **Многоходовой диалог ограничен 3 раундами**: предотвращение бесконечных циклов; вывод текущего состояния, если 3 раунда не сошлись
+- **Используйте [[slug]] при ссылках на wiki-страницы**: все ссылки на wiki-страницы используют синтаксис wikilink
 
-## Error Handling
+## Обработка ошибок
 
-- **Artifact not found**: prompt user to check slug or path, list likely candidate pages
-- **Review LLM unavailable**: downgrade to Claude self-review mode; annotate report with "single-model review, cross-model verification unavailable"; recommend the user retry with Review LLM later
-- **Wiki empty**: proceed with review normally, but annotate Wiki Entity Mapping section with "wiki empty, no entity mapping available"
-- **Artifact too long**: if it exceeds Review LLM's context window, review section by section and merge at the end
-- **Review LLM returns invalid response**: retry once; if still invalid, use Claude self-review fallback
-- **Review LLM does not converge in multi-round dialogue**: force-stop after 3 rounds; output the last round's score and summary
+- **Артефакт не найден**: предложите пользователю проверить slug или путь, перечислите вероятные страницы-кандидаты
+- **Review LLM недоступен**: понижение до режима самопроверки Claude; аннотируйте отчёт "проверка одной модели, кросс-модельная верификация недоступна"; рекомендуйте пользователю повторить с Review LLM позже
+- **Wiki пуста**: продолжите проверку нормально, но аннотируйте раздел Маппинг сущностей wiki "wiki пуста, маппинг сущностей недоступен"
+- **Артефакт слишком длин**: если превышает контекстное окно Review LLM, проверяйте по разделам и объединяйте в конце
+- **Review LLM возвращает невалидный ответ**: повторите один раз; если всё ещё невалидный, используйте запасную самопроверку Claude
+- **Review LLM не сходится в многоходовом диалоге**: принудительная остановка после 3 раундов; выведите балл и сводку последнего раунда
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- No direct tool calls (review does not require deterministic tools)
+### Инструменты (через Bash)
+- Нет прямых вызовов инструментов (проверка не требует детерминированных инструментов)
 
-### MCP Servers
-- `mcp__llm-review__chat` — Review LLM initial review (Step 2)
-- `mcp__llm-review__chat-reply` — Review LLM multi-round dialogue (Step 3)
+### MCP-серверы
+- `mcp__llm-review__chat` — начальная проверка Review LLM (Шаг 2)
+- `mcp__llm-review__chat-reply` — многоходовой диалог Review LLM (Шаг 3)
 
 ### Claude Code Native
-- `Read` — read artifact and wiki pages
-- `Glob` — find wiki page corresponding to artifact
+- `Read` — чтение артефакта и wiki-страниц
+- `Glob` — поиск wiki-страницы, соответствующей артефакту
 
-### Shared References
-- `.claude/skills/shared-references/cross-model-review.md` — reviewer independence principle (required reading)
+### Общие справочники
+- `.claude/skills/shared-references/cross-model-review.md` — принцип независимости рецензента (обязательное чтение)
 
-### Called by
-- `/ideate` Phase 4 (review top ideas)
-- `/refine` each iteration round (review current version)
-- `/exp-design --review` (review experiment plan)
+### Вызывается из
+- `/ideate` Этап 4 (проверка топ-идей)
+- `/refine` каждый итерационный раунд (проверка текущей версии)
+- `/exp-design --review` (проверка плана экспериментов)

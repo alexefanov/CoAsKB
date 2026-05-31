@@ -1,282 +1,283 @@
 ---
-description: Idea-driven experiment design with iterative ablation — method candidate generation (direct / hybrid / cross-idea combination) → benchmark selection → iterative ablation (non-linear: ablation can trigger method simplification and re-planning) → sensitivity analysis → main experiment → optional generalization → deep analysis of intermediate quantities. Use when designing a full experiment suite for an idea after pilot evaluation.
+name: exp-design
+description: Идейно-ориентированное проектирование экспериментов с итеративной абляцией — генерация кандидатов методов (прямой / гибридный / межидейная комбинация) → выбор бенчмарка → итеративная абляция (нелинейная: абляция может вызвать упрощение метода и перепланирование) → анализ чувствительности → основной эксперимент → опциональная обобщённость → глубокий анализ промежуточных величин. Используйте при проектировании полного набора экспериментов для идеи после пилотной оценки.
 argument-hint: <idea-slug>
 ---
 
 # /exp-design
 
-> Design a complete, non-linear experiment suite for an idea.
-> This skill supports method candidate generation, iterative ablation with method simplification, sensitivity analysis, and deep analysis of intermediate quantities.
-> The ablation loop is the core non-linear feature: ablation results classify factors as essential/contributing/marginal/harmful, and marginal/harmful factors trigger method simplification and re-planning (capped at 2 iterations).
+> Проектирование полного нелинейного набора экспериментов для идеи.
+> Этот навык поддерживает генерацию кандидатов методов, итеративную абляцию с упрощением метода, анализ чувствительности и глубокий анализ промежуточных величин.
+> Цикл абляции — ключевая нелинейная особенность: результаты абляции классифицируют факторы как существенные/вносящие/пограничные/вредные, а пограничные/вредные факторы вызывают упрощение метода и перепланирование (ограничено 2 итерациями).
 
-## Inputs
+## Входы
 
-- `idea-slug`: the idea to design experiments for (reads from `wiki/ideas/{slug}.md`)
+- `idea-slug`: идея, для которой проектируются эксперименты (читается из `wiki/ideas/{slug}.md`)
 
-## Outputs
+## Выходы
 
-- Experiment wiki pages: `wiki/experiments/{exp-slug}.md` — one per experiment block (ablation, sensitivity, main, generalization, analysis), each with `status: planned` and `linked_idea` set
-- Master design document: `experiments/designs/{slug}-master.md` — detailed specs for all experiment blocks
-- `wiki/graph/edges.jsonl` — new `tested_by` edges: idea → each experiment
-- `wiki/ideas/{slug}.md` — updated `linked_experiments` field
-- `wiki/graph/context_brief.md` — rebuilt
-- `wiki/graph/open_questions.md` — rebuilt
-- `wiki/log.md` — appended log entry
-- **DESIGN_REPORT** (printed to terminal) — experiment suite summary, run order, compute budget
+- Wiki-страницы экспериментов: `wiki/experiments/{exp-slug}.md` — по одной на экспериментальный блок (абляция, чувствительность, основной, обобщённость, анализ), каждая со статусом `status: planned` и установленным `linked_idea`
+- Мастер-документ проектирования: `experiments/designs/{slug}-master.md` — подробные спецификации для всех экспериментальных блоков
+- `wiki/graph/edges.jsonl` — новые рёбра `tested_by`: idea → каждый эксперимент
+- `wiki/ideas/{slug}.md` — обновлённое поле `linked_experiments`
+- `wiki/graph/context_brief.md` — пересобран
+- `wiki/graph/open_questions.md` — пересобран
+- `wiki/log.md` — добавлена запись в журнал
+- **ОТЧЁТ_О_ПРОЕКТИРОВАНИИ** (выводится в терминал) — сводка набора экспериментов, порядок запуска, вычислительный бюджет
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/ideas/{slug}.md` — idea's hypothesis, approach, risks, novelty argument
-- `wiki/ideas/*.md` — other ideas (for Candidate C cross-idea combination, filtering for validated/pilot-passed ideas)
-- `experiments/pilot/{slug}/report.md` — pilot evaluation results (if exists)
-- `wiki/papers/*.md` — related papers for baseline setups and method details
-- `wiki/concepts/*.md` and `wiki/topics/*.md` — referenced via idea's `origin_gaps`
-- `wiki/methods/*.md` — reusable methods the idea builds on
-- `wiki/experiments/*.md` — existing experiments (avoid duplicate designs)
-- `wiki/graph/context_brief.md` — global context
-- `wiki/graph/open_questions.md` — knowledge gaps
+### Чтение
+- `wiki/ideas/{slug}.md` — гипотеза, подход, риски, аргумент о новизне
+- `wiki/ideas/*.md` — другие идеи (для кандидата C межидейной комбинации, фильтрация по validated/прошедшим пилот)
+- `experiments/pilot/{slug}/report.md` — результаты пилотной оценки (если существует)
+- `wiki/papers/*.md` — связанные статьи для базовых настроек и деталей методов
+- `wiki/concepts/*.md` и `wiki/topics/*.md` — через `origin_gaps` идеи
+- `wiki/methods/*.md` — переиспользуемые методы, на которых основывается идея
+- `wiki/experiments/*.md` — существующие эксперименты (избегайте дублирования дизайнов)
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `wiki/graph/open_questions.md` — пробелы в знаниях
 
-### Writes
-- `wiki/experiments/{exp-slug}.md` — experiment wiki pages (one per block, following entity schema)
-- `experiments/designs/{slug}-master.md` — master design document with detailed block specs
-- `wiki/ideas/{slug}.md` — append experiment slugs to `linked_experiments`
-- `wiki/graph/edges.jsonl` — add `tested_by` edges (idea → each experiment)
-- `wiki/graph/context_brief.md` — rebuild
-- `wiki/graph/open_questions.md` — rebuild
-- `wiki/log.md` — append operation log
+### Запись
+- `wiki/experiments/{exp-slug}.md` — wiki-страницы экспериментов (по одной на блок, согласно схеме сущности)
+- `experiments/designs/{slug}-master.md` — мастер-документ проектирования с подробными спецификациями блоков
+- `wiki/ideas/{slug}.md` — добавление slug'ов экспериментов в `linked_experiments`
+- `wiki/graph/edges.jsonl` — добавление рёбер `tested_by` (idea → каждый эксперимент)
+- `wiki/graph/context_brief.md` — пересборка
+- `wiki/graph/open_questions.md` — пересборка
+- `wiki/log.md` — добавление в журнал операций
 
-### Graph edges created
-- `tested_by`: idea → experiment (the idea is being validated by this experiment). The reverse direction is captured by the experiment's `linked_idea` frontmatter field, which `xref.yaml` reverses into the idea's `linked_experiments` list.
+### Создаваемые графовые рёбра
+- `tested_by`: idea → experiment (идея валидируется этим экспериментом). Обратное направление фиксируется в поле frontmatter `linked_idea` эксперимента, которое `xref.yaml` разворачивает в список `linked_experiments` идеи.
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (directory containing `wiki/`, `raw/`, `tools/`).
-
----
-
-### Phase 1: Load Context & Validate Prerequisites
-
-1. **Read idea page**: load `wiki/ideas/{slug}.md`, extract `## Motivation`, `## Hypothesis`, `## Approach sketch`, `## Novelty argument`, `## Risks` plus frontmatter fields `origin_gaps`, `tags`, `target_venue`, `priority`, `novelty_score`.
-
-2. **Read pilot results** (if exists): load `experiments/pilot/{slug}/report.md` to understand pilot outcome. If pilot passed, proceed with confidence. If no pilot exists, proceed with caution and note reduced confidence in design document.
-
-3. **Load relevant wiki context**:
-   - Read `wiki/graph/context_brief.md` and `wiki/graph/open_questions.md`
-   - From idea's `origin_gaps`, read referenced `wiki/concepts/*.md` and `wiki/topics/*.md`
-   - From `## Approach sketch` wikilinks, read referenced `wiki/methods/*.md`
-   - Read existing `wiki/experiments/*.md` whose `linked_idea` matches this idea
-
-4. **Read related papers**: from `wiki/papers/*.md`, extract baseline setups and method details relevant to the idea.
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (директория, содержащая `wiki/`, `raw/`, `tools/`).
 
 ---
 
-### Phase 2: Method Candidate Generation
+### Этап 1: Загрузка контекста и проверка предусловий
 
-Generate 2–3 method candidates from the idea. Each candidate represents a different implementation strategy:
+1. **Чтение страницы идеи**: загрузите `wiki/ideas/{slug}.md`, извлеките `## Motivation`, `## Hypothesis`, `## Approach sketch`, `## Novelty argument`, `## Risks` и поля frontmatter `origin_gaps`, `tags`, `target_venue`, `priority`, `novelty_score`.
 
-- **Candidate A — Direct**: straight implementation of the idea's proposed method from `## Approach sketch`
-- **Candidate B — Hybrid/Fusion**: combine the idea's method with an existing method (from `wiki/methods/`) to balance performance and cost
-- **Candidate C — Cross-idea Combination**: combine this idea with another existing idea that has been validated or passed pilot experiments (check `wiki/ideas/` for ideas with `pilot_result: passed` or `status: validated`). This tests whether two complementary ideas can compound gains.
+2. **Чтение пилотных результатов** (если существует): загрузите `experiments/pilot/{slug}/report.md` для понимания результата пилота. Если пилот прошёл, продолжайте с уверенностью. Если пилота нет, продолжайте с осторожностью и отметьте сниженную уверенность в документе проектирования.
 
-For each candidate, document:
-- Core mechanism / algorithm sketch (2–4 sentences)
-- Expected advantages and risks
-- Implementation complexity: low / medium / high
-- Computational cost estimate (relative to baseline)
+3. **Загрузка релевантного контекста wiki**:
+   - Прочитайте `wiki/graph/context_brief.md` и `wiki/graph/open_questions.md`
+   - Из `origin_gaps` идеи прочитайте указанные `wiki/concepts/*.md` и `wiki/topics/*.md`
+   - Из wikilinks `## Approach sketch` прочитайте указанные `wiki/methods/*.md`
+   - Прочитайте существующие `wiki/experiments/*.md`, чей `linked_idea` совпадает с этой идеей
 
-**Present candidates to user for review and selection.** User selects 1–2 candidates to proceed with. If user doesn't select, re-present with clearer trade-off comparison.
+4. **Чтение связанных статей**: из `wiki/papers/*.md` извлеките базовые настройки и детали методов, релевантные идее.
 
 ---
 
-### Phase 3: Benchmark & Metric Selection
+### Этап 2: Генерация кандидатов методов
 
-> Select the benchmark, including datasets, evaluation metrics and baseline methods. Among them, the datasets and evaluation metrics shall adopt the universally recognized standard benchmarks in the corresponding research field.
+Сгенерируйте 2–3 кандидата методов из идеи. Каждый кандидат представляет собой разную стратегию реализации:
 
-1. **Identify benchmark(s)** based on:
-   - The idea's domain (NLP, CV, RL, etc.)
-   - Standard benchmarks used in related papers (from `wiki/papers/`)
-   - Dataset availability and compute constraints
+- **Кандидат A — Прямой**: прямая реализация предлагаемого метода из `## Approach sketch`
+- **Кандидат B — Гибридный/слияние**: сочетание метода идеи с существующим методом (из `wiki/methods/`) для баланса производительности и стоимости
+- **Кандидат C — Межидейная комбинация**: сочетание этой идеи с другой существующей идеей, прошедшей или прошедшей пилотные эксперименты (проверьте `wiki/ideas/` на наличие идей с `pilot_result: passed` или `status: validated`). Это проверяет, могут ли две дополнительные идеи объединить прирост.
 
-2. **Select Dataset**:
-   - Clarify the dataset to be used (taking into account task adaptability, scale and standardization level)
-   - Specify the composition structure, usage methods and specifications of the dataset
+Для каждого кандидата задокументируйте:
+- Основной механизм / эскиз алгоритма (2–4 предложения)
+- Ожидаемые преимущества и риски
+- Сложность реализации: низкая / средняя / высокая
+- Оценка вычислительных затрат (относительно базовой)
 
-3. **Select metrics**:
-   - Primary metric: the single most important measure of success (e.g., accuracy, F1, reward)
-   - Secondary metrics: supplementary measures (e.g., latency, memory, throughput)
-
-4. **Define baselines**: list all methods the selected candidate(s) will be compared against. Include:
-   - The reproduced baseline from the most relevant paper
-   - Any SOTA methods from related work
-
-5. **Document rationale**: why these benchmarks and metrics are appropriate for the idea's hypothesis.
+**Представьте кандидатов пользователю для проверки и выбора.** Пользователь выбирает 1–2 кандидата для продолжения. Если пользователь не выбирает, представьте снова с более чётким сравнением компромиссов.
 
 ---
 
-### Phase 4: Experiment Suite Design (non-linear, with iteration)
+### Этап 3: Выбор бенчмарка и метрик
 
-This phase designs all experiment blocks. The ablation loop (Step 4.6) is the core non-linear feature.
+> Выберите бенчмарк, включая наборы данных, метрики оценки и базовые методы. При этом наборы данных и метрики оценки должны быть универсально признанными стандартными бенчмарками в соответствующей области исследований.
 
-#### Step 4.1 — Design Ablation Experiment
+1. **Определите бенчмарк(и)** на основе:
+   - Домена идеи (NLP, CV, RL и т.д.)
+   - Стандартных бенчмарков, используемых в связанных статьях (из `wiki/papers/`)
+   - Доступности наборов данных и вычислительных ограничений
 
-- Identify **ablation factors**: each independent component or hypothesis of the method that can be toggled on/off
-- Design the **ablation matrix**: which combinations to test (typically: full method minus one factor per run)
-- Define **metrics to collect**: not just final performance — also intermediate quantities (loss components, gradient norms, etc.) that help diagnose why each factor matters
-- Each factor will later be classified as: ESSENTIAL / CONTRIBUTING / MARGINAL / HARMFUL
+2. **Выбор набора данных**:
+   - Уточните используемый набор данных (с учётом адаптивности задачи, масштаба и уровня стандартизации)
+   - Укажите структуру состава, методы использования и спецификации набора данных
 
-#### Step 4.2 — Design Sensitivity Analysis
+3. **Выбор метрик**:
+   - Основная метрика: единственная 가장 важная мера успеха (например, accuracy, F1, награда)
+   - Дополнительные метрики: вспомогательные меры (например, латентность, память, пропускная способность)
 
-- Identify **hyperparameters to sweep**: learning rate, method-specific parameters (e.g., sparsity ratio, fusion weight), model-specific params
-- Define **sweep ranges and resolution**: start broad, refine later
-- Plan **incremental execution**: run on a subset first (fewer steps, smaller dataset), then run full sweep with narrowed ranges
+4. **Определение базовых методов**: перечислите все методы, с которыми будут сравниваться выбранные кандидаты. Включите:
+   - Воспроизведённый базовый метод из наиболее релевантной статьи
+   - Любой метод SOTA из связанной работы
 
-#### Step 4.3 — Design Main Experiment
+5. **Задокументируйте обоснование**: почему эти бенчмарки и метрики уместны для гипотезы идеи.
 
-- Selected method candidate(s) vs all baselines on full benchmark
-- Multi-seed (>= 3 seeds for variance estimation)
-- Full training budget
-- Collect both final metrics and intermediate quantities (for deep analysis in Step 4.5)
+---
 
-#### Step 4.4 — Design Generalization Experiment (optional)
+### Этап 4: Проектирование набора экспериментов (нелинейное, с итерациями)
 
-- Test on a different benchmark, dataset, or setting
-- Verify the method's assumptions hold beyond the primary setup
-- Only include if the idea's hypothesis makes generalization claims
-- If included, document: what changes from main experiment, what new insight it provides
+Этап проектирует все экспериментальные блоки. Цикл абляции (шаг 4.6) — ключевая нелинейная особенность.
 
-#### Step 4.5 — Design Deep Analysis
+#### Шаг 4.1 — Проектирование эксперимента абляции
 
-- Identify **intermediate quantities to log** during main experiment:
-  - Gradient norms (per-layer, per-component)
-  - Attention patterns or feature distributions
-  - Loss decomposition (individual loss terms)
-  - Anything that validates or invalidates the method's core hypothesis
-- Define **analysis scripts/visualizations** to produce after experiments complete
-- This is NOT about final metrics — it's about understanding *why* the method works (or doesn't)
-- Specify which quantities must be collected *before* experiments run (instrumentation requirements)
+- Определите **факторы абляции**: каждый независимый компонент или гипотезу метода, которые можно включать/выключать
+- Спроектируйте **матрицу абляции**: какие комбинации тестировать (обычно: полный метод минус один фактор за запуск)
+- Определите **собираемые метрики**: не только конечная производительность — но и промежуточные величины (компоненты потерь, нормы градиентов и т.д.), которые помогают диагностировать, почему каждый фактор важен
+- Каждый фактор будет впоследствии классифицирован как: СУЩЕСТВЕННЫЙ / ВНОСЯЩИЙ / ПОГРАНИЧНЫЙ / ВРЕДНЫЙ
 
-Each experiment block carries:
-- `title`: descriptive title
-- `linked_idea`: the source idea slug (mandatory; required by the schema)
-- `hypothesis`: specific hypothesis the experiment tests
-- `type`: ablation / sensitivity / main / generalization / analysis — captured as a tag
-- `setup`: model, dataset, hardware, framework
-- `metrics`: list of evaluation metrics
-- `baseline`: comparison baseline
-- `success_criterion`: explicit pass/fail criterion (will live in `## Procedure` of the experiment page)
-- `estimated_gpu_hours`: estimated compute time
-- `seeds`: number of random seeds (recommend >= 3)
+#### Шаг 4.2 — Проектирование анализа чувствительности
 
-Block-specific requirements:
+- Определите **гиперпараметры для перебора**: скорость обучения, параметры, специфичные для метода (например, коэффициент разреженности, вес слияния), параметры модели
+- Определите **диапазоны перебора и разрешение**: начните широко, затем уточните
+- План **инкрементного выполнения**: сначала запустите на подмножестве (меньше шагов, меньший набор данных), затем полный перебор с суженными диапазонами
 
-**Ablation**:
-- Purpose: isolate the contribution of each independent factor of the method
-- Each ablation removes one factor and validates the resulting performance drop
-- N factors → N ablation runs (plus full method as control)
-- Collect intermediate quantities for each run (not just final metrics)
-- Success criterion: factor classification table (ESSENTIAL / CONTRIBUTING / MARGINAL / HARMFUL)
-- Compute: similar to main experiment × N factors
+#### Шаг 4.3 — Проектирование основного эксперимента
 
-**Sensitivity**:
-- Purpose: find optimal hyperparameter values for the method
-- Identify all method-specific hyperparameters (learning rate, sparsity ratio, fusion weight, etc.)
-- Define sweep ranges (start broad) and resolution (grid or random search)
-- Incremental: run on subset first, narrow ranges, then full sweep
-- Success criterion: identified optimal hparams with clear sensitivity patterns
-- Compute: moderate (subset sweep is cheap, full sweep depends on param count)
+- Выбранные кандидаты методов vs все базовые методы на полном бенчмарке
+- Множественные сиды (>= 3 сида для оценки дисперсии)
+- Полный бюджет обучения
+- Собирайте как конечные метрики, так и промежуточные величины (для глубокого анализа на шаге 4.5)
 
-**Main**:
-- Purpose: validate the idea's central proposition vs all baselines on full benchmark
-- Selected method with best hparams from sensitivity analysis
-- Multi-seed (>= 3 seeds) for statistical reliability
-- Collect both final metrics and intermediate quantities for deep analysis
-- Success criterion: statistically significant improvement over baselines
-- Compute: highest (full training budget, multiple seeds, multiple baselines)
+#### Шаг 4.4 — Проектирование эксперимента обобщённости (опционально)
 
-**Generalization** (optional):
-- Purpose: verify the method holds under different conditions
-- Test on at least 2 variation dimensions (different dataset, model size, domain, etc.)
-- Uses finalized method and best hparams from main experiment
-- Success criterion: performance holds (no catastrophic degradation) on new settings
-- Compute: depends on number of variation dimensions
+- Тестирование на другом бенчмарке, наборе данных или настройке
+- Проверка того, что предположения метода сохраняются за пределами основной настройки
+- Включайте только если гипотеза идеи делает утверждения об обобщённости
+- Если включено, задокументируйте: что меняется по сравнению с основным экспериментом, какое новое понимание он даёт
 
-**Analysis**:
-- Purpose: understand *why* the method works (or doesn't) by examining intermediate quantities
-- Input: logs and intermediate data collected during main experiment
-- Produce visualizations: gradient norms, attention patterns, loss decomposition, etc.
-- Success criterion: intermediate quantities confirm (or contradict) the method's core hypothesis
-- Compute: minimal (post-hoc analysis, no new training runs)
+#### Шаг 4.5 — Проектирование глубокого анализа
 
-#### Step 4.6 — Iterative Ablation Loop (non-linear core)
+- Определите **промежуточные величины для логирования** во время основного эксперимента:
+  - Нормы градиентов (по слоям, по компонентам)
+  - Паттерны внимания или распределения признаков
+  - Декомпозиция потерь (отдельные компоненты потерь)
+  - Всё, что валидирует или опровергает основную гипотезу метода
+- Определите **скрипты/визуализации анализа** для создания после завершения экспериментов
+- Это НЕ о конечных метриках — это о понимании *почему* метод работает (или не работает)
+- Укажите, какие величины необходимо собрать *до* запуска экспериментов (требования к инструментации)
 
-This is the key difference from linear experiment design. After initial ablation results:
+Каждый экспериментальный блок несёт:
+- `title`: описательный заголовок
+- `linked_idea`: slug исходной идеи (обязательно; требуется схемой)
+- `hypothesis`: конкретная гипотеза, которую проверяет эксперимент
+- `type`: ablation / sensitivity / main / generalization / analysis — фиксируется как тег
+- `setup`: модель, набор данных, оборудование, фреймворк
+- `metrics`: список метрик оценки
+- `baseline`: базовый метод для сравнения
+- `success_criterion`: явный критерий прохождения/провала (будет в `## Procedure` страницы эксперимента)
+- `estimated_gpu_hours`: оценка вычислительного времени
+- `seeds`: количество случайных сидов (рекомендуется >= 3)
+
+Требования для конкретных блоков:
+
+**Абляция**:
+- Цель: выделить вклад каждого независимого фактора метода
+- Каждая абляция удаляет один фактор и валидирует resulting падение производительности
+- N факторов → N запусков абляции (плюс полный метод как контроль)
+- Собирайте промежуточные величины для каждого запуска (не только конечные метрики)
+- Критерий успеха: таблица классификации факторов (СУЩЕСТВЕННЫЙ / ВНОСЯЩИЙ / ПОГРАНИЧНЫЙ / ВРЕДНЫЙ)
+- Вычисления: аналогичны основному эксперименту × N факторов
+
+**Чувствительность**:
+- Цель: найти оптимальные значения гиперпараметров для метода
+- Определите все специфические для метода гиперпараметры (скорость обучения, коэффициент разреженности, вес слияния и т.д.)
+- Определите диапазоны перебора (начните широко) и разрешение (сетевой или случайный поиск)
+- Инкрементно: сначала запустите на подмножестве, сужайте диапазоны, затем полный перебор
+- Критерий успеха: определённые оптимальные гиперпараметры с чёткими паттернами чувствительности
+- Вычисления: умеренные (перебор подмножества дешёвый, полный зависит от числа параметров)
+
+**Основной**:
+- Цель: валидировать центральное утверждение идеи vs все базовые методы на полном бенчмарке
+- Выбранный метод с лучшими гиперпараметрами от анализа чувствительности
+- Множественные сиды (>= 3 сидов) для статистической достоверности
+- Собирайте как конечные метрики, так и промежуточные величины для глубокого анализа
+- Критерий успеха: статистически значимое улучшение по отношению к базовым методам
+- Вычисления: наиболее высокие (полный бюджет обучения, несколько сидов, несколько базовых методов)
+
+**Обобщённость** (опционально):
+- Цель: проверить, что метод работает в разных условиях
+- Тестирование как минимум в 2 измерениях вариации (разный набор данных, размер модели, домен и т.д.)
+- Использует финализированный метод и лучшие гиперпараметры из основного эксперимента
+- Критерий успеха: производительность сохраняется (без катастрофической деградации) в новых настройках
+- Вычисления: зависят от количества измерений вариации
+
+**Анализ**:
+- Цель: понять *почему* метод работает (или не работает), исследуя промежуточные величины
+- Вход: логи и промежуточные данные, собранные во время основного эксперимента
+- Создайте визуализации: нормы градиентов, паттерны внимания, декомпозиция потерь и т.д.
+- Критерий успеха: промежуточные величины подтверждают (или опровергают) основную гипотезу метода
+- Вычисления: минимальные (постфактум анализ, без новых запусков обучения)
+
+#### Шаг 4.6 — Итеративный цикл абляции (нелинейное ядро)
+
+Это ключевое отличие от линейного проектирования экспериментов. После первых результатов абляции:
 
 ```
-iteration = 0
-while iteration < 2:
-    run ablation experiment (via /exp-run)
-    classify each ablation factor based on results:
-      - ESSENTIAL:   removing it causes major performance degradation (>10%)  → keep
-      - CONTRIBUTING: removing it causes moderate degradation (3-10%)        → keep
-      - MARGINAL:    removing it has negligible effect (<3%)                 → candidate for removal
-      - HARMFUL:     removing it improves performance                        → remove
-    if any MARGINAL or HARMFUL factors found:
-      simplify method:
-        - Remove all HARMFUL factors
-        - Discuss with user whether to remove MARGINAL factors
-      re-plan ablation with reduced factor set
-      iteration += 1
-    else:
-      break  # method is clean, proceed to main experiment
+итерация = 0
+пока итерация < 2:
+    запустите эксперимент абляции (через /exp-run)
+    классифицируйте каждый фактор абляции по результатам:
+      - СУЩЕСТВЕННЫЙ: удаление вызывает major падение производительности (>10%)  → оставить
+      - ВНОСЯЩИЙ: удаление вызывает умеренное падение (3-10%)        → оставить
+      - ПОГРАНИЧНЫЙ: удаление имеет пренебрежимо малый эффект (<3%)                 → кандидат на удаление
+      - ВРЕДНЫЙ: удаление улучшает производительность                        → удалить
+    если найдены ПОГРАНИЧНЫЕ или ВРЕДНЫЕ факторы:
+      упростите метод:
+        - Удалите все ВРЕДНЫЕ факторы
+        - Обсудите с пользователем, удалять ли ПОГРАНИЧНЫЕ факторы
+      перепланируйте абляцию с уменьшенным набором факторов
+      итерация += 1
+    иначе:
+      выход  # метод чистый, переходите к основному эксперименту
 ```
 
-- After loop exits (max 2 iterations): finalize method design
-- Record full iteration history in design document (what was removed, why, results at each iteration)
-- The finalized method from this loop becomes the method used in main experiment (Step 4.3)
+- После выхода из цикла (максимум 2 итерации): финализируйте дизайн метода
+- Запишите полную историю итераций в документ проектирования (что было удалено, почему, результаты на каждой итерации)
+- Финализированный метод из этого цикла становится методом, используемым в основном эксперименте (шаг 4.3)
 
 ---
 
-### Phase 5: Build Run Order
+### Этап 5: Построение порядка запуска
 
-Order experiments by dependency and set decision gates:
+Расположите эксперименты по зависимостям и установите контрольные точки:
 
 ```
-Stage 0: Ablation (iteration 1)
-  └── Run ablation matrix
-  └── Classify factors → simplify if needed → re-run (iteration 2, up to max 2)
+Стадия 0: Абляция (итерация 1)
+  └── Запуск матрицы абляции
+  └── Классификация факторов → упрощение при необходимости → перезапуск (итерация 2, до макс. 2)
   
-Stage 1: Sensitivity analysis (subset)
-  └── Run on small subset to narrow hyperparameter ranges
-  └── Gate: if no reasonable hparams found → stop, reconsider method
+Стадия 1: Анализ чувствительности (подмножество)
+  └── Запуск на небольшом подмножестве для сужения диапазонов гиперпараметров
+  └── Контрольная точка: если не найдены приемлемые гиперпараметры → стоп, пересмотр метода
 
-Stage 2: Main experiment
-  └── Finalized method vs baselines, full benchmark, multi-seed
-  └── Gate: no improvement over baseline → stop, analyze via deep analysis
+Стадия 2: Основной эксперимент
+  └── Финализированный метод vs базовые, полный бенчмарк, множественные сиды
+  └── Контрольная точка: нет улучшения по отношению к базовому → стоп, анализ через глубокий анализ
 
-Stage 3: Generalization (optional)
-  └── Only if generalization experiment was designed in Step 4.4
-  └── Uses finalized method and best hparams
+Стадия 3: Обобщённость (опционально)
+  └── Только если эксперимент обобщённости был спроектирован на шаге 4.4
+  └── Использует финализированный метод и лучшие гиперпараметры
 
-Stage 4: Deep analysis
-  └── Analyze intermediate quantities collected during Stage 2
-  └── Produce visualizations and diagnostic report
+Стадия 4: Глубокий анализ
+  └── Анализ промежуточных величин, собранных на стадии 2
+  └── Создание визуализаций и диагностического отчёта
 ```
 
-Estimate total compute budget. Generate execution checklist with dependencies.
+Оцените общий вычислительный бюджет. Сгенерируйте чеклист выполнения с зависимостями.
 
 ---
 
-### Gate: User reviews designed experimental modules and execution sequence
+### Контрольная точка: Пользователь проверяет спроектированные экспериментальные модули и последовательность выполнения
 
-**Before finalizing experimental modules and preparing design documents and wiki pages, confirmation must be obtained from users. Users are required to manually inspect the designed experimental modules. Proceed to Phase6 once confirmed; otherwise, make revisions repeatedly until users give approval.**
+**Перед финализацией экспериментальных модулей и подготовкой документов проектирования и wiki-страниц необходимо получить подтверждение от пользователей. Пользователи должны вручную проверить спроектированные экспериментальные модули. Переходите к Этапу 6 после подтверждения; в противном случае вносятся исправления до получения согласия пользователей.**
 
-### Phase 6: Write Design Document
+### Этап 6: Запись документа проектирования
 
-1. **Create master design document** at `experiments/designs/{slug}-master.md`:
+1. **Создайте мастер-документ проектирования** в `experiments/designs/{slug}-master.md`:
    ```markdown
    ---
-   title: "Experiment Design: {idea-title}"
+   title: "Проектирование экспериментов: {idea-title}"
    slug: "{idea-slug}-design"
    status: planned
    linked_idea: "{idea-slug}"
@@ -284,55 +285,55 @@ Estimate total compute budget. Generate execution checklist with dependencies.
    date_planned: YYYY-MM-DD
    ---
 
-   ## Idea Summary
-   {idea hypothesis and approach sketch}
+   ## Краткое описание идеи
+   {гипотеза и эскиз подхода идеи}
 
-   ## Method Candidates
-   {table of candidates with selection rationale}
+   ## Кандидаты методов
+   {таблица кандидатов с обоснованием выбора}
 
-   ## Benchmark & Metrics
-   {dataset, metrics, baselines}
+   ## Бенчмарк и метрики
+   {набор данных, метрики, базовые методы}
 
-   ## Experiment Blocks
+   ## Экспериментальные блоки
 
-   ### Ablation
-   {ablation factors, matrix, metrics}
+   ### Абляция
+   {факторы абляции, матрица, метрики}
 
-   ### Sensitivity Analysis
-   {hyperparameters, sweep ranges}
+   ### Анализ чувствительности
+   {гиперпараметры, диапазоны перебора}
 
-   ### Main Experiment
-   {method vs baselines, full config}
+   ### Основной эксперимент
+   {метод vs базовые, полная конфигурация}
 
-   ### Generalization (optional)
-   {different setting/benchmark}
+   ### Обобщённость (опционально)
+   {разная настройка/бенчмарк}
 
-   ### Deep Analysis
-   {intermediate quantities, analysis plan}
+   ### Глубокий анализ
+   {промежуточные величины, план анализа}
 
-   ## Ablation Iteration History
-   {record of each iteration: factors classified, simplifications made}
+   ## История итераций абляции
+   {запись каждой итерации: классифицированные факторы, произведённые упрощения}
 
-   ## Run Order & Budget
-   {stage dependencies, estimated GPU-hours}
+   ## Порядок запуска и бюджет
+   {зависимости стадий, оценка GPU-часов}
 
-   ## Results
-   (to be filled after /exp-run)
+   ## Результаты
+   (заполняется после /exp-run)
    ```
 
-2. **Create experiment wiki pages** — one page per experiment block (following `runtime/schema/entities.yaml` and `runtime/templates/experiments.md.tmpl`):
+2. **Создайте wiki-страницы экспериментов** — по одной странице на экспериментальный блок (согласно `runtime/schema/entities.yaml` и `runtime/templates/experiments.md.tmpl`):
    ```bash
-   python3 tools/research_wiki.py slug "<experiment-title>"
+   python3 tools/research_wiki.py slug "<название-эксперимента>"
    ```
-   Create `wiki/experiments/{slug}.md` following `runtime/schema/entities.yaml::experiments` and `runtime/templates/experiments.md.tmpl` exactly — every frontmatter field below must be present even if empty, because `/exp-run` later uses `tools/research_wiki.py set-meta` to update them, and `set-meta` refuses to create fields that don't already exist:
+   Создайте `wiki/experiments/{slug}.md`, точно следуя `runtime/schema/entities.yaml::experiments` и `runtime/templates/experiments.md.tmpl` — каждое поле frontmatter ниже должно присутствовать, даже если пустое, потому что `/exp-run` позже использует `tools/research_wiki.py set-meta` для их обновления, а `set-meta` отказывается создавать поля, которых ещё нет:
    ```yaml
    ---
    title: ""
    slug: ""
    status: planned
-   linked_idea: "{idea-slug}"   # MANDATORY (required by schema). Reverse link to wiki/ideas/{idea-slug}.md::linked_experiments via xref.yaml.
+   linked_idea: "{idea-slug}"   # ОБЯЗАТЕЛЬНО (требуется схемой). Обратная ссылка на wiki/ideas/{idea-slug}.md::linked_experiments через xref.yaml.
    hypothesis: ""
-   tags: []                     # include the type tag here: ["ablation"], ["sensitivity"], ["main"], ["generalization"], or ["analysis"]
+   tags: []                     # включите тег типа: ["ablation"], ["sensitivity"], ["main"], ["generalization"] или ["analysis"]
    setup:
      model: ""
      dataset: ""
@@ -340,14 +341,14 @@ Estimate total compute budget. Generate execution checklist with dependencies.
      framework: ""
    metrics: []
    baseline: ""
-   outcome: ""                  # empty until /exp-run Phase 4 — succeeded | failed | inconclusive
-   key_result: ""               # empty until /exp-run Phase 4
+   outcome: ""                  # пусто до /exp-run Этап 4 — succeeded | failed | inconclusive
+   key_result: ""               # пусто до /exp-run Этап 4
    date_planned: YYYY-MM-DD
-   date_completed: ""           # empty until /exp-run Phase 4
-   run_log: ""                  # empty until /exp-run Phase 2
-   started: ""                  # empty until /exp-run Phase 2 (ISO timestamp, set via set-meta)
-   estimated_hours: 0           # 0 until /exp-run Phase 2 (set via set-meta)
-   remote:                      # full block must exist so /exp-run --env remote can populate sub-fields via Edit
+   date_completed: ""           # пусто до /exp-run Этап 4
+   run_log: ""                  # пусто до /exp-run Этап 2
+   started: ""                  # пусто до /exp-run Этап 2 (ISO timestamp, через set-meta)
+   estimated_hours: 0           # 0 до /exp-run Этап 2 (через set-meta)
+   remote:                      # полный блок должен существовать, чтобы /exp-run --env remote мог заполнить подполя через Edit
      server: ""
      gpu: ""
      session: ""
@@ -356,154 +357,154 @@ Estimate total compute budget. Generate execution checklist with dependencies.
    ---
    ```
 
-   Body sections per block type:
+   Разделы тела для каждого типа блока:
 
-   **Ablation** (`tags: ["ablation"]`):
-   - `## Objective` — which factors are being tested, what the ablation reveals about the method
-   - `## Setup` — ablation matrix (factor combinations), model, dataset, hardware, hyperparameters
-   - `## Procedure` — step-by-step: run each factor combination, collect metrics and intermediate quantities
-   - `## Results` (to be filled after /exp-run) — factor classification table: ESSENTIAL / CONTRIBUTING / MARGINAL / HARMFUL
-   - `## Analysis` (to be filled after /exp-run) — which factors to remove, iteration history
-   - `## Follow-up` — if MARGINAL/HARMFUL found: simplify method and re-run ablation (iteration 2); if all ESSENTIAL/CONTRIBUTING: proceed to main experiment
+   **Абляция** (`tags: ["ablation"]`):
+   - `## Цель` — какие факторы тестируются, что раскрывает абляция о методе
+   - `## Настройка` — матрица абляции (комбинации факторов), модель, набор данных, оборудование, гиперпараметры
+   - `## Процедура` — пошагово: запуск каждой комбинации факторов, сбор метрик и промежуточных величин
+   - `## Результаты` (заполняется после /exp-run) — таблица классификации факторов: СУЩЕСТВЕННЫЙ / ВНОСЯЩИЙ / ПОГРАНИЧНЫЙ / ВРЕДНЫЙ
+   - `## Анализ` (заполняется после /exp-run) — какие факторы удалить, история итераций
+   - `## Дальнейшие действия` — если найдены ПОГРАНИЧНЫЕ/ВРЕДНЫЕ: упростите метод и перезапустите абляцию (итерация 2); если все СУЩЕСТВЕННЫЕ/ВНОСЯЩИЕ: переходите к основному эксперименту
 
-   **Sensitivity** (`tags: ["sensitivity"]`):
-   - `## Objective` — which hyperparameters are being swept, what range is optimal
-   - `## Setup` — sweep ranges and resolution, model, dataset, hardware
-   - `## Procedure` — step-by-step: run subset first, narrow ranges, then full sweep
-   - `## Results` (to be filled after /exp-run) — best hyperparameter values, performance curves
-   - `## Analysis` (to be filled after /exp-run) — sensitivity patterns, recommended values for main experiment
-   - `## Follow-up` — pass best hparams to main experiment
+   **Чувствительность** (`tags: ["sensitivity"]`):
+   - `## Цель` — какие гиперпараметры перебираются, какой диапазон оптимален
+   - `## Настройка` — диапазоны перебора и разрешение, модель, набор данных, оборудование
+   - `## Процедура` — пошагово: сначала запуск на подмножестве, сужение диапазонов, затем полный перебор
+   - `## Результаты` (заполняется после /exp-run) — лучшие значения гиперпараметров, кривые производительности
+   - `## Анализ` (заполняется после /exp-run) — паттерны чувствительности, рекомендованные значения для основного эксперимента
+   - `## Дальнейшие действия` — передайте лучшие гиперпараметры в основной эксперимент
 
-   **Main** (`tags: ["main"]`):
-   - `## Objective` — what this experiment proves about the linked idea vs baselines
-   - `## Setup` — method vs all baselines, full benchmark, multi-seed (>=3), best hparams from sensitivity
-   - `## Procedure` — step-by-step execution plan with explicit success criterion; collect intermediate quantities for deep analysis
-   - `## Results` (to be filled after /exp-run) — metric comparison table (method vs baselines), statistical significance
-   - `## Analysis` (to be filled after /exp-run) — why method works/fails, intermediate quantity analysis
-   - `## Follow-up` — contingency plans: what to do if success / failure
+   **Основной** (`tags: ["main"]`):
+   - `## Цель` — что доказывает этот эксперимент для связанной идеи по сравнению с базовыми
+   - `## Настройка` — метод vs все базовые, полный бенчмарк, множественные сиды (>=3), лучшие гиперпараметры от чувствительности
+   - `## Процедура` — пошаговый план выполнения с явным критерием успеха; сбор промежуточных величин для глубокого анализа
+   - `## Результаты` (заполняется после /exp-run) — таблица сравнения метрик (метод vs базовые), статистическая значимость
+   - `## Анализ` (заполняется после /exp-run) — почему метод работает/не работает, анализ промежуточных величин
+   - `## Дальнейшие действия` — планы на случай успеха / провала
 
-   **Generalization** (`tags: ["generalization"]`, optional):
-   - `## Objective` — what generalization claim is being tested
-   - `## Setup` — different benchmark/dataset/setting from main experiment
-   - `## Procedure` — run finalized method with best hparams on new setting
-   - `## Results` (to be filled after /exp-run) — performance on new setting vs main setting
-   - `## Analysis` (to be filled after /exp-run) — does the method generalize?
-   - `## Follow-up` — if fails: identify which assumption breaks
+   **Обобщённость** (`tags: ["generalization"]`, опционально):
+   - `## Цель` — какое утверждение обобщённости проверяется
+   - `## Настройка` — другой бенчмарк/набор данных/настройка по сравнению с основным экспериментом
+   - `## Процедура` — запуск финализированного метода с лучшими гиперпараметрами в новой настройке
+   - `## Результаты` (заполняется после /exp-run) — производительность в новой настройке vs основная настройка
+   - `## Анализ` (заполняется после /exp-run) — обобщается ли метод?
+   - `## Дальнейшие действия` — если провал: определите, какое предположение нарушено
 
-   **Analysis** (`tags: ["analysis"]`):
-   - `## Objective` — which intermediate quantities to analyze, what hypothesis they validate
-   - `## Setup` — data sources (logs from main experiment), visualization specs
-   - `## Procedure` — run analysis scripts, produce plots and diagnostic tables
-   - `## Results` (to be filled after /exp-run) — plots, tables, key observations
-   - `## Analysis` (to be filled after /exp-run) — do intermediate quantities confirm the method's hypothesis?
-   - `## Follow-up` — if hypothesis not confirmed: identify what went wrong
+   **Анализ** (`tags: ["analysis"]`):
+   - `## Цель` — какие промежуточные величины анализировать, какую гипотезу они валидируют
+   - `## Настройка` — источники данных (логи из основного эксперимента), спецификации визуализации
+   - `## Процедура` — запуск скриптов анализа, создание графиков и диагностических таблиц
+   - `## Результаты` (заполняется после /exp-run) — графики, таблицы, ключевые наблюдения
+   - `## Анализ` (заполняется после /exp-run) — подтверждают ли промежуточные величины гипотезу метода?
+   - `## Дальнейшие действия` — если гипотеза не подтверждена: определите, что пошло не так
 
-3. **Add graph edges**:
+3. **Добавление графовых рёбер**:
    ```bash
-   # For each experiment page, idea → experiment
+   # Для каждой страницы эксперимента, idea → experiment
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "ideas/{idea-slug}" --to "experiments/{exp-slug}" \
-     --type tested_by --evidence "Designed by /exp-design"
+     --type tested_by --evidence "Спроектировано через /exp-design"
    ```
 
-4. **Update idea page**: append all experiment slugs to `linked_experiments` in `wiki/ideas/{slug}.md`.
+4. **Обновление страницы идеи**: добавьте все slug'и экспериментов в `linked_experiments` в `wiki/ideas/{slug}.md`.
 
-6. **Rebuild derived data**:
+6. **Пересборка производных данных**:
    ```bash
    python3 tools/research_wiki.py rebuild-context-brief wiki/
    python3 tools/research_wiki.py rebuild-open-questions wiki/
    ```
 
-7. **Append log**:
+7. **Добавление в журнал**:
    ```bash
    python3 tools/research_wiki.py log wiki/ \
-     "exp-design | {N} experiments designed for idea {slug} | linked_idea: {slug}"
+     "exp-design | {N} экспериментов спроектировано для идеи {slug} | linked_idea: {slug}"
    ```
 
-8. **Print DESIGN_REPORT to terminal**:
+8. **Вывод ОТЧЁТА_О_ПРОЕКТИРОВАНИИ в терминал**:
    ```markdown
-   # Design Report: {idea-slug}
+   # Отчёт о проектировании: {idea-slug}
 
-   ## Target Idea
-   - Idea: [[idea-slug]]
-   - Hypothesis: {hypothesis}
+   ## Целевая идея
+   - Идея: [[idea-slug]]
+   - Гипотеза: {hypothesis}
 
-   ## Method Candidates
-   | # | Candidate | Type | Complexity | Selected |
-   |---|-----------|------|------------|----------|
-   | A | {name} | Direct | {low/med/high} | {yes/no} |
-   | B | {name} | Hybrid/Fusion | {low/med/high} | {yes/no} |
-   | C | {name} | Cross-idea Combination | {low/med/high} | {yes/no} |
+   ## Кандидаты методов
+   | # | Кандидат | Тип | Сложность | Выбран |
+   |---|----------|-----|-----------|--------|
+   | A | {name} | Прямой | {низкая/средняя/высокая} | {да/нет} |
+   | B | {name} | Гибридный/слияние | {низкая/средняя/высокая} | {да/нет} |
+   | C | {name} | Межидейная комбинация | {низкая/средняя/высокая} | {да/нет} |
 
-   ## Benchmark
-   - Primary: {benchmark} | Metric: {metric}
-   - Baselines: {list}
+   ## Бенчмарк
+   - Основной: {benchmark} | Метрика: {metric}
+   - Базовые: {список}
 
-   ## Experiment Blocks
-   | # | Experiment | Type | GPU-hrs | Stage |
-   |---|-----------|------|---------|-------|
+   ## Экспериментальные блоки
+   | # | Эксперимент | Тип | GPU-часы | Стадия |
+   |---|-------------|-----|----------|--------|
    | 1 | [[slug]] | sensitivity | {N} | 0 |
    | 2 | [[slug]] | ablation | {N} | 1 |
    | 3 | [[slug]] | main | {N} | 2 |
    | 4 | [[slug]] | generalization | {N} | 3 |
 
-   ## Ablation Iterations
-   - Iterations planned: {N} (max 2)
-   - Factors: {list with classifications}
+   ## Итерации абляции
+   - Запланированные итерации: {N} (макс. 2)
+   - Факторы: {список с классификациями}
 
-   ## Run Order
-   Stage 0: Sensitivity → Stage 1: Ablation → Stage 2: Main → Stage 3: Generalization → Stage 4: Deep Analysis
+   ## Порядок запуска
+   Стадия 0: Чувствительность → Стадия 1: Абляция → Стадия 2: Основной → Стадия 3: Обобщённость → Стадия 4: Глубокий анализ
 
-   ## Budget
-   - Total estimated: {N} GPU-hours
+   ## Бюджет
+   - Общая оценка: {N} GPU-часов
 
-   ## Next Steps
-   - Run `/exp-run [[sensitivity-slug]]` to start Stage 0
+   ## Следующие шаги
+   - Запустите `/exp-run [[sensitivity-slug]]` для старта стадии 0
    ```
 
-## Constraints
+## Ограничения
 
-- **Every experiment must reference an idea**: `linked_idea` is required by the schema. If no idea page exists, refuse to design — instruct user to run `/ideate` first.
-- **No duplicate experiments**: before creating, scan `wiki/experiments/*.md` for existing experiments with same `linked_idea` + `hypothesis`.
-- **Do NOT overwrite existing design files**: if `experiments/designs/{slug}-master.md` already exists, ask user before overwriting.
-- **Method candidates must be grounded**: no hallucinated methods — all candidates must derive from the idea page's content.
-- **Ablation loop capped at 2 iterations**: prevents infinite loops. After 2 iterations, finalize with current design.
-- **Sensitivity sweep must be incremental**: subset first, full sweep second.
-- **Deep analysis must be pre-planned**: specify which intermediate quantities to collect *before* experiments run — this is instrumentation, not post-hoc analysis.
-- **Graph edges via tools/research_wiki.py**: do not manually edit `edges.jsonl`.
-- **At least 3 seeds**: experiments requiring statistical reliability (main experiment) must specify >= 3 random seeds.
-- **Success criteria must be quantified**: each experiment block needs a specific pass/fail number.
+- **Каждый эксперимент должен ссылаться на идею**: `linked_idea` обязателен по схеме. Если страницы идеи нет, откажитесь от проектирования — инструктируйте пользователя сначала запустить `/ideate`.
+- **Нет дублирующих экспериментов**: перед созданием сканируйте `wiki/experiments/*.md` на наличие существующих экспериментов с тем же `linked_idea` + `hypothesis`.
+- **Не перезаписывайте существующие файлы дизайна**: если `experiments/designs/{slug}-master.md` уже существует, спросите пользователя перед перезаписью.
+- **Кандидаты методов должны быть обоснованы**: никаких выдуманных методов — все кандидаты должны вытекать из содержимого страницы идеи.
+- **Цикл абляции ограничен 2 итерациями**: предотвращает бесконечные циклы. После 2 итераций финализируйте текущий дизайн.
+- **Перебор чувствительности должен быть инкрементным**: сначала подмножество, затем полный перебор.
+- **Глубокий анализ должен быть заранее спланирован**: укажите, какие промежуточные величины собирать *до* запуска экспериментов — это инструментация, а не постфактум анализ.
+- **Графовые рёбра через tools/research_wiki.py**: не редактируйте вручную `edges.jsonl`.
+- **Как минимум 3 сида**: эксперименты, требующие статистической достоверности (основной эксперимент), должны указывать >= 3 случайных сидов.
+- **Критерии успеха должны быть количественными**: каждый экспериментальный блок нуждается в конкретном числовом пороге прохождения/провала.
 
-## Error Handling
+## Обработка ошибок
 
-- **Idea page not found**: report error, suggest running `/ideate` first.
-- **No pilot results**: warn user, proceed but note reduced confidence in design document.
-- **User doesn't select any method candidate**: re-present candidates with clearer trade-off comparison, ask for explicit choice.
-- **Benchmark unavailable**: suggest alternatives, let user decide.
-- **Ablation loop hits 2 iterations**: finalize with current design, note remaining marginal factors in report.
-- **Similar experiment already exists**: list existing experiments, ask user whether to add or skip.
-- **Insufficient compute budget**: reduce generalization experiment scope, note actual allocation in report.
+- **Страница идеи не найдена**: сообщите об ошибке, предложите сначала запустить `/ideate`.
+- **Нет пилотных результатов**: предупредите пользователя, продолжите, но отметьте сниженную уверенность в документе проектирования.
+- **Пользователь не выбирает ни один кандидат метода**: представьте кандидатов снова с более чётким сравнением компромиссов, попросите явного выбора.
+- **Бенчмарк недоступен**: предложите альтернативы, дайте пользователю решить.
+- **Цикл абляции достиг 2 итераций**: финализируйте текущим дизайном, отметьте оставшиеся пограничные факторы в отчёте.
+- **Похожий эксперимент уже существует**: перечислите существующие эксперименты, спросите пользователя, добавлять или пропускать.
+- **Недостаточный вычислительный бюджет**: сократите объём эксперимента обобщённости, укажите фактическую аллокацию в отчёте.
 
-## Dependencies
+## Зависимости
 
-### Skills (via Skill tool)
-- `/exp-run` — execute designed experiments
-- `/exp-pilot-eval` — prerequisite: pilot evaluation should complete before formal design
+### Навыки (через инструмент Skill)
+- `/exp-run` — выполнение спроектированных экспериментов
+- `/exp-pilot-eval` — предусловие: пилотная оценка должна завершиться до формального проектирования
 
-### Tools (via Bash)
-- `python3 tools/research_wiki.py slug "<title>"` — generate slug
-- `python3 tools/research_wiki.py add-edge wiki/ ...` — add graph edge
-- `python3 tools/research_wiki.py set-meta ...` — update frontmatter fields
-- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — rebuild context
-- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — rebuild gaps
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py slug "<title>"` — генерация slug
+- `python3 tools/research_wiki.py add-edge wiki/ ...` — добавление графового ребра
+- `python3 tools/research_wiki.py set-meta ...` — обновление полей frontmatter
+- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — пересборка контекста
+- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — пересборка пробелов
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
 
 ### Claude Code Native
-- `Read` — read wiki pages
-- `Write` — create design documents and experiment pages
-- `Glob` — find existing experiments
-- `AskUserQuestion` — method candidate selection
+- `Read` — чтение wiki-страниц
+- `Write` — создание документов проектирования и страниц экспериментов
+- `Glob` — поиск существующих экспериментов
+- `AskUserQuestion` — выбор кандидата метода
 
-### Called by
-- `/ideate` (after pilot evaluation)
-- User directly
+### Вызывается из
+- `/ideate` (после пилотной оценки)
+- Пользователь напрямую

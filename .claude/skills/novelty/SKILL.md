@@ -1,217 +1,218 @@
 ---
-description: Multi-source novelty verification — WebSearch + Semantic Scholar + wiki + Review LLM cross-verify — outputs novelty score and recommendations. Optionally writes the score back to an idea page with --write.
+name: novelty
+description: Многоисточниковая проверка новизны — WebSearch + Semantic Scholar + wiki + кросс-модельная проверка Review LLM — выводит оценку новизны и рекомендации. Опционально записывает оценку обратно в страницу идеи через --write.
 argument-hint: <idea-description-or-slug> [--quick] [--verbose] [--write]
 ---
 
 # /novelty
 
-> Verify the novelty of a research idea or method using multiple sources. Searches WebSearch,
-> Semantic Scholar, existing wiki work, and arXiv recent preprints, then Review LLM cross-verifies.
-> Outputs a novelty score (1-5), closest prior work, differentiation points, and next-step recommendations.
-> Can be used standalone or called by /ideate Phase 4.
+> Проверка новизны исследовательской идеи или метода с использованием множества источников. Поиск в WebSearch,
+> Semantic Scholar, существующей wiki и свежих препринтов arXiv, затем кросс-модельная проверка Review LLM.
+> Выводит оценку новизны (1-5), ближайшую предшествующую работу, точки дифференциации и рекомендации по дальнейшим шагам.
+> Может использоваться отдельно или вызываться из /ideate Этап 4.
 
-## Inputs
+## Входы
 
-- `target`: one of the following:
-  - free-text description of the idea (a paragraph or a few sentences)
-  - slug of an ideas/ page in the wiki (e.g. `sparse-lora-for-edge-devices`)
-  - paper title or arXiv URL (check novelty of that paper's method)
-- `--quick`: fast mode, skip Review LLM cross-verify (Step 3), search only
-- `--verbose`: output full search results, not just summaries
-- `--write` (optional, default **off**): persist the resulting `novelty_score` to the target's frontmatter. **Only takes effect when `target` is an idea slug** (i.e. `wiki/ideas/{slug}.md` exists). Free-text targets and paper-novelty checks remain read-only regardless of this flag. Treat as a user-owned flag — `/ideate` Phase 4 sets it explicitly when calling `/novelty`; do not infer it from repo state.
+- `target`: одно из:
+  - описание идеи свободным текстом (абзац или несколько предложений)
+  - slug страницы ideas/ в wiki (например, `sparse-lora-for-edge-devices`)
+  - заголовок статьи или URL arXiv (проверка новизны метода этой статьи)
+- `--quick`: быстрый режим, пропуск кросс-модельной проверки Review LLM (Шаг 3), только поиск
+- `--verbose`: вывод полных результатов поиска, а не только сводок
+- `--write` (опционально, по умолчанию **выкл**): запись результата `novelty_score` в frontmatter цели. **Действует только когда `target` — slug идеи** (т.е. `wiki/ideas/{slug}.md` существует). Цели свободным текстом и проверки новизны статей остаются доступными для чтения независимо от этого флага. Считайте пользовательским флагом — `/ideate` Этап 4 устанавливает его явно при вызове `/novelty`; не выводите из состояния репозитория.
 
-## Outputs
+## Выходы
 
-- **Novelty Report** (output to terminal):
-  - Novelty Score (1-5)
-  - List of closest prior work (top 3-5)
-  - Differentiation points versus each prior work
-  - Review LLM cross-verify assessment (unless --quick)
-  - Recommended action: proceed / modify / abandon
-- **Idea page write (only when `--write` is set AND target is an idea slug)**: updates `wiki/ideas/{slug}.md` frontmatter `novelty_score` field via `tools/research_wiki.py set-meta`. No other field is touched.
+- **Отчёт о новизне** (вывод в терминал):
+  - Оценка новизны (1-5)
+  - Список ближайшей предшествующей работы (топ 3-5)
+  - Точки дифференциации по отношению к каждой предшествующей работе
+  - Оценка кросс-модельной проверки Review LLM (если не --quick)
+  - Рекомендуемое действие: продолжить / изменить / прекратить
+- **Запись в страницу идеи (только когда --write задан И target — slug идеи)**: обновление поля `novelty_score` frontmatter `wiki/ideas/{slug}.md` через `tools/research_wiki.py set-meta`. Другие поля не затрагиваются.
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/papers/*.md` — search existing papers for similar methods
-- `wiki/concepts/*.md` — check concept overlap
-- `wiki/methods/*.md` — check for already-cataloged methods that overlap with the candidate
-- `wiki/ideas/*.md` — check for duplication with existing ideas (especially `failure_reason` of failed ideas)
-- `wiki/graph/context_brief.md` — global context to assist search
+### Чтение
+- `wiki/papers/*.md` — поиск существующих статей с похожими методами
+- `wiki/concepts/*.md` — проверка перекрытия концепций
+- `wiki/methods/*.md` — проверка уже каталогизированных методов, перекрывающихся с кандидатом
+- `wiki/ideas/*.md` — проверка дублирования с существующими идеями (особенно `failure_reason` провалившихся идей)
+- `wiki/graph/context_brief.md` — глобальный контекст для помощи в поиске
 
-### Writes
-- `wiki/ideas/{slug}.md` (only when `--write` and target is an idea slug) — sets `novelty_score`. Otherwise none.
-- `wiki/log.md` (only when a write occurs) — append "novelty | wrote novelty_score=N to ideas/{slug}".
+### Запись
+- `wiki/ideas/{slug}.md` (только при --write и target — slug идеи) — установка `novelty_score`. Иначе ничего.
+- `wiki/log.md` (только при записи) — добавление "novelty | записан novelty_score=N в ideas/{slug}".
 
-### Graph edges created
-- **None**.
+### Создаваемые графовые рёбра
+- **Нет**.
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`).
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`).
 
-### Step 1: Extract Method Signature
+### Шаг 1: Извлечение сигнатуры метода
 
-1. **If target is a slug**: read `wiki/ideas/{slug}.md`, extract title, Hypothesis, Approach sketch
-2. **If target is free text**: use directly
-3. **If target is an arXiv URL**: download the abstract, extract method description
-4. Extract the "method signature" from the target — the core elements of the method:
-   - **What**: what it does (task / goal)
-   - **How**: the method used (technical approach)
-   - **Why novel**: claimed innovation
-5. Generate 3-5 core keywords for subsequent searches
+1. **Если target — slug**: прочитайте `wiki/ideas/{slug}.md`, извлеките заголовок, Hypothesis, Approach sketch
+2. **Если target — свободный текст**: используйте напрямую
+3. **Если target — URL arXiv**: скачайте аннотацию, извлеките описание метода
+4. Извлеките "сигнатуру метода" из цели — ключевые элементы метода:
+   - **Что**: что делает (задача / цель)
+   - **Как**: используемый метод (технический подход)
+   - **Почему ново**: заявленная инновация
+5. Сгенерируйте 3-5 ключевых слов для последующего поиска
 
-### Step 2: Multi-Source Search
+### Шаг 2: Многоисточниковый поиск
 
-Execute the following searches in parallel (use Agent tool for concurrency):
+Выполните следующие поиски параллельно (используйте инструмент Agent для параллелизма):
 
-**Source A — Web Search (5+ queries):**
-1. Direct query: `"<method-name>" + "<task>"` — exact phrase search
-2. Component query: `<component-1> + <component-2> + <domain>` — component combination search
-3. Survey query: `"survey" OR "review" + <task-area> + 2024 2025`
-4. Competitor query: `<alternative-approach> + <same-task>`
-5. Recent query: `<method-keywords> + arXiv + 2025 2026`
+**Источник A — Веб-поиск (5+ запросов):**
+1. Прямой запрос: `"<method-name>" + "<task>"` — поиск точной фразы
+2. Запрос по компонентам: `<component-1> + <component-2> + <domain>` — поиск комбинации компонентов
+3. Обзорный запрос: `"survey" OR "review" + <task-area> + 2024 2025`
+4. Запрос конкурента: `<alternative-approach> + <same-task>`
+5. Последний запрос: `<method-keywords> + arXiv + 2025 2026`
 
-**Source B — Semantic Scholar + DeepXiv:**
+**Источник B — Semantic Scholar + DeepXiv:**
 ```bash
 python3 tools/fetch_s2.py search "<method-keywords>" --limit 20
 python3 tools/fetch_deepxiv.py search "<method-keywords>" --mode hybrid --limit 20
 ```
-Merge results from both sources (deduplicate by arxiv_id). DeepXiv's hybrid semantic search finds semantically similar work that S2 keyword search may miss.
-- Fetch details and TLDR for top 5 results:
+Объедините результаты из обоих источников (дедупликация по arxiv_id). Гибридный семантический поиск DeepXiv находит семантически похожие работы, которые может пропустить ключевой поиск S2.
+- Получите детали и TLDR для топ-5 результатов:
 ```bash
 python3 tools/fetch_s2.py paper <s2_id>
 python3 tools/fetch_deepxiv.py brief <arxiv_id>
 ```
-Use DeepXiv brief TLDRs to quickly judge method similarity.
-**If DeepXiv is unavailable**: fall back to S2 search only (original behavior).
+Используйте краткие TLDR из DeepXiv для быстрой оценки схожести методов.
+**Если DeepXiv недоступен**: переход только к поиску S2 (исходное поведение).
 
-**Source C — Wiki Internal Search:**
-1. Scan Key idea and Method sections of all pages in `wiki/papers/`
-2. Scan Definition and Variants sections of `wiki/concepts/`
-3. Scan all content in `wiki/ideas/`, with special attention to:
-   - ideas with status = failed and their failure_reason (anti-repetition)
-   - ideas with status = proposed/in_progress (avoid internal duplication)
-4. Read `wiki/graph/context_brief.md` for global perspective
+**Источник C — Внутренний поиск wiki:**
+1. Сканирование разделов Key idea и Method всех страниц в `wiki/papers/`
+2. Сканирование разделов Definition и Variants в `wiki/concepts/`
+3. Сканирование всего содержимого в `wiki/ideas/`, с особым вниманием к:
+   - идеям со статусом failed и их failure_reason (предотвращение повторений)
+   - идеям со статусом proposed/in_progress (избегание внутреннего дублирования)
+4. Чтение `wiki/graph/context_brief.md` для глобальной перспективы
 
-**Source D — Recent arXiv Preprints:**
-- Use WebSearch: `site:arxiv.org <method-keywords> 2025 2026`
+**Источник D — Свежие препринты arXiv:**
+- Используйте WebSearch: `site:arxiv.org <method-keywords> 2025 2026`
 
-### Step 3: Review LLM Cross-Verify
+### Шаг 3: Кросс-модельная проверка Review LLM
 
-(Skip if `--quick`)
+(Пропустите, если `--quick`)
 
-Submit the following to Review LLM for independent assessment:
+Отправьте следующее в Review LLM для независимой оценки:
 
 ```
 mcp__llm-review__chat:
-  system: "You are a senior ML researcher assessing the novelty of a proposed method.
-           Be rigorous: if the method is essentially a recombination of known techniques
-           with minor changes, score it low. Only score 4-5 if there is a genuinely new
-           insight or formulation."
+  system: "Вы — старший ML-исследователь, оценивающий новизну предлагаемого метода.
+           Будьте строги: если метод по сути является рекомбинацией известных техник
+           с незначительными изменениями, оценивайте низко. Ставьте 4-5 только при наличии
+           действительно нового见解 или формализации."
   message: |
-    ## Proposed Method
-    {method signature from Step 1}
+    ## Предлагаемый метод
+    {сигнатура метода из шага 1}
 
-    ## Existing Similar Work Found
-    {top 5 similar works from Step 2, with title + one-line summary}
+    ## Найденные существующие похожие работы
+    {топ-5 похожих работ из шага 2, с заголовком + кратким описанием}
 
-    ## Questions
-    1. Is this method genuinely novel, or a minor variation of existing work?
-    2. What is the closest existing work and what's the real difference?
-    3. Novelty score 1-5 with justification.
-    4. If score <= 2, what modification could increase novelty?
+    ## Вопросы
+    1. Является ли этот метод действительно новым или незначительной вариацией существующей работы?
+    2. Какая существующая работа ближе всего и в чём реальное отличие?
+    3. Оценка новизны 1-5 с обоснованием.
+    4. Если оценка <= 2, какие изменения могли бы повысить новизну?
 ```
 
-### Step 4: Generate Novelty Report
+### Шаг 4: Генерация отчёта о новизне
 
-Synthesize Step 2 search results and Step 3 Review LLM assessment into a structured report:
+Синтез результатов поиска шага 2 и оценки Review LLM шага 3 в структурированный отчёт:
 
 ```markdown
-# Novelty Report: {idea title}
+# Отчёт о новизне: {название идеи}
 
-## Score: {1-5}/5 — {label}
+## Оценка: {1-5}/5 — {метка}
 
-| Score | Label | Meaning |
-|-------|-------|---------|
-| 1 | Published | Highly similar published work exists |
-| 2 | Very Similar | Very similar method exists, only minor differences |
-| 3 | Incremental | Clear incremental contribution over existing work |
-| 4 | Novel Combination | Creatively combines existing techniques, producing new insight |
-| 5 | Fundamentally New | Proposes an entirely new paradigm or formulation |
+| Оценка | Метка | Значение |
+|--------|-------|----------|
+| 1 | Опубликовано | Существует高度 схожая опубликованная работа |
+| 2 | Очень похоже | Существует очень похожий метод, только незначительные отличия |
+| 3 | Инкрементально | Чёткий инкрементальный вклад по сравнению с существующей работой |
+| 4 | Новая комбинация | Творческое сочетание существующих техник, дающее новое понимание |
+| 5 | Фундаментально ново | Предлагает совершенно новую парадигму или формализацию |
 
-## Closest Prior Work
+## Ближайшая предшествующая работа
 
-1. **{title}** ({year}) — {one-sentence description of the similarity}
-   - Difference: {key distinction between this method and the prior work}
-   - Wiki link: [[slug]] (if it exists)
+1. **{title}** ({year}) — {однострочное описание схожести}
+   - Отличие: {ключевое отличие этого метода от предшествующей работы}
+   - Ссылка wiki: [[slug]] (если существует)
 2. ...
 
-## Review LLM Assessment
-{summary of Review LLM's independent judgment}
+## Оценка Review LLM
+{сводка независимого суждения Review LLM}
 
-## Anti-repetition Check
-- Failed ideas in wiki: {list relevant failed ideas with failure_reason}
-- In-progress ideas in wiki: {list potentially overlapping ideas}
+## Проверка на повторение
+- Провалившиеся идеи в wiki: {список релевантных провалившихся идей с failure_reason}
+- Идеи в процессе в wiki: {список потенциально перекрывающихся идей}
 
-## Recommendation
-- **{proceed / modify / abandon}**
-- Rationale: {one paragraph}
-- If modify: suggested differentiation directions: {specific suggestions}
+## Рекомендация
+- **{продолжить / изменить / прекратить}**
+- Обоснование: {один абзац}
+- Если изменить: предложенные направления дифференциации: {конкретные предложения}
 ```
 
-**Scoring rules (composite judgment):**
-- Take the lower of Claude's search-based score and Review LLM's score (conservative principle)
-- If wiki contains a failed idea whose failure_reason overlaps with this idea → lower score by 1
-- If wiki contains a highly overlapping in_progress idea → mark as abandon (internal duplication)
+**Правила оценки (комплексное суждение):**
+- Берите меньшую из оценки Claude на основе поиска и оценки Review LLM (консервативный принцип)
+- Если wiki содержит провалившуюся идею, чей failure_reason перекрывается с этой идеей → понизьте оценку на 1
+- Если wiki содержит高度 перекрывающуюся идею в процессе → пометьте как прекратить (внутреннее дублирование)
 
-### Step 5: Persist score (only when `--write` is set AND target is an idea slug)
+### Шаг 5: Запись оценки (только при --write и target — slug идеи)
 
-Skip this step entirely if the target was a free-text description or a paper slug, or if `--write` was not set. Otherwise:
+Полностью пропустите этот шаг, если цель была описанием свободным текстом или slug'ом статьи, или если --write не был задан. Иначе:
 
 ```bash
 python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md novelty_score {N}
-python3 tools/research_wiki.py log wiki/ "novelty | wrote novelty_score=${N} to ideas/${slug}"
+python3 tools/research_wiki.py log wiki/ "novelty | записан novelty_score=${N} в ideas/${slug}"
 ```
 
-Where `{N}` is the integer 1-5 from the composite scoring rules above. If `set-meta` errors (e.g. the field is missing from the existing page because it was created before this schema version), surface the error in the report — do not silently swallow it.
+Где `{N}` — целое число 1-5 из правил комплексной оценки выше. Если `set-meta` завершается ошибкой (например, поле отсутствует на существующей странице, потому что она была создана до этой версии схемы), покажите ошибку в отчёте — не поглощайте её молча.
 
-## Constraints
+## Ограничения
 
-- **Default is read-only**: without `--write`, novelty check produces only a terminal report; no wiki content is modified.
-- **`--write` is the only persistence path**: when set, only `novelty_score` and `wiki/log.md` are written. Do not edit any other field of the idea page (status, priority, body sections, etc.).
-- **`--write` is meaningless for non-idea targets**: if the target is free text or a paper slug, ignore `--write` and produce the read-only report.
-- **Conservative scoring**: underestimate novelty rather than overestimate to avoid wasting effort on known work
-- **Must check failed ideas**: ideas with status=failed in wiki/ideas/ are important anti-repetition signals
-- **Search coverage**: at least 5 distinct WebSearch queries + Semantic Scholar + wiki internal search
-- **Review LLM independence**: do not include Claude's own novelty judgment when submitting to Review LLM; let Review LLM assess independently
-- **Cite real sources**: all prior work listed in the report must be real (returned by WebSearch/S2); do not fabricate
+- **По умолчанию только чтение**: без --write проверка новизны генерирует только отчёт в терминале; содержимое wiki не изменяется.
+- **`--write` — единственный путь записи**: при установке записываются только `novelty_score` и `wiki/log.md`. Не редактируйте другие поля страницы идеи (status, priority, разделы тела и т.д.).
+- **`--write` бессмыслен для не-идеальных целей**: если цель — свободный текст или slug статьи, игнорируйте --write и генерируйте отчёт для чтения.
+- **Консервативная оценка**: занижайте новизну, а не завышайте, чтобы не тратить усилия на известные работы
+- **Обязательна проверка провалившихся идей**: идеи со статусом failed в wiki/ideas/ — важные сигналы предотвращения повторений
+- **Покрытие поиска**: как минимум 5 различных запросов WebSearch + Semantic Scholar + внутренний поиск wiki
+- **Независимость Review LLM**: не включайте собственное суждение Claude о новизне при отправке в Review LLM; дайте Review LLM оценить независимо
+- **Цитируйте реальные источники**: все перечисленные в отчёте предшествующие работы должны быть реальными (возвращёнными WebSearch/S2); не фабрикуйте
 
-## Error Handling
+## Обработка ошибок
 
-- **WebSearch unavailable**: skip Sources A and D, rely only on S2 + wiki search; note limited coverage in report
-- **Semantic Scholar API unavailable**: skip S2 portion, use DeepXiv + WebSearch as compensation
-- **DeepXiv API unavailable**: skip DeepXiv portion, rely on S2 + WebSearch (fall back to original behavior)
-- **Review LLM unavailable**: skip Step 3; annotate report with "Review LLM cross-verify unavailable, single-model assessment only"
-- **Wiki empty**: proceed with external searches normally; annotate wiki internal search section with "wiki empty"
-- **idea slug not found**: prompt user to check the slug, list available slugs in wiki/ideas/
+- **WebSearch недоступен**: пропустите источники A и D, полагайтесь только на S2 + wiki-поиск; отметьте ограниченное покрытие в отчёте
+- **API Semantic Scholar недоступен**: пропустите 부분 S2, используйте DeepXiv + WebSearch для компенсации
+- **API DeepXiv недоступен**: пропустите часть DeepXiv, полагайтесь на S2 + WebSearch (возврат к исходному поведению)
+- **Review LLM недоступен**: пропустите шаг 3; пометьте отчёт "кросс-модельная проверка Review LLM недоступна, оценка только одной моделью"
+- **Wiki пуста**: продолжите с внешним поиском нормально; пометьте раздел внутреннего поиска wiki "wiki пуста"
+- **slug идеи не найден**: предложите пользователю проверить slug, перечислите доступные slug'и в wiki/ideas/
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/fetch_s2.py search "<query>" --limit 20` — Semantic Scholar keyword search
-- `python3 tools/fetch_s2.py paper <s2_id>` — fetch paper details
-- `python3 tools/fetch_deepxiv.py search "<query>" --mode hybrid --limit 20` — DeepXiv semantic search
-- `python3 tools/fetch_deepxiv.py brief <arxiv_id>` — fetch paper TLDR for similarity judgment
-- `python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md novelty_score <1-5>` — only when `--write` is set and target is an idea slug
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log on write
+### Инструменты (через Bash)
+- `python3 tools/fetch_s2.py search "<query>" --limit 20` — ключевой поиск Semantic Scholar
+- `python3 tools/fetch_s2.py paper <s2_id` — получение деталей статьи
+- `python3 tools/fetch_deepxiv.py search "<query>" --mode hybrid --limit 20` — семантический поиск DeepXiv
+- `python3 tools/fetch_deepxiv.py brief <arxiv_id>` — получение TLDR статьи для оценки схожести
+- `python3 tools/research_wiki.py set-meta wiki/ideas/{slug}.md novelty_score <1-5>` — только при --write и target — slug идеи
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал при записи
 
-### MCP Servers
-- `mcp__llm-review__chat` — Review LLM cross-verify (Step 3)
+### MCP-серверы
+- `mcp__llm-review__chat` — кросс-модельная проверка Review LLM (Шаг 3)
 
 ### Claude Code Native
-- `WebSearch` — multi-query web search (Step 2 Sources A + D)
-- `Agent` tool — parallel execution of multi-source search (Step 2)
+- `WebSearch` — много-запросный веб-поиск (Шаг 2, источники A + D)
+- `Инструмент Agent` — параллельное выполнение многоисточникового поиска (Шаг 2)
 
-### Shared References
-- `.claude/skills/shared-references/cross-model-review.md` (created in Phase 2, Review LLM independence principle)
+### Общие справочники
+- `.claude/skills/shared-references/cross-model-review.md` (создан на Этапе 2, принцип независимости Review LLM)

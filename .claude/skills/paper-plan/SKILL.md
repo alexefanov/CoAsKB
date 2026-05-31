@@ -1,399 +1,400 @@
 ---
-description: Compile a paper outline from the idea graph — evidence map → narrative structure → section plan + figure plan + citation plan, Review LLM review mandatory
+name: paper-plan
+description: Составление плана статьи из графа идей — карта доказательств → структура повествования → план разделов + план фигур + план цитат, обязательная проверка Review LLM
 argument-hint: <idea-slugs...> --venue <ICLR|NeurIPS|ICML|ACL|CVPR|IEEE> [--title <working-title>]
 ---
 
 # /paper-plan
 
-> Compile a paper outline from the wiki's idea graph.
-> Input target ideas (status: validated or in-progress with succeeded experiments), specify the target venue,
-> compile an evidence map from the wiki → determine narrative structure → generate a section outline + figure plan + citation plan.
-> Review LLM review is a mandatory step (acting as area chair to assess outline persuasiveness).
-> Output PAPER_PLAN.md to wiki/outputs/.
+> Составление плана статьи из графа идей wiki.
+> Входные целевые идеи (статус: validated или in_progress сucceeded экспериментами), указание целевой площадки,
+> составление карты доказательств из wiki → определение структуры повествования → генерация плана разделов + плана фигур + плана цитат.
+> Проверка Review LLM является обязательным шагом (в роли area chair для оценки убедительности плана).
+> Вывод PAPER_PLAN.md в wiki/outputs/.
 >
-> Key distinction: the outline is idea-graph-driven — each section exists because it supports an idea (or its evidence/methods),
-> not because paper convention requires that section.
+> Ключевое отличие: план опирается на граф идей — каждый раздел существует, потому что он поддерживает идею (или её доказательства/методы),
+> а не потому, что конвенция статьи требует этот раздел.
 
-## Inputs
+## Входы
 
-- `ideas`: list of target idea slugs (space-separated)
-  - each idea should have `status: validated` or be `in_progress` with at least one `succeeded` experiment
-  - if `proposed` or `invalidated` ideas are included, warn but continue
-- `--venue` (required): target venue, determines page limit and format requirements
-  - supported: `ICLR` / `NeurIPS` / `ICML` / `ACL` / `CVPR` / `IEEE`
-- `--title` (optional): working title; if omitted, generated from target ideas
+- `ideas`: список slug'ов целевых идей (через пробел)
+  - каждая идея должна иметь `status: validated` или быть `in_progress` как минимум с одним экспериментом `succeeded`
+  - если включены `proposed` или `invalidated` идеи, предупредите, но продолжите
+- `--venue` (обязательно): целевая площадка, определяет лимит страниц и требования формата
+  - поддерживаемые: `ICLR` / `NeurIPS` / `ICML` / `ACL` / `CVPR` / `IEEE`
+- `--title` (опционально): рабочее название; если не указано, генерируется из целевых идей
 
-## Outputs
+## Выходы
 
-- `wiki/outputs/paper-plan-{slug}-{date}.md` — complete paper plan (PAPER_PLAN.md)
-- `wiki/graph/edges.jsonl` — new derived_from edges (plan → source ideas/papers)
-- `wiki/graph/context_brief.md` — rebuilt
-- `wiki/log.md` — appended log entry
-- **PAPER_PLAN_REPORT** (printed to terminal) — plan summary
+- `wiki/outputs/paper-plan-{slug}-{date}.md` — полный план статьи (PAPER_PLAN.md)
+- `wiki/graph/edges.jsonl` — новые рёбра derived_from (plan → исходные идеи/статьи)
+- `wiki/graph/context_brief.md` — пересобран
+- `wiki/log.md` — добавлена запись в журнал
+- **PAPER_PLAN_REPORT** (выводится в терминал) — сводка плана
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/ideas/*.md` — Hypothesis, Motivation, Approach sketch, Novelty argument, status, novelty_score, target_venue, linked_experiments, origin_gaps
-- `wiki/experiments/*.md` — supporting experiments (linked via `linked_idea`); results, metrics, key_result
-- `wiki/methods/*.md` — methods referenced by the idea's Approach sketch (Mechanism, Procedure, source_papers)
-- `wiki/papers/*.md` — evidence source papers (Method, Results, Related)
-- `wiki/concepts/*.md` — concepts the idea's `origin_gaps` points to (Definition, Variants, Comparison)
-- `wiki/topics/*.md` — topics the idea's `origin_gaps` points to (Overview, Open problems)
-- `wiki/graph/context_brief.md` — global context
-- `wiki/graph/open_questions.md` — knowledge gaps (annotate paper limitations)
-- `wiki/graph/edges.jsonl` — relationship graph (build narrative logic chain)
-- `.claude/skills/shared-references/academic-writing.md` — writing principles
-- `.claude/skills/shared-references/citation-verification.md` — citation discipline
+### Чтение
+- `wiki/ideas/*.md` — Hypothesis, Motivation, Approach sketch, Novelty argument, статус, novelty_score, target_venue, linked_experiments, origin_gaps
+- `wiki/experiments/*.md` — вспомогательные эксперименты (связаны через `linked_idea`); результаты, метрики, key_result
+- `wiki/methods/*.md` — методы, на которые ссылается Approach sketch идеи (Mechanism, Procedure, source_papers)
+- `wiki/papers/*.md` — статьи-источники доказательств (Method, Results, Related)
+- `wiki/concepts/*.md` — концепции, на которые указывают `origin_gaps` идеи (Definition, Variants, Comparison)
+- `wiki/topics/*.md` — темы, на которые указывают `origin_gaps` идеи (Overview, Open problems)
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `wiki/graph/open_questions.md` — пробелы в знаниях (аннотация ограничений статьи)
+- `wiki/graph/edges.jsonl` — граф отношений (построение повествовательной логической цепочки)
+- `.claude/skills/shared-references/academic-writing.md` — принципы написания
+- `.claude/skills/shared-references/citation-verification.md` — дисциплина цитирования
 
-### Writes
-- `wiki/outputs/paper-plan-{slug}-{date}.md` — paper plan file
-- `wiki/graph/edges.jsonl` — derived_from edges
-- `wiki/graph/context_brief.md` — rebuilt
-- `wiki/log.md` — appended operation log
+### Запись
+- `wiki/outputs/paper-plan-{slug}-{date}.md` — файл плана статьи
+- `wiki/graph/edges.jsonl` — рёбра derived_from
+- `wiki/graph/context_brief.md` — пересобран
+- `wiki/log.md` — добавлена запись в журнал операций
 
-### Graph edges created
-- `derived_from`: paper-plan → ideas (which ideas the plan is derived from)
-- `derived_from`: paper-plan → papers (which papers the plan cites)
+### Создаваемые графовые рёбра
+- `derived_from`: paper-plan → идеи (какие идеи лежат в основе плана)
+- `derived_from`: paper-plan → статьи (какие статьи цитируются в плане)
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm the working directory is the wiki project root (the directory containing `wiki/`, `raw/`, `tools/`).
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (директория, содержащая `wiki/`, `raw/`, `tools/`).
 
-### Step 1: Load Idea Graph
+### Шаг 1: Загрузка графа идей
 
-1. Read `wiki/ideas/{slug}.md` for all target ideas
-2. For each idea, traverse:
-   - `linked_experiments` → read each `wiki/experiments/{slug}.md` (key_result, metrics, outcome)
-   - `origin_gaps` → read each `wiki/concepts/{slug}.md` and `wiki/topics/{slug}.md` (background context)
-   - `## Approach sketch` body wikilinks → read each `wiki/methods/{slug}.md` and `wiki/papers/{slug}.md`
-3. Read `wiki/graph/context_brief.md` for global context
-4. Read `wiki/graph/open_questions.md` to annotate known limitations
-5. Load relevant edges from `wiki/graph/edges.jsonl` to build relationships between ideas
+1. Прочитайте `wiki/ideas/{slug}.md` для всех целевых идей
+2. Для каждой идеи пройдите:
+   - `linked_experiments` → прочитайте каждую `wiki/experiments/{slug}.md` (key_result, metrics, outcome)
+   - `origin_gaps` → прочитайте каждую `wiki/concepts/{slug}.md` и `wiki/topics/{slug}.md` (контекст фона)
+   - wikilinks тела `## Approach sketch` → прочитайте каждую `wiki/methods/{slug}.md` и `wiki/papers/{slug}.md`
+3. Прочитайте `wiki/graph/context_brief.md` для глобального контекста
+4. Прочитайте `wiki/graph/open_questions.md` для аннотации известных ограничений
+5. Загрузите релевантные рёбра из `wiki/graph/edges.jsonl` для построения связей между идеями
 
-**Validation**:
-- If any target idea has `status: proposed`: warn "idea is unvalidated; paper may lack evidence support"
-- If any target idea has empty `novelty_score` OR `novelty_score <= 2`: warn "idea novelty is thin; consider running `/novelty` first"
-- If no `linked_experiments` resolve to a `succeeded` outcome for any target idea: error "at least one supporting experiment is required to plan a paper"
+**Валидация**:
+- Если любая целевая идея имеет `status: proposed`: предупредите "идея не валидирована; статье может не хватать доказательств"
+- Если у любой целевой идеи пустой `novelty_score` ИЛИ `novelty_score <= 2`: предупредите "новизна идеи слаба; рассмотрите запуск `/novelty` сначала"
+- Если ни один `linked_experiments` не приводит к `succeeded` для любой целевой идеи: ошибка "требуется как минимум один вспомогательный эксперимент для планирования статьи"
 
-### Step 2: Compile Evidence Map from Wiki
+### Шаг 2: Составление карты доказательств из wiki
 
-Generate a structured matrix mapping ideas → evidence → sections:
+Сгенерируйте структурированную матрицу, сопоставляющую идеи → доказательства → разделы:
 
 ```markdown
-| Idea | Status | linked experiments | Methods/Concepts | Section |
-|------|--------|--------------------|------------------|---------|
+| Идея | Статус | Связанные эксперименты | Методы/Концепции | Раздел |
+|------|--------|------------------------|------------------|--------|
 | [[primary-idea]] | validated | [[exp-main]] (succeeded), [[exp-ablation-1]] (succeeded) | [[method-core]], [[concept-foundation]] | Method + Exp 5.2 |
 | [[supporting-idea-1]] | validated | [[exp-ablation-2]] (succeeded) | [[method-component]] | Exp 5.3 (Ablation) |
 | [[supporting-idea-2]] | in_progress | [[exp-scaling]] (inconclusive) | [[concept-scaling]] | Exp 5.4 (Scaling) |
 ```
 
-Map ideas to paper structure along each dimension:
-- **Primary idea** → core contribution, drives Abstract + Introduction + Method
-- **Decomposition ideas** → factor contributions, drives Ablation subsections
-- **Concepts/topics from origin_gaps** → background knowledge, drives Related Work + Introduction
+Сопоставьте идеи со структурой статьи по каждому измерению:
+- **Основная идея** → основной вклад, управляет Abstract + Introduction + Method
+- **Идеи декомпозиции** → вклад факторов, управляет подразделами Ablation
+- **Концепции/темы из origin_gaps** → фоновые знания, управляет Related Work + Introduction
 
-### Step 3: Determine Narrative Structure
+### Шаг 3: Определение структуры повествования
 
-Follow the hourglass principle in `shared-references/academic-writing.md`:
+Следуйте принципу песочных часов из `shared-references/academic-writing.md`:
 
-1. **Identify the paper's core storyline**:
-   - Gap (extracted from idea's `## Motivation` and `origin_gaps`)
-   - Solution (extracted from idea's `## Approach sketch` and linked methods)
-   - Evidence (extracted from `linked_experiments` results)
-   - Impact (inferred from idea `novelty_score` + experiment scope)
+1. **Определите центральный сюжет статьи**:
+   - Пробел (извлечённый из `## Motivation` и `origin_gaps` идеи)
+   - Решение (извлечённое из `## Approach sketch` и связанных методов)
+   - Доказательства (извлечённые из результатов `linked_experiments`)
+   - Влияние (выводимое из novelty_score идеи + масштаба экспериментов)
 
-2. **Determine the narrative angle**:
-   - What problem does the paper solve? (problem-driven vs. method-driven vs. data-driven)
-   - Who is the primary audience? (theory / systems / applications)
-   - How does it differentiate from the 3 most relevant recent papers?
+2. **Определите повествовательный ракурс**:
+   - Какую проблему решает статья? (ориентация на проблему / метод / данные)
+   - Кто основная аудитория? (теория / системы / приложения)
+   - Чем она отличается от 3 наиболее релевантных последних статей?
 
-3. **Establish section → idea mapping**:
-   Every section must support at least one idea (or its supporting evidence/methods). A section with no idea support is filler and should be removed.
+3. **Установите соответствие раздел → идея**:
+   Каждый раздел должен поддерживать как минимум идею (или её вспомогательные доказательства/методы). Раздел без поддержки идеи — заполнитель и должен быть удалён.
 
-### Step 4: Generate Section Outline
+### Шаг 4: Генерация плана разделов
 
-Generate the outline according to venue format requirements; each section includes:
-
-```markdown
-## 1. Introduction (1.5 pages)
-
-### Ideas addressed
-- Gap framing: {existing approaches lack X because Y} (from `origin_gaps`)
-- Primary contribution idea: [[primary-idea]]
-
-### Paragraph plan
-1. Broad context: {field importance, recent progress}
-2. Specific problem: {what's missing, why it matters}
-3. Our approach: "In this work, we propose..." + contributions list
-4. Results preview: {headline numbers}
-5. Paper structure: "The rest of this paper..."
-
-### Key citations
-- [[paper-A]] — establishes the problem
-- [[paper-B]] — closest prior work (we improve upon)
-- [[paper-C]] — our baseline
-
----
-
-## 2. Related Work (1 page)
-
-### Groupings
-- Direction A: {papers, our position}
-- Direction B: {papers, our position}
-- Direction C: {papers, our position}
-
-### Ideas addressed
-- Background concepts/topics from each idea's `origin_gaps` distinguishing this work from prior work
-
----
-
-## 3. Method (2-3 pages)
-
-### Ideas addressed
-- [[primary-idea]]: section 3.1-3.2 (Approach sketch + referenced [[method-slug]])
-- [[supporting-idea-1]]: section 3.3
-
-### Subsection plan
-- 3.1 Problem formulation: notation, objective
-- 3.2 Core approach: intuition → formalism
-- 3.3 Component X: design decision + justification
-- 3.4 Training/inference details
-
-### Figures
-- Figure 1: Overall architecture (mandatory)
-- Figure 2: Component X detail (if complex)
-
----
-
-## 4. Experiments (2-3 pages)
-
-### Ideas addressed
-- [[primary-idea]]: section 4.2 (main results)
-- [[supporting-idea-1]]: section 4.3 (ablation)
-- [[supporting-idea-2]]: section 4.4 (scaling)
-
-### Subsection plan
-- 4.1 Setup: datasets, baselines, metrics, implementation details
-- 4.2 Main results: Table 1 (main comparison), [[exp-main]]
-- 4.3 Ablation study: Table 2 (component analysis), [[exp-ablation-*]]
-- 4.4 Analysis: scaling, robustness, qualitative examples
-
-### Figures/Tables
-- Table 1: Main comparison vs baselines
-- Table 2: Ablation results
-- Figure 3: Scaling curves / qualitative examples
-
----
-
-## 5. Conclusion (0.5 page)
-
-### Key takeaway
-- {one sentence the reader should remember}
-
-### Limitations
-- {from gap_map or each idea's `## Risks`}
-
-### Future work
-- {from gap_map open questions and each idea's `## Lessons learned`}
-```
-
-**Page budget**: allocated by `--venue` (refer to the venue table in academic-writing.md); total section pages <= venue main-body limit.
-
-### Step 5: Figure Plan
-
-Design each planned figure/table:
+Сгенерируйте план в соответствии с требованиями формата площадки; каждый раздел включает:
 
 ```markdown
-## Figure Plan
+## 1. Введение (1.5 страницы)
 
-### Figure 1: System Architecture
-- Type: diagram
-- Source: Method section description
-- Style: block diagram with labeled components
-- Size: full width (1 column = text width)
+### Затронутые идеи
+- Формулировка пробела: {существующие подходы не имеют X, потому что Y} (из `origin_gaps`)
+- Основная идея вклада: [[primary-idea]]
 
-### Table 1: Main Results
-- Type: comparison table
-- Source: [[exp-main]] key_result + baselines
-- Columns: Method | Metric-1 | Metric-2 | ...
-- Rows: baselines + ours (ours in bold)
-- Notes: best bold, second underline, ↑/↓ arrows for direction
+### План абзацев
+1. Широкий контекст: {важность области, последние достижения}
+2. Конкретная проблема: {чего не хватает, почему это важно}
+3. Наш подход: "В данной работе мы предлагаем..." + список вкладов
+4. Предварительные результаты: {ключевые цифры}
+5. Структура статьи: "Остальная часть статьи..."
 
-### Figure 3: Scaling Analysis
-- Type: line plot
-- Source: [[exp-scaling]] results
-- X-axis: scale dimension (model size / data size)
-- Y-axis: performance metric
-- Lines: ours vs baseline, with error bands
+### Ключевые цитаты
+- [[paper-A]] — устанавливает проблему
+- [[paper-B]] — ближайшая предшествующая работа (мы её улучшаем)
+- [[paper-C]] — наш базовый метод
+
+---
+
+## 2. Связанная работа (1 страница)
+
+### Группировки
+- Направление A: {статьи, наша позиция}
+- Направление B: {статьи, наша позиция}
+- Направление C: {статьи, наша позиция}
+
+### Затронутые идеи
+- Фоновые концепции/темы из `origin_gaps` каждой идеи, отличающие эту работу от предшествующей
+
+---
+
+## 3. Метод (2-3 страницы)
+
+### Затронутые идеи
+- [[primary-idea]]: раздел 3.1-3.2 (Approach sketch + указан [[method-slug]])
+- [[supporting-idea-1]]: раздел 3.3
+
+### План подразделов
+- 3.1 Постановка задачи: обозначения, цель
+- 3.2 Основной подход: интуиция → формализм
+- 3.3 Компонент X: решение по дизайну + обоснование
+- 3.4 Детали обучения/вывода
+
+### Фигуры
+- Фигура 1: Общая архитектура (обязательна)
+- Фигура 2: Деталь компонента X (если сложная)
+
+---
+
+## 4. Эксперименты (2-3 страницы)
+
+### Затронутые идеи
+- [[primary-idea]]: раздел 4.2 (основные результаты)
+- [[supporting-idea-1]]: раздел 4.3 (абляция)
+- [[supporting-idea-2]]: раздел 4.4 (масштабирование)
+
+### План подразделов
+- 4.1 Настройка: наборы данных, базовые методы, метрики, детали реализации
+- 4.2 Основные результаты: Таблица 1 (основное сравнение), [[exp-main]]
+- 4.3 Исследование абляции: Таблица 2 (анализ компонентов), [[exp-ablation-*]]
+- 4.4 Анализ: масштабирование, робастность, качественные примеры
+
+### Фигуры/Таблицы
+- Таблица 1: Основное сравнение с базовыми
+- Таблица 2: Результаты абляции
+- Фигура 3: Кривые масштабирования / качественные примеры
+
+---
+
+## 5. Заключение (0.5 страницы)
+
+### Ключевой вывод
+- {одно предложение, которое должен запомнить читатель}
+
+### Ограничения
+- {из gap_map или `## Risks` каждой идеи}
+
+### Будущая работа
+- {из открытых вопросов gap_map и `## Lessons learned` каждой идеи}
 ```
 
-### Step 6: Citation Plan
+**Бюджет страниц**: распределяется по `--venue` (см. таблицу площадок в academic-writing.md); суммарные страницы разделов <= основной лимит площадки.
 
-Following `shared-references/citation-verification.md`:
+### Шаг 5: План фигур
 
-1. List all wiki papers referenced via `[[slug]]` in the outline
-2. For each paper, pre-fetch BibTeX:
-   - DBLP first, then CrossRef, then S2
-   - Success: record BibTeX key + source
-   - Failure: mark `[UNCONFIRMED]`
-3. Generate citation coverage report:
+Спроектируйте каждую запланированную фигуру/таблицу:
+
+```markdown
+## План фигур
+
+### Фигура 1: Архитектура системы
+- Тип: диаграмма
+- Источник: описание раздела Method
+- Стиль: блочная диаграмма с подписанными компонентами
+- Размер: на всю ширину (1 колонка = ширина текста)
+
+### Таблица 1: Основные результаты
+- Тип: таблица сравнения
+- Источник: key_result [[exp-main]] + базовые
+- Столбцы: Метод | Метрика-1 | Метрика-2 | ...
+- Строки: базовые + наши (наши жирным)
+- Примечания: лучший жирным, второй подчёркнутым, стрелки ↑/↓ для направления
+
+### Фигура 3: Анализ масштабирования
+- Тип: линейный график
+- Источник: результаты [[exp-scaling]]
+- Ось X: измерение масштаба (размер модели / объём данных)
+- Ось Y: метрика производительности
+- Линии: наши vs базовый, с доверительными полосами
+```
+
+### Шаг 6: План цитат
+
+Следуя `shared-references/citation-verification.md`:
+
+1. Перечислите все wiki-статьи, на которые ссылаются через `[[slug]]` в плане
+2. Для каждой статьи предварительно извлеките BibTeX:
+   - Сначала DBLP, затем CrossRef, затем S2
+   - Успех: запишите ключ BibTeX + источник
+   - Неудача: пометьте `[UNCONFIRMED]`
+3. Сгенерируйте отчёт о покрытии цитат:
    ```
-   Citations: 15 total, 12 verified (DBLP: 8, CrossRef: 3, S2: 1), 3 [UNCONFIRMED]
+   Цитаты: 15 всего, 12 верифицировано (DBLP: 8, CrossRef: 3, S2: 1), 3 [UNCONFIRMED]
    ```
-4. For [UNCONFIRMED] entries, provide suggested URLs for manual verification
+4. Для записей [UNCONFIRMED] предоставьте предложенные URL для ручной проверки
 
-### Step 7: Review LLM Review (mandatory)
+### Шаг 7: Проверка Review LLM (обязательная)
 
 ```
 mcp__llm-review__chat:
-  system: "You are an area chair at {venue} reviewing a paper outline.
-           Assess: Is the narrative convincing? Does every section serve a clear purpose?
-           Are the experiments sufficient to support the paper's central ideas?
-           Is the related work coverage adequate?
-           Are there obvious gaps that reviewers will attack?
-           Provide specific suggestions for strengthening the outline."
+  system: "Вы — area chair на {venue}, проверяющий план статьи.
+           Оцените: убедительно ли повествование? Служит ли каждый раздел чёткой цели?
+           Достаточны ли эксперименты для поддержки центральных идей статьи?
+           Адекватно ли покрытие связанной работы?
+           Есть ли явные пробелы, которые атакуют рецензенты?
+           Предложите конкретные предложения по усилению плана."
   message: |
-    ## Paper Outline
-    {complete outline from Step 4}
+    ## План статьи
+    {полный план из шага 4}
 
-    ## Evidence Map
-    {evidence map from Step 2}
+    ## Карта доказательств
+    {карта доказательств из шага 2}
 
-    ## Figure/Table Plan
-    {plan from Step 5}
+    ## План фигур/таблиц
+    {план из шага 5}
 
-    ## Citation Coverage
-    {report from Step 6}
+    ## Покрытие цитат
+    {отчёт из шага 6}
 
-    ## Questions for Review
-    1. Is the narrative arc (gap → solution → evidence → impact) convincing?
-    2. Are any ideas under-supported? Which experiments are missing?
-    3. Is the related work grouping appropriate? Missing directions?
-    4. Will the page budget work? Any section too long/short?
-    5. Are the figures/tables sufficient to tell the story?
+    ## Вопросы для проверки
+    1. Убедителен ли повествовательный弧 (пробел → решение → доказательства → влияние)?
+    2. Какие-либо идеи недостаточно подтверждены? Каких экспериментов не хватает?
+    3. Соответствует ли группировка связанной работы? Не хватает направлений?
+    4. Будет ли укладываться бюджет страниц? Какой-либо раздел слишком длинный/короткий?
+    5. Достаточно ли фигур/таблиц для рассказа?
 ```
 
-Revise the outline based on Review LLM feedback (add sections, adjust page budget, add figures/tables, correct narrative structure).
+Отредактируйте план по обратной связи Review LLM (добавьте разделы, скорректируйте бюджет страниц, добавьте фигуры/таблицы, исправьте структуру повествования).
 
-### Step 8: Write to Wiki
+### Шаг 8: Запись в wiki
 
-1. **Generate slug**:
+1. **Генерация slug**:
    ```bash
-   python3 tools/research_wiki.py slug "<working-title>"
+   python3 tools/research_wiki.py slug "<рабочее-название>"
    ```
 
-2. **Write PAPER_PLAN.md**:
-   Create `wiki/outputs/paper-plan-{slug}-{date}.md` containing:
-   - Metadata (venue, title, date, target ideas)
-   - Evidence Map (Step 2)
-   - Complete section outline (Step 4, with Review LLM revisions)
-   - Figure/Table Plan (Step 5)
-   - Citation Plan + coverage report (Step 6)
-   - Review LLM Review Summary (Step 7 key feedback and revision record)
+2. **Запись PAPER_PLAN.md**:
+   Создайте `wiki/outputs/paper-plan-{slug}-{date}.md`, содержащий:
+   - Метаданные (площадка, название, дата, целевые идеи)
+   - Карту доказательств (Шаг 2)
+   - Полный план разделов (Шаг 4, с правками Review LLM)
+   - План фигур/таблиц (Шаг 5)
+   - План цитат + отчёт о покрытии (Шаг 6)
+   - Сводку проверки Review LLM (Шаг 7: ключевая обратная связь и запись правок)
 
-3. **Add graph edges**:
+3. **Добавление графовых рёбер**:
    ```bash
-   # plan → target idea
+   # plan → целевая идея
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "outputs/paper-plan-{slug}-{date}" --to "ideas/{primary-idea}" \
-     --type derived_from --evidence "Paper plan built from this idea"
+     --type derived_from --evidence "План статьи построен на основе этой идеи"
 
-   # plan → key papers
+   # plan → ключевые статьи
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "outputs/paper-plan-{slug}-{date}" --to "papers/{paper-slug}" \
-     --type derived_from --evidence "Paper plan cites this paper"
+     --type derived_from --evidence "План статьи цитирует эту статью"
    ```
 
-4. **Rebuild derived data**:
+4. **Пересборка производных данных**:
    ```bash
    python3 tools/research_wiki.py rebuild-context-brief wiki/
    ```
 
-5. **Append log**:
+5. **Добавление в журнал**:
    ```bash
    python3 tools/research_wiki.py log wiki/ \
-     "paper-plan | {venue} paper outline for [[{slug}]] | ideas: {idea-list} | citations: {verified}/{total}"
+     "paper-plan | план статьи для {venue} [[{slug}]] | идеи: {idea-list} | цитаты: {verified}/{total}"
    ```
 
-6. **Print PAPER_PLAN_REPORT to terminal**:
+6. **Вывод PAPER_PLAN_REPORT в терминал**:
    ```markdown
-   # Paper Plan Report
+   # Отчёт о плане статьи
 
-   ## Meta
-   - Title: {working title}
-   - Venue: {venue}
-   - Page limit: {N} pages
-   - Date: {date}
+   ## Мета
+   - Название: {рабочее название}
+   - Площадка: {площадка}
+   - Лимит страниц: {N} страниц
+   - Дата: {дата}
 
-   ## Ideas → Sections
-   | Idea | Status / Novelty | Section |
-   |------|------------------|---------|
+   ## Идеи → Разделы
+   | Идея | Статус / Новизна | Раздел |
+   |------|------------------|--------|
    | [[primary]] | validated / 4 | Method + Exp 5.2 |
    | [[supporting-1]] | validated / 3 | Exp 5.3 |
 
-   ## Page Budget
-   | Section | Pages | Ideas |
-   |---------|-------|-------|
-   | Introduction | 1.5 | gap, contribution |
-   | Related Work | 1.0 | context |
-   | Method | 2.5 | primary, supporting |
-   | Experiments | 2.5 | all |
-   | Conclusion | 0.5 | — |
+   ## Бюджет страниц
+   | Раздел | Страницы | Идеи |
+   |--------|----------|------|
+   | Введение | 1.5 | пробел, вклад |
+   | Связанная работа | 1.0 | контекст |
+   | Метод | 2.5 | основная, supporting |
+   | Эксперименты | 2.5 | все |
+   | Заключение | 0.5 | — |
 
-   ## Figures/Tables: {N} planned
-   ## Citations: {verified}/{total} verified, {verify_count} [UNCONFIRMED]
-   ## Review LLM Review: score {X}/10, verdict: {verdict}
+   ## Фигуры/Таблицы: {N} запланировано
+   ## Цитаты: {verified}/{total} верифицировано, {verify_count} [UNCONFIRMED]
+   ## Проверка Review LLM: балл {X}/10, вердикт: {verdict}
 
-   ## Next Steps
-   - Run `/paper-draft wiki/outputs/paper-plan-{slug}-{date}.md` to draft the paper
-   - Resolve {verify_count} [UNCONFIRMED] citations before /paper-compile
+   ## Следующие шаги
+   - Запустите `/paper-draft wiki/outputs/paper-plan-{slug}-{date}.md` для черновика статьи
+   - Разрешите {verify_count} цитат [UNCONFIRMED] до /paper-compile
    ```
 
-## Constraints
+## Ограничения
 
-- **--venue is required**: page limits and format requirements vary significantly by venue; cannot be omitted
-- **At least one experiment evidence**: purely theoretical ideas are insufficient for an empirical paper; at least one supporting experiment is required
-- **Page budget must be feasible**: total section pages <= venue main-body limit; otherwise adjust (compress or move to appendix)
-- **Review LLM review is mandatory**: cannot be skipped; catching problems at the outline stage has the lowest cost
-- **All citations from wiki**: every paper in the citation plan must exist in wiki/papers/
-- **idea → section mapping must be complete**: every target idea must appear in at least one section
-- **Every section must have an idea**: a section with no idea support is filler and should be removed or merged
-- **Graph edges via tools/research_wiki.py**: do not manually edit edges.jsonl
-- **Citations use [[slug]]**: all citations in the outline use wikilink syntax
+- **--venue обязателен**: лимиты страниц и требования формата сильно различаются по площадкам; нельзя опускать
+- **Как минимум одно экспериментальное доказательство**: чисто теоретические идеи недостаточны для эмпирической статьи; требуется как минимум один вспомогательный эксперимент
+- **Бюджет страниц должен быть реалистичным**: суммарные страницы разделов <= основной лимит площадки; иначе скорректируйте (сжмите или перенесите в приложение)
+- **Проверка Review LLM обязательна**: нельзя пропускать; обнаружение проблем на этапе плана имеет минимальную стоимость
+- **Все цитаты из wiki**: каждая статья в плане цитат должна существовать в wiki/papers/
+- **Соответствие идея → раздел должно быть полным**: каждая целевая идея должна появляться как минимум в одном разделе
+- **Каждый раздел должен иметь идею**: раздел без поддержки идеи — заполнитель и должен быть удалён или объединён
+- **Графовые рёбра через tools/research_wiki.py**: не редактируйте вручную edges.jsonl
+- **Цитаты используют [[slug]]**: все цитаты в плане используют синтаксис wikilink
 
-## Error Handling
+## Обработка ошибок
 
-- **Insufficient idea status**: if all ideas are `proposed`, error "ideas are unvalidated; run experiments first"
-- **No experiment evidence**: error "at least one experimental result is required"; suggest running /exp-design + /exp-run first
-- **Insufficient wiki papers**: if the citation plan has fewer than 5 wiki papers, warn "related work coverage is insufficient; consider /ingest of more papers first"
-- **Page budget exceeded**: automatically move lower-priority sections to appendix plan; report the adjustment
-- **Review LLM unavailable**: fall back to Claude self-review; report annotated "single-model review — cross-model verification unavailable"
-- **BibTeX fetch failed**: mark [UNCONFIRMED]; summarize in the citation plan report
-- **Slug conflict**: append date suffix
-- **Target idea not found**: error; list candidates in wiki/ideas/
+- **Недостаточный статус идей**: если все идеи `proposed`, ошибка "идеи не валидированы; сначала запустите эксперименты"
+- **Нет экспериментальных доказательств**: ошибка "требуется как минимум один экспериментальный результат"; предложите сначала запустить /exp-design + /exp-run
+- **Недостаточно статей wiki**: если план цитат содержит менее 5 статей wiki, предупредите "покрытие связанной работы недостаточно; рассмотрите /ingest большего количества статей"
+- **Превышен бюджет страниц**: автоматически перенесите менее приоритетные разделы в план приложения; сообщите о корректировке
+- **Review LLM недоступен**: переход к самопроверке Claude; сообщите "проверка одной модели — кросс-модельная верификация недоступна"
+- **Извлечение BibTeX не удалось**: пометьте [UNCONFIRMED]; обобщите в отчёте плана цитат
+- **Конфликт slug'ов**: добавьте суффикс даты
+- **Целевая идея не найдена**: ошибка; перечислите кандидатов в wiki/ideas/
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py slug "<title>"` — generate slug
-- `python3 tools/research_wiki.py add-edge wiki/ ...` — add graph edge
-- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — rebuild query_pack
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
-- `python3 tools/fetch_s2.py search "<title>"` — Semantic Scholar search (citation plan fallback)
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py slug "<title>"` — генерация slug
+- `python3 tools/research_wiki.py add-edge wiki/ ...` — добавление графового ребра
+- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — пересборка query_pack
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
+- `python3 tools/fetch_s2.py search "<title>"` — поиск Semantic Scholar (резервный план цитат)
 
-### MCP Servers
-- `mcp__llm-review__chat` — Step 7 outline review (mandatory)
+### MCP-серверы
+- `mcp__llm-review__chat` — проверка плана Шаг 7 (обязательная)
 
 ### Claude Code Native
-- `Read` — read wiki pages
-- `Glob` — find ideas, experiments, methods, papers
-- `WebFetch` — DBLP / CrossRef BibTeX fetch (Step 6)
+- `Read` — чтение wiki-страниц
+- `Glob` — поиск идей, экспериментов, методов, статей
+- `WebFetch` — извлечение BibTeX из DBLP / CrossRef (Шаг 6)
 
-### Shared References
-- `.claude/skills/shared-references/academic-writing.md` — narrative structure and section design principles
-- `.claude/skills/shared-references/citation-verification.md` — citation fetch and verification rules
+### Общие справочники
+- `.claude/skills/shared-references/academic-writing.md` — принципы структуры повествования и дизайна разделов
+- `.claude/skills/shared-references/citation-verification.md` — правила извлечения и верификации цитат
 
-### Called by
-- `/research` Stage 5 (paper writing stage)
-- Manual user invocation
+### Вызывается из
+- `/research` Стадия 5 (этап написания статьи)
+- Ручной вызов пользователя

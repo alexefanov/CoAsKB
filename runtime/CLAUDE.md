@@ -75,3 +75,11 @@ Only when extending the **schema language itself**, not when adding more data:
 - Skill prompts and workflow logic — `.claude/skills/<skill>/`
 - Lint severity / auto-fix policy — derived from `required` / `default` in schema
 - Migration history — git log + one-shot scripts; no `migrations/` folder
+
+## Кодировка файлов
+
+Все .md-файлы в vault — чистая UTF-8 без BOM.
+- При чтении: `encoding='utf-8'`
+- При записи: `encoding='utf-8'`
+- Проверять, что PowerShell/Python работают с UTF-8, а не Windows-1251
+- При mojibake: UTF-8 → CP1251 → UTF-8

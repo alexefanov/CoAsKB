@@ -1,137 +1,138 @@
 ---
-description: General-purpose multi-round iterative improvement — repeatedly calls /review on any research artifact, parses feedback, applies fixes, updates wiki, until the target score is reached
+name: refine
+description: Многоходовая итеративная улучшение общего назначения — многократно вызывает /review для любого исследовательского артефакта, парсит обратную связь, применяет исправления, обновляет wiki, пока не будет достигнут целевой балл
 argument-hint: <artifact-slug-or-path> [--max-rounds N] [--target-score N] [--difficulty standard|hard|adversarial] [--focus method|evidence|writing|completeness]
 ---
 
 # /refine
 
-> General-purpose multi-round iterative improvement loop for any research artifact
-> (idea, proposal, experiment plan, paper draft).
-> Each round calls /review for structured feedback → parses actionable items → Claude fixes the artifact →
-> updates wiki entities → re-reviews, until the score reaches the target or the maximum rounds are exhausted.
-> Outputs an improvement history and the final review score.
+> Многоходовая итеративная петля улучшения общего назначения для любого исследовательского артефакта
+> (идея, предложение, план экспериментов, черновик статьи).
+> Каждый раунд вызывает /review для структурированной обратной связи → парсит действия → Claude исправляет артефакт →
+> обновляет сущности wiki → повторно проверяет, пока балл не достигнет целевого или не будут исчерпаны максимальные раунды.
+> Выводит историю улучшений и итоговый балл проверки.
 
-## Inputs
+## Входы
 
-- `artifact`: the artifact to improve, one of:
-  - slug of a wiki page (searched in ideas/experiments/methods/outputs/)
-  - file path (e.g. `wiki/outputs/paper-draft-v1.md`)
-- `--max-rounds N` (optional, default 4): maximum iteration rounds
-- `--target-score N` (optional, default 8): target review score (1-10); stop when reached
-- `--difficulty` (optional, default `hard`): difficulty level passed to /review
-- `--focus` (optional): review focus passed to /review
+- `artifact`: артефакт для улучшения, один из:
+  - slug wiki-страницы (поиск в ideas/experiments/methods/outputs/)
+  - путь к файлу (например, `wiki/outputs/paper-draft-v1.md`)
+- `--max-rounds N` (опционально, по умолчанию 4): максимальное количество итерационных раундов
+- `--target-score N` (опционально, по умолчанию 8): целевой балл проверки (1-10); остановка при достижении
+- `--difficulty` (опционально, по умолчанию `hard`): уровень сложности, передаваемый в /review
+- `--focus` (опционально): фокус проверки, передаваемый в /review
 
-## Outputs
+## Выходы
 
-- **Improved artifact** (wiki page or file, updated in place)
-- **Wiki entity updates** (if review finds ideas/methods needing strengthening or identifies gaps)
-- **REFINE_REPORT** (output to terminal):
-  - Score trajectory across all rounds
-  - Cumulative list of fixed issues
-  - Final review score and verdict
-  - Unresolved issues (if any)
+- **Улучшенный артефакт** (wiki-страница или файл, обновлённый на месте)
+- **Обновления сущностей wiki** (если проверка выявляет идеи/методы, нуждающиеся в усилении, или обнаруживает пробелы)
+- **REFINE_REPORT** (вывод в терминал):
+  - Траектория баллов по всем раундам
+  - Накопленный список исправленных проблем
+  - Итоговый балл проверки и вердикт
+  - Нерешённые проблемы (если есть)
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/ideas/*.md` — if artifact is an idea
-- `wiki/experiments/*.md` — if artifact is an experiment plan
-- `wiki/methods/*.md` — methods referenced by the review
-- `wiki/papers/*.md` — papers referenced by the review
-- `wiki/outputs/*.md` — if artifact is a paper draft or output
-- `wiki/graph/context_brief.md` — global context passed to /review
-- `wiki/graph/open_questions.md` — check whether new gaps need recording
+### Чтение
+- `wiki/ideas/*.md` — если артефакт — идея
+- `wiki/experiments/*.md` — если артефакт — план экспериментов
+- `wiki/methods/*.md` — методы, на которые ссылается проверка
+- `wiki/papers/*.md` — статьи, на которые ссылается проверка
+- `wiki/outputs/*.md` — если артефакт — черновик статьи или результат
+- `wiki/graph/context_brief.md` — глобальный контекст, передаваемый в /review
+- `wiki/graph/open_questions.md` — проверка необходимости записи новых пробелов
 
-### Writes
-- `wiki/ideas/{slug}.md` — if artifact is an idea, fix issues found by review
-- `wiki/experiments/{slug}.md` — if artifact is an experiment plan
-- `wiki/methods/{slug}.md` — if review flags a method gap (e.g. missing source_papers, weak Procedure)
-- `wiki/outputs/*.md` — if artifact is a paper draft or output
-- `wiki/graph/edges.jsonl` — if new relationships are discovered during fixes
-- `wiki/graph/context_brief.md` — rebuild after each round if wiki changes were made
-- `wiki/graph/open_questions.md` — rebuild after each round if wiki changes were made
-- `wiki/log.md` — append operation log
+### Запись
+- `wiki/ideas/{slug}.md` — если артефакт — идея, исправление проблем, найденных проверкой
+- `wiki/experiments/{slug}.md` — если артефакт — план экспериментов
+- `wiki/methods/{slug}.md` — если проверка обнаруживает пробел в методе (например, отсутствующие source_papers, слабая Procedure)
+- `wiki/outputs/*.md` — если артефакт — черновик статьи или результат
+- `wiki/graph/edges.jsonl` — если во время исправлений обнаружены новые связи
+- `wiki/graph/context_brief.md` — пересборка после каждого раунда, если были изменения wiki
+- `wiki/graph/open_questions.md` — пересборка после каждого раунда, если были изменения wiki
+- `wiki/log.md` — добавление в журнал операций
 
-### Graph edges created
-- Depends on fix content; may add: `supports`, `addresses_gap`, `inspired_by`, etc.
+### Создаваемые графовые рёбра
+- Зависят от содержания исправлений; могут добавлять: `supports`, `addresses_gap`, `inspired_by` и т.д.
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`).
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`).
 
-### Step 1: Initialize
+### Шаг 1: Инициализация
 
-1. **Locate artifact**:
-   - If slug: search sequentially in `wiki/ideas/`, `wiki/experiments/`, `wiki/methods/`, `wiki/outputs/`, `wiki/papers/` for `{slug}.md`
-   - If file path: read directly
-   - Record artifact type and path
-2. **Read current content**: load full artifact text
-3. **Initialize tracking variables**:
+1. **Распознавание артефакта**:
+   - Если slug: последовательный поиск в `wiki/ideas/`, `wiki/experiments/`, `wiki/methods/`, `wiki/outputs/`, `wiki/papers/` для `{slug}.md`
+   - Если путь к файлу: прямое чтение
+   - Запись типа и пути артефакта
+2. **Чтение текущего содержимого**: загрузка полного текста артефакта
+3. **Инициализация переменных отслеживания**:
    - `round = 0`
    - `score_history = []`
    - `fixed_issues = []`
    - `unresolved_issues = []`
    - `wiki_changes = []`
 
-### Step 2: Iteration Loop
+### Шаг 2: Итерационный цикл
 
-Repeat the following steps until the termination condition is met:
+Повторяйте следующие шаги до выполнения условия завершения:
 
-**Round N (N = 1, 2, ..., max-rounds):**
+**Раунд N (N = 1, 2, ..., max-rounds):**
 
-#### 2a. Call /review
+#### 2a. Вызов /review
 
 ```
 Skill: review
 Args: "<artifact-path-or-content>" --difficulty {difficulty} --focus {focus}
 ```
 
-Parse the review output and extract:
+Парсинг вывода проверки и извлечение:
 - `score` (1-10)
 - `verdict` (ready / needs-work / major-revision / rethink)
-- `weaknesses` (by severity: critical / major / minor)
-- `actionable_items` (ranked list)
-- `wiki_entity_mapping` (ideas/methods needing strengthening, gaps identified)
+- `weaknesses` (по серьёзности: critical / major / minor)
+- `actionable_items` ( ранжированный список)
+- `wiki_entity_mapping` (идеи/методы, нуждающиеся в усилении, обнаруженные пробелы)
 
-#### 2b. Check Termination Conditions
+#### 2b. Проверка условий завершения
 
-- **Target score reached**: `score >= target-score` → terminate, output final report
-- **No score improvement for two consecutive rounds**: `score_history[-1] == score_history[-2]` → terminate (converged)
-- **Maximum rounds reached**: `round >= max-rounds` → terminate
-- **verdict == ready**: → terminate
-- **verdict == rethink and round == 1**: → terminate and suggest redesign (do not iterate on a rethink-level artifact)
+- **Достигнут целевой балл**: `score >= target-score` → завершение, вывод итогового отчёта
+- **Нет улучшения балла в двух последовательных раундах**: `score_history[-1] == score_history[-2]` → завершение (сходство)
+- **Достигнуты максимальные раунды**: `round >= max-rounds` → завершение
+- **verdict == ready**: → завершение
+- **verdict == rethink и round == 1**: → завершение и предложение переработки (не итерируйте артефакт уровня rethink)
 
-#### 2c. Classify Actionable Items and Apply Fixes
+#### 2c. Классификация действий и применение исправлений
 
-Classify and handle each actionable item:
+Классификация и обработка каждого элемента действий:
 
-**Category A — Method/content issues (Claude fixes directly):**
-- Method description too vague → add details
-- Missing comparative analysis → add comparison against baseline
-- Incomplete argumentative logic → add reasoning steps
-- Unclear expression → rewrite relevant paragraphs
-- → Edit the artifact file directly
+**Категория A — Проблемы метода/содержимого (Claude исправляет напрямую):**
+- Описание метода слишком расплывчатое → добавьте детали
+- Отсутствует сравнительный анализ → добавьте сравнение с базовым
+- Неполная аргументационная логика → добавьте шаги рассуждений
+- Непонятная формулировка → перепишите соответствующие абзацы
+  → Редактируйте файл артефакта напрямую
 
-**Category B — Wiki knowledge gaps (suggest external operations):**
-- Idea novelty argument too thin → suggest running `/novelty` rerun
-- Method has no source_papers → flag for `/ingest` review
-- Missing related work citations → suggest running `/ingest` to add papers
-- Requires experimental validation → suggest running `/exp-run`
-- → Record in `unresolved_issues`, list suggested operations in the report
+**Категория B — Пробелы в знаниях wiki (предложение внешних операций):**
+- Аргумент о новизне идеи слишком слаб → предложение повторного запуска `/novelty`
+- У метода нет source_papers → пометка для проверки `/ingest`
+- Отсутствуют ссылки на связанную работу → предложение запуска `/ingest` для добавления статей
+- Требуется экспериментальная валидация → предложение запуска `/exp-run`
+  → Запись в `unresolved_issues`, перечень предложенных операций в отчёте
 
-**Category C — Idea / method updates (Claude fixes wiki):**
-- Review identifies a missing concept link in an idea's `origin_gaps` → add the link and write the reverse `linked_ideas`
-- Review finds a method missing parent/child relations → patch the method page
-- Review discovers a new gap → record to gap_map (via rebuild)
-- Review discovers a new relationship → add graph edge
-- → Update relevant wiki pages, record in `wiki_changes`
+**Категория C — Обновления идеи/метода (Claude исправляет wiki):**
+- Проверка обнаруживает отсутствующую ссылку на концепцию в `origin_gaps` идеи → добавьте ссылку и запишите обратную `linked_ideas`
+- Проверка обнаруживает отсутствие parent/child relations у метода → исправьте страницу метода
+- Проверка обнаруживает новый пробел → запись в gap_map (через rebuild)
+- Проверка обнаруживает новую связь → добавление графового ребра
+  → Обновление соответствующих wiki-страниц, запись в `wiki_changes`
 
-**Category D — Out of scope (skip):**
-- Requires new experimental data → cannot resolve in refine loop
-- Requires domain expert judgment → mark as unresolved
-- → Record in `unresolved_issues`
+**Категория D — Вне объёма (пропуск):**
+- Требуются новые экспериментальные данные → невозможно разрешить в цикле refine
+- Требуется суждение эксперта домена → пометка как нерешённая
+  → Запись в `unresolved_issues`
 
-#### 2d. Update Tracking
+#### 2d. Обновление отслеживания
 
 - `score_history.append(score)`
 - `fixed_issues.extend(category_A_items + category_C_items)`
@@ -139,94 +140,94 @@ Classify and handle each actionable item:
 - `wiki_changes.extend(category_C_changes)`
 - `round += 1`
 
-#### 2e. Rebuild Derived Data (if wiki was changed)
+#### 2e. Пересборка производных данных (если wiki была изменена)
 
-If this round had wiki changes (Category C):
+Если в этом раунде были изменения wiki (Категория C):
 ```bash
 python3 tools/research_wiki.py rebuild-context-brief wiki/
 python3 tools/research_wiki.py rebuild-open-questions wiki/
 ```
 
-### Step 3: Final Report
+### Шаг 3: Итоговый отчёт
 
-After iteration ends, generate the REFINE_REPORT:
+После завершения итерации сгенерируйте REFINE_REPORT:
 
 ```markdown
-# Refine Loop Report: {artifact title}
+# Отчёт петли Refine: {название артефакта}
 
-## Summary
-- **Artifact**: {slug or path}
-- **Rounds**: {N} / {max-rounds}
-- **Score trajectory**: {score_history, e.g., 5 → 6 → 7 → 8}
-- **Final score**: {final_score}/10
-- **Final verdict**: {verdict}
-- **Termination reason**: {target reached / converged / max rounds / rethink}
+## Сводка
+- **Артефакт**: {slug или путь}
+- **Раунды**: {N} / {max-rounds}
+- **Траектория баллов**: {score_history, например, 5 → 6 → 7 → 8}
+- **Итоговый балл**: {final_score}/10
+- **Итоговый вердикт**: {verdict}
+- **Причина завершения**: {достигнут целевой / сходство / максимальные раунды / rethink}
 
-## Issues Fixed ({count})
+## Исправленные проблемы ({count})
 
-| Round | Issue | Severity | Fix applied |
-|-------|-------|----------|-------------|
-| 1 | Method description too vague | major | Added specific algorithm steps |
-| 1 | Idea novelty argument too thin | major | Flagged [[idea-slug]] for `/novelty` rerun |
-| 2 | Missing ablation design | minor | Added ablation plan |
+| Раунд | Проблема | Серьёзность | Применённое исправление |
+|-------|----------|-------------|------------------------|
+| 1 | Описание метода слишком расплывчатое | major | Добавлены конкретные шаги алгоритма |
+| 1 | Аргумент о новизне идеи слишком слаб | major | Помечен [[idea-slug]] для повторного `/novelty` |
+| 2 | Отсутствует дизайн абляции | minor | Добавлен план абляции |
 
-## Wiki Changes Made
+## Внесённые изменения в wiki
 
-| Page | Change | Round |
-|------|--------|-------|
-| `wiki/methods/{slug}.md` | added missing source_papers link | 1 |
-| `wiki/graph/edges.jsonl` | +1 edge (addresses_gap) | 2 |
+| Страница | Изменение | Раунд |
+|----------|-----------|-------|
+| `wiki/methods/{slug}.md` | добавлена отсутствующая ссылка source_papers | 1 |
+| `wiki/graph/edges.jsonl` | +1 ребро (addresses_gap) | 2 |
 
-## Unresolved Issues ({count})
+## Нерешённые проблемы ({count})
 
-| Issue | Severity | Suggested action |
-|-------|----------|------------------|
-| Missing experimental validation | critical | Run `/exp-design {slug}` |
-| Missing comparison paper | major | Run `/ingest` for {paper-title} |
+| Проблема | Серьёзность | Предлагаемое действие |
+|----------|-------------|----------------------|
+| Отсутствует экспериментальная валидация | critical | Запустите `/exp-design {slug}` |
+| Отсутствует сравнительная статья | major | Запустите `/ingest` для {paper-title}
 
-## Next Steps
-- {based on verdict and unresolved issues}
+## Следующие шаги
+- {на основе вердикта и нерешённых проблем}
 ```
 
-Append log:
+Добавление в журнал:
 ```bash
 python3 tools/research_wiki.py log wiki/ \
-  "refine | {artifact-slug} | {N} rounds | score {initial}→{final} | verdict: {verdict}"
+  "refine | {artifact-slug} | {N} раундов | балл {initial}→{final} | вердикт: {verdict}"
 ```
 
-## Constraints
+## Ограничения
 
-- **Each round must show substantive progress**: if score does not change for two consecutive rounds, terminate (prevents infinite loops)
-- **Do not iterate on rethink**: if the first round verdict == rethink, terminate immediately and suggest redesign
-- **Wiki modifications limited to review suggestions**: refine only modifies wiki entities explicitly recommended by the review; do not expand scope proactively
-- **Unresolved issues must be listed**: do not silently skip issues that cannot be resolved in the loop
-- **Preserve improvement history**: score_history and fixed_issues are recorded in full; do not discard intermediate state
-- **Pass review parameters through**: --difficulty and --focus are passed through to /review; maintain consistent review standards
-- **Artifact updated in place**: fixes modify the original file directly; do not create copies
+- **Каждый раунд должен показывать существенный прогресс**: если балл не меняется в двух последовательных раундах, завершите (предотвращение бесконечных циклов)
+- **Не итерируйте rethink**: если вердикт первого раунда == rethink, немедленно завершите и предложите переработку
+- **Изменения wiki ограничены предложениями проверки**: refine изменяет только сущности wiki, явно рекомендованные проверкой; не расширяйте объём самостоятельно
+- **Нерешённые проблемы должны быть перечислены**: не пропускайте молча проблемы, которые невозможно разрешить в цикле
+- **Сохраняйте историю улучшений**: score_history и fixed_issues записываются полностью; не отбрасывайте промежуточное состояние
+- **Передавайте параметры проверки**: --difficulty и --focus передаются в /review; поддерживайте единые стандарты проверки
+- **Артефакт обновляется на месте**: исправления изменяют исходный файл напрямую; не создавайте копии
 
-## Error Handling
+## Обработка ошибок
 
-- **Artifact not found**: prompt user to check slug or path, list likely candidate pages
-- **/review call fails**: retry once; if still failing, terminate the loop and output the improvement history completed so far
-- **Wiki write fails**: log the error, continue to the next round (wiki changes downgraded to unresolved)
-- **First round score already >= target-score**: terminate immediately, output report (no improvement needed)
-- **All issues are Category B/D**: cannot fix within the loop; terminate and output the unresolved issues list
+- **Артефакт не найден**: предложите пользователю проверить slug или путь, перечислите вероятные страницы-кандидаты
+- **Вызов /review завершился ошибкой**: повторите один раз; если всё ещё ошибка, завершите петлю и выведите историю улучшений, завершённую на данный момент
+- **Запись в wiki завершилась ошибкой**: запишите ошибку, продолжите следующий раунд (изменения wiki понижаются до нерешённых)
+- **Балл первого раунда уже >= target-score**: немедленно завершите, выведите отчёт (улучшение не требуется)
+- **Все проблемы относятся к категории B/D**: невозможно исправить в петле; завершите и выведите список нерешённых проблем
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — rebuild query_pack
-- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — rebuild gap_map
-- `python3 tools/research_wiki.py add-edge wiki/ ...` — add graph edge (if needed)
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log entry
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py rebuild-context-brief wiki/` — пересборка query_pack
+- `python3 tools/research_wiki.py rebuild-open-questions wiki/` — пересборка gap_map
+- `python3 tools/research_wiki.py add-edge wiki/ ...` — добавление графового ребра (при необходимости)
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
 
-### Skills（via Skill tool）
-- `/review` — each round's review (core dependency)
+### Навыки (через инструмент Skill)
+- `/review` — проверка каждого раунда (основная зависимость)
 
 ### Claude Code Native
-- `Read` — read artifact and wiki pages
-- `Edit` — fix artifact content
-- `Glob` — find artifact and related wiki pages
+- `Read` — чтение артефакта и wiki-страниц
+- `Edit` — исправление содержимого артефакта
+- `Glob` — поиск артефакта и связанных wiki-страниц
 
-### Shared References
-- `.claude/skills/shared-references/cross-model-review.md` — indirect dependency via /review
+### Общие справочники
+- `.claude/skills/shared-references/cross-model-review.md` — косвенная зависимость через /review

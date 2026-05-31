@@ -1,43 +1,43 @@
 ---
-description: Interactive API key configuration guide — checks current .env state and walks you through Semantic Scholar, DeepXiv, and Review LLM setup
+name: setup
+description: Интерактивное руководство по настройке API-ключей — проверка текущего состояния .env и пошаговая настройка Semantic Scholar, DeepXiv и Review LLM
 ---
 
 # /setup
 
-> Guides you through ΩmegaWiki's optional API key configuration.
-> Reads your current `.env`, shows what is and isn't configured, and helps you
-> set up each key with clear explanations of what it does and how to get it.
-> Safe to re-run at any time — only updates keys you choose to configure.
+> Проводит вас через опциональную настройку ключей API ΩmegaWiki.
+> Читает ваш текущий `.env`, показывает, что настроено, а что нет, и помогает
+> настроить каждый ключ с понятными объяснениями его назначения и способа получения.
+> Безопасно для повторного запуска в любое время — обновляет только ключи, которые вы решите настроить.
 
-## Inputs
+## Входы
 
-- No arguments required
-- Reads: `.env` (current configuration state)
-- Reads: `config/setup-guide.md` (reference for what each key does)
+- Аргументы не требуются
+- Чтение: `.env` (текущее состояние конфигурации)
+- Чтение: `config/setup-guide.md` (справочник по назначению каждого ключа)
 
-## Outputs
+## Выходы
 
-- Updated `.env` with any newly configured keys
-- A summary of current configuration status
+- Обновлённый `.env` с вновь настроенными ключами
+- Сводка текущего состояния конфигурации
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- None (setup runs before any wiki exists)
+### Чтение
+- Нет (настройка выполняется до создания wiki)
 
-### Writes
-- None (does not touch the wiki)
+### Запись
+- Нет (не трогает wiki)
 
-## Workflow
+## Рабочий процесс
 
-### Step 1: Read Configuration Reference
+### Шаг 1: Чтение справочника конфигурации
 
-Read `config/setup-guide.md` to load the complete reference for all configurable keys,
-including what each does, which skills use it, how to get it, and fallback behavior.
+Прочитайте `config/setup-guide.md` для загрузки полного справочника по всем настраиваемым ключам, включая назначение каждого, какие навыки его используют, как его получить и поведение при отказе.
 
-### Step 2: Detect Current Environment
+### Шаг 2: Определение текущей среды
 
-Run the following to check what is already configured:
+Запустите следующее для проверки того, что уже настроено:
 
 ```bash
 python3 -c "
@@ -60,70 +60,70 @@ for k, label in keys.items():
 "
 ```
 
-Also detect the Python environment and `.venv` status:
+Также определите окружение Python и статус `.venv`:
 ```bash
 ls .venv/ 2>/dev/null && echo "venv:present" || echo "venv:absent"
 python3 --version
 ```
 
-### Step 3: Show Configuration Status
+### Шаг 3: Показ статуса конфигурации
 
-Present a clear summary to the user, grouped by status:
+Предоставьте пользователю понятную сводку, сгруппированную по статусу:
 
 ```
-ΩmegaWiki Configuration Status
+Статус конфигурации ΩmegaWiki
 ================================
-✓  ANTHROPIC_API_KEY      — managed by Claude Code (claude login)
+✓  ANTHROPIC_API_KEY      — управление через Claude Code (claude login)
 
-Recommended:
-✗  Semantic Scholar        — not set  (citation expansion 3x slower — get free key)
+Рекомендуемые:
+✗  Semantic Scholar        — не задан  (расширение цитат в 3 раза медленнее — получите бесплатный ключ)
 
-Optional:
-✗  DeepXiv                 — not set  (semantic search unavailable)
-✗  Review LLM              — not set  (cross-model review unavailable)
+Опциональные:
+✗  DeepXiv                 — не задан  (семантический поиск недоступен)
+✗  Review LLM              — не задан  (кросс-модельная проверка недоступна)
 ```
 
-Ask the user: "Which would you like to configure? (You can skip any or all.)"
+Спросите пользователя: "Какой ключ вы хотите настроить? (Можно пропустить любой или все.)"
 
-### Step 4: Configure Each Key (user-directed)
+### Шаг 4: Настройка каждого ключа (направляемая пользователем)
 
-For each key the user wants to configure, follow the specific sub-flow below.
-Always ask for user confirmation before writing to `.env`.
+Для каждого ключа, который пользователь хочет настроить, следуйте конкретному подпроцессу ниже.
+Всегда запрашивайте подтверждение пользователя перед записью в `.env`.
 
 ---
 
-#### 4a: Semantic Scholar API Key
+#### 4a: API-ключ Semantic Scholar
 
-**Explain**: "Semantic Scholar gives citation data and paper search.
-Used by /ingest, /init, /novelty, /ideate. Free to get.
-**Recommended** — without it, /init runs 3x slower and citation-chain expansion is much less effective."
+**Объясните**: "Semantic Scholar предоставляет данные цитирования и поиск статей.
+Используется в /ingest, /init, /novelty, /ideate. Получить бесплатно.
+**Рекомендуется** — без него /init работает в 3 раза медленнее и расширение цепочек цитат значительно менее эффективно."
 
-**Guide to get it**: "Go to https://www.semanticscholar.org/product/api and click 'Get API Key'. It's free."
+**Руководство по получению**: "Перейдите на https://www.semanticscholar.org/product/api и нажмите 'Get API Key'. Это бесплатно."
 
-**Ask**: "Do you have a Semantic Scholar API key? (paste it, or 'skip')"
+**Спросите**: "У вас есть API-ключ Semantic Scholar? (вставьте его или 'skip')"
 
-**If provided**, write to `.env`:
+**Если предоставлен**, запишите в `.env`:
 ```python
-# Read current .env, update or append SEMANTIC_SCHOLAR_API_KEY=<value>
+# Прочитайте текущий .env, обновите или добавьте SEMANTIC_SCHOLAR_API_KEY=<значение>
 ```
-Use the Edit tool to update `.env`:
-- If `SEMANTIC_SCHOLAR_API_KEY=` line exists (even empty), replace it
-- Otherwise append `SEMANTIC_SCHOLAR_API_KEY=<value>`
+Используйте инструмент Edit для обновления `.env`:
+- Если строка `SEMANTIC_SCHOLAR_API_KEY=` существует (даже пустая), замените её
+- Иначе добавьте `SEMANTIC_SCHOLAR_API_KEY=<значение>`
 
 ---
 
-#### 4b: DeepXiv Token
+#### 4b: Токен DeepXiv
 
-**Explain**: "DeepXiv enables semantic paper search, AI paper summaries (TLDR),
-and trending paper detection. Used by /daily-arxiv, /novelty, /ideate, /ingest, /init.
-Without it, those skills fall back to arXiv RSS + Semantic Scholar — everything still works."
+**Объясните**: "DeepXiv обеспечивает семантический поиск статей, AI-резюме статей (TLDR)
+и обнаружение трендовых статей. Используется в /daily-arxiv, /novelty, /ideate, /ingest, /init.
+Без него эти навыки переходят на arXiv RSS + Semantic Scholar — всё по-прежнему работает."
 
-**Offer three options**:
-1. **Auto-register** (recommended, free, instant): Run the registration inline
-2. **Paste existing token**: User provides their token
-3. **Skip**: Configure later
+**Предложите три варианта**:
+1. **Авто-регистрация** (рекомендуется, бесплатно, мгновенно): Запустите регистрацию встроенно
+2. **Вставить существующий токен**: Пользователь предоставляет свой токен
+3. **Пропустить**: Настроить позже
 
-**For option 1 — auto-register**, run:
+**Для варианта 1 — авто-регистрация**, запустите:
 ```bash
 python3 -c "
 import sys, json
@@ -162,51 +162,50 @@ print(token)
 print(f'daily_limit:{daily_limit}', file=sys.stderr)
 "
 ```
-stdout → token value; stderr → human-readable status (pass through, don't suppress).
+stdout → значение токена; stderr → человекочитаемый статус (передавайте, не подавляйте).
 
-If registration succeeds, write the token to `.env`. If it fails, show the error and
-offer to let the user paste a token manually instead.
+Если регистрация прошла успешно, запишите токен в `.env`. Если не удалась, покажите ошибку и предложите пользователю вставить токен вручную.
 
 ---
 
 #### 4c: Review LLM
 
-**Explain**: "The Review LLM connects ΩmegaWiki to a second AI model for independent
-adversarial review. It's used by /review, /novelty, /ideate, /paper-plan, /paper-draft,
-/rebuttal, /refine, /exp-eval, /exp-design, and /daily-arxiv inform recommendations.
-Works with any OpenAI-compatible API.
-Without it, those skills skip the cross-model review step (everything still works)."
+**Объясните**: "Review LLM подключает ΩmegaWiki ко второй AI-модели для независимой
+адверсивной проверки. Используется в /review, /novelty, /ideate, /paper-plan, /paper-draft,
+/rebuttal, /refine, /exp-eval, /exp-design и рекомендациях /daily-arxiv inform.
+Работает с любым API, совместимым с OpenAI.
+Без него эти навыки пропускают шаг кросс-модельной проверки (всё по-прежнему работает)."
 
-**Present the provider table** from `config/setup-guide.md` (Key 3 section).
+**Представьте таблицу провайдеров** из `config/setup-guide.md` (раздел Key 3).
 
-**Clarify what 'OpenAI-compatible' means** if the user asks: any API that accepts
-`POST /chat/completions` with `{"model": "...", "messages": [...]}` in the OpenAI format.
+**Разъясните, что такое 'совместимый с OpenAI'**, если спросит пользователь: любой API, принимающий
+`POST /chat/completions` с `{"model": "...", "messages": [...]}` в формате OpenAI.
 
-**Ask for**:
-1. `LLM_BASE_URL` — e.g. `https://api.deepseek.com/v1`
-2. `LLM_API_KEY` — their API key for that provider
-3. `LLM_MODEL` — model name, e.g. `deepseek-chat`
+**Запросите**:
+1. `LLM_BASE_URL` — например, `https://api.deepseek.com/v1`
+2. `LLM_API_KEY` — их API-ключ для этого провайдера
+3. `LLM_MODEL` — название модели, например, `deepseek-chat`
 
-**Validate format**: Base URL should start with `http://` or `https://` and end with `/v1`
-(or similar path). If it looks wrong, ask for confirmation before writing.
+**Проверьте формат**: URL базы должен начинаться с `http://` или `https://` и заканчиваться `/v1`
+(или аналогичным путём). Если выглядит неправильно, запросите подтверждение перед записью.
 
-**Write all three** to `.env` once the user confirms.
+**Запишите все три** в `.env` после подтверждения пользователя.
 
-**After writing**: Remind the user that the Review LLM MCP server starts when Claude Code
-launches and reads `.env` at that time — changes take effect after restarting Claude Code.
-
----
-
-#### 4d: arXiv Categories (only if user asks)
-
-This key has a sensible default (`cs.LG,cs.CV,cs.CL,cs.AI,stat.ML`). Only configure
-it if the user explicitly asks, or if their research area is clearly outside ML/AI.
+**После записи**: Напомните пользователю, что MCP-сервер Review LLM запускается при запуске Claude Code
+и читает `.env` в тот момент — изменения вступают в силу после перезапуска Claude Code.
 
 ---
 
-### Step 5: Verify Configuration
+#### 4d: Категории arXiv (только если просит пользователь)
 
-After the user finishes configuring, run the verification check from `config/setup-guide.md`:
+Этот ключ имеет разумное значение по умолчанию (`cs.LG,cs.CV,cs.CL,cs.AI,stat.ML`). Настраивайте
+только если пользователь явно просит, или если его область исследований явно выходит за пределы ML/AI.
+
+---
+
+### Шаг 5: Проверка конфигурации
+
+После завершения настройки запустите проверку из `config/setup-guide.md`:
 
 ```bash
 python3 -c "
@@ -223,60 +222,59 @@ for k in keys:
 "
 ```
 
-Show a final summary. For any keys still not set, briefly note what they unlock
-and that the user can run `/setup` again anytime to add them.
+Покажите финальную сводку. Для любых ключей, всё ещё не заданных, кратко укажите, что они открывают, и что пользователь может запустить `/setup` снова в любое время для их добавления.
 
-### Step 6: Next Steps
+### Шаг 6: Следующие шаги
 
-If this is a fresh install (no `wiki/` directory):
+Если это свежая установка (нет директории `wiki/`):
 ```
-Configuration done. Next:
-  • Put your own papers in raw/papers/ (.tex or .pdf)
-  • Optional: add intent notes to raw/notes/ and saved pages to raw/web/
-  • /init and direct local /ingest will manage generated inputs under raw/discovered/ and raw/tmp/
-  • Run: /init [your-research-topic]
-```
-
-If `wiki/` already exists:
-```
-Configuration updated. Restart Claude Code for Review LLM changes to take effect.
+Конфигурация завершена. Далее:
+  • Поместите собственные статьи в raw/papers/ (.tex или .pdf)
+  • Опционально: добавьте заметки о намерениях в raw/notes/ и сохранённые страницы в raw/web/
+  • /init и прямой локальный /ingest будут управлять сгенерированными входами в raw/discovered/ и raw/tmp/
+  • Запуск: /init [ваша-тема-исследования]
 ```
 
-## Constraints
+Если `wiki/` уже существует:
+```
+Конфигурация обновлена. Перезапустите Claude Code для вступления в силу изменений Review LLM.
+```
 
-- **Never overwrite existing non-empty values** without asking the user first
-- **Never expose the full key value** in output — show only the first 8 characters + `...`
-- **Write only to `.env`** — never to `~/.env` or other locations
-- **No wiki reads or writes** — this skill runs before the wiki may exist
-- **Skip gracefully**: if the user says "skip all", show the status summary and exit cleanly
+## Ограничения
 
-## Error Handling
+- **Никогда не перезаписывайте существующие непустые значения** без предварительного запроса пользователя
+- **Никогда не показывайте полное значение ключа** в выводе — только первые 8 символов + `...`
+- **Записывайте только в `.env`** — никогда в `~/.env` или другие расположения
+- **Нет чтений/записей wiki** — этот навык работает до создания wiki
+- **Корректный пропуск**: если пользователь говорит "пропустить все", покажите сводку статуса и корректно завершитесь
 
-- **`.env` not found**: Inform the user that `setup.sh` was not run yet. Offer to create `.env` from `.env.example`:
+## Обработка ошибок
+
+- **`.env` не найден**: сообщите пользователю, что `setup.sh` ещё не был запущен. Предложите создать `.env` из `.env.example`:
   ```bash
   cp config/.env.example .env
   ```
-  Then continue with configuration.
+  Затем продолжите настройку.
 
-- **`config/setup-guide.md` not found**: Proceed using the information in this SKILL.md directly.
+- **`config/setup-guide.md` не найден**: продолжите, используя информацию непосредственно из этого SKILL.md.
 
-- **DeepXiv registration fails** (network error, server error): Show the error message clearly,
-  offer to let the user paste a token manually, or skip.
+- **Регистрация DeepXiv не удалась** (сетевая ошибка, ошибка сервера): чётко покажите сообщение об ошибке,
+  предложите пользователю вставить токен вручную или пропустить.
 
-- **Python environment issue** (`tools/_env.py` not found): Note that `.venv` may not be active,
-  but still read `.env` directly using shell or Python file I/O to check current state.
+- **Проблема окружения Python** (`tools/_env.py` не найден): отметьте, что `.venv` может быть не активен,
+  но всё равно прочитайте `.env` напрямую через shell или файловый ввод/вывод Python для проверки текущего состояния.
 
-## Dependencies
+## Зависимости
 
-### Tools (via Bash)
-- `python3 -c "import _env; ..."` — read current `.env` state
-- `python3 -c "import requests; ..."` — DeepXiv auto-registration HTTP call
+### Инструменты (через Bash)
+- `python3 -c "import _env; ..."` — чтение текущего состояния `.env`
+- `python3 -c "import requests; ..."` — HTTP-вызов авто-регистрации DeepXiv
 
-### Files Read
-- `config/setup-guide.md` — complete reference for all configurable keys
-- `.env` — current configuration (read + write)
+### Читаемые файлы
+- `config/setup-guide.md` — полный справочник по всем настраиваемым ключам
+- `.env` — текущая конфигурация (чтение + запись)
 
-### Files Written
-- `.env` — updated with newly configured keys (via Edit tool)
+### Записываемые файлы
+- `.env` — обновляется с вновь настроенными ключами (через инструмент Edit)
 
-### No MCP servers, no wiki, no external skills called
+### Нет MCP-серверов, нет wiki, нет вызовов сторонних навыков
