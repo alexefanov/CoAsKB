@@ -1,83 +1,74 @@
 ---
-description: Ingest a paper into the wiki — creates pages (papers + concepts + methods + people) and builds all cross-references and graph edges. Trigger whenever the user says "ingest", "add this paper", drops a `.pdf` / `.tex` / arXiv URL, or asks to fold a paper into the knowledge base.
+name: ingest
+description: Загрузка статьи в wiki — создание страниц (статьи + концепции + методы + люди) и построение всех перекрёстных ссылок и графовых рёбер. Запускайте, когда пользователь говорит "загрузить", "добавьте эту статью", сбрасывает `.pdf` / `.tex` / URL arXiv или просит включить статью в базу знаний.
 argument-hint: <local-path-or-arXiv-URL> [--discover] [--visualize]
 ---
 
 # /ingest
 
-Turn one paper into a fully wired set of wiki pages. Emit well-formed entities and correct cross-references; leave semantic audits (backlink symmetry, dangling nodes, field-value policing) for `/check`.
+> Превращение одной статьи в полностью связанный набор wiki-страниц. Формирование корректных сущностей и правильных перекрёстных ссылок; семантические аудиты (симметрия обратных ссылок, висячие узлы, проверка значений полей) откладываются для `/check`.
 
-Use these local references on demand:
+Используйте эти локальные справочники по мере необходимости:
 
-- `references/pdf-preprocessing.md` — arXiv-ID recovery, tex fetching, prepare-paper handoff for direct PDF drops
-- `references/dedup-policy.md` — merge-vs-create decision rule for concepts and methods, and the line that separates `/ingest` shape checks from `/check` semantic audits
-- `references/cross-references.md` — forward/reverse link matrix and paper-to-paper edge-type selection
-- `references/init-mode.md` — manifest-driven handoff from `/init` and parallel-safety conventions
-- `references/error-handling.md` — source parse, API, and slug-collision fallbacks
+- `references/pdf-preprocessing.md` — восстановление arXiv-ID, получение tex, передача prepare-paper для прямых PDF
+- `references/dedup-policy.md` — правило слияние-vs-создание для концепций и методов
+- `references/cross-references.md` — матрица прямых/обратных ссылок и выбор типа ребра между статьями
+- `references/init-mode.md` — передача из `/init` через манифест и соглашения параллельной безопасности
+- `references/error-handling.md` — обработка ошибок парсинга, API и коллизий slug'ов
 
-Open `runtime/schema/entities.yaml` for frontmatter field definitions and `runtime/templates/{kind}.md.tmpl` for body section structure. For `index.md`, `log.md`, and `graph/` shapes, see `runtime/schema/conventions.yaml` and `runtime/schema/edges.yaml`.
+Откройте `runtime/schema/entities.yaml` для определений полей frontmatter и `runtime/templates/{kind}.md.tmpl` для структуры разделов тела. Для форматов `index.md`, `log.md` и `graph/` см. `runtime/schema/conventions.yaml` и `runtime/schema/edges.yaml`.
 
-## Inputs
+## Входы
 
-- `source`: one of — arXiv URL (e.g. `https://arxiv.org/abs/2106.09685`), local `.tex`, local `.pdf`, or a `canonical_ingest_path` handed off by `/init` via `.checkpoints/init-sources.json`(see `references/init-mode.md`)
-- `--discover` (optional, default **off**): after the final report, invoke `/discover --anchor <this-paper's-arxiv-id>` and append the shortlist to the report as "Related papers you may want to ingest next". Never auto-ingests the suggestions. Skipped automatically in INIT MODE. Treat this as a user-owned flag: do not set it based on repo state.
-- `--visualize` (optional, default **off**): after Step 7 rebuild, regenerate Canvas visualization artifacts via `tools/visualize.py generate-canvas`. Skipped automatically in INIT MODE — the parent `/init` handles visualization once at fan-in. Treat this as a user-owned flag: do not set it based on repo state. (The interactive web Graph view lives in the SPA at `app/modules/graph.js`, served by `tools/serve.py`; it reads `wiki/graph/` live and needs no per-ingest regeneration.)
+- `source`: одно из — URL arXiv (например, `https://arxiv.org/abs/2106.09685`), локальный `.tex`, локальный `.pdf` или `canonical_ingest_path`, переданный из `/init` через `.checkpoints/init-sources.json` (см. `references/init-mode.md`)
+- `--discover` (опционально, по умолчанию **выкл**): после финального отчёта вызовите `/discover --anchor <arxiv-id-этой-статьи>` и добавьте короткий список в отчёт как "Связанные статьи, которые вы, возможно, захотите загрузить дальше". Никогда не загружает автоматически. Пропускается в РЕЖИМЕ INIT. Считайте пользовательским флагом.
+- `--visualize` (опционально, по умолчанию **выкл**): после пересборки шага 7 перегенерируйте артефакты визуализации Canvas через `tools/visualize.py generate-canvas`. Пропускается в РЕЖИМЕ INIT — родительский `/init` обрабатывает визуализацию один раз при слиянии.
 
-## Outputs
+## Выходы
 
-- One fully-wired paper page plus linked entities (concepts, methods, people)
-- Graph edges and citations appended via `tools/research_wiki.py`
-- Terminal summary with page counts and suggested follow-up ingests
+- Одна полностью связанная страница статьи плюс связанные сущности (концепции, методы, люди)
+- Графовые рёбра и цитаты, добавленные через `tools/research_wiki.py`
+- Сводка в терминале с количеством страниц и предложенными дальнейшими загрузками
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
+### Чтение
 
-- `wiki/index.md` for existing slugs and tags
-- `wiki/papers/*.md` to detect an already-ingested paper
-- `wiki/concepts/*.md` and `wiki/foundations/*.md` for dedup matches
-- `wiki/methods/*.md` for dedup matches against existing reusable methods
-- `wiki/people/*.md` for existing authors
-- `wiki/topics/*.md` to place the paper under existing topics
-- `wiki/graph/open_questions.md` to notice when the paper addresses a known gap
+- `wiki/index.md` для существующих slug'ов и тегов
+- `wiki/papers/*.md` для обнаружения уже загруженной статьи
+- `wiki/concepts/*.md` и `wiki/foundations/*.md` для поиска дубликатов
+- `wiki/methods/*.md` для поиска дубликатов существующих переиспользуемых методов
+- `wiki/people/*.md` для существующих авторов
+- `wiki/topics/*.md` для размещения статьи в существующих темах
+- `wiki/graph/open_questions.md` для обнаружения случаев, когда статья затрагивает известный пробел
 
-### Writes
+### Запись
 
-- `wiki/papers/{slug}.md` — CREATE
-- `wiki/concepts/{slug}.md` — CREATE (new) or EDIT (append `key_papers`, aliases, variants)
-- `wiki/methods/{slug}.md` — CREATE (new, only when the method is named, reusable, and citable across papers) or EDIT (append `source_papers`)
-- `wiki/people/{slug}.md` — CREATE (importance ≥ 4 only) or EDIT (append into `## Recent work`)
-- `wiki/topics/{slug}.md` — EDIT only (no CREATE from `/ingest`)
-- `wiki/graph/edges.jsonl` — APPEND via tool
-- `wiki/graph/citations.jsonl` — APPEND via tool
-- `wiki/graph/context_brief.md` — REBUILD (skipped in INIT MODE)
-- `wiki/graph/open_questions.md` — REBUILD (skipped in INIT MODE)
-- `wiki/index.md` — APPEND
-- `wiki/log.md` — APPEND via tool
-- `wiki/canvases/*.canvas` — CREATE/OVERWRITE (only when `--visualize` is set and not in INIT MODE)
+- `wiki/papers/{slug}.md` — СОЗДАТЬ
+- `wiki/concepts/{slug}.md` — СОЗДАТЬ (новая) или РЕДАКТИРОВАТЬ (добавить `key_papers`, aliases, варианты)
+- `wiki/methods/{slug}.md` — СОЗДАТЬ (новая, только когда метод назван, переиспользуем и цитируем между статьями) или РЕДАКТИРОВАТЬ (добавить `source_papers`)
+- `wiki/people/{slug}.md` — СОЗДАТЬ (importance ≥ 4 только) или РЕДАКТИРОВАТЬ (добавить в `## Recent work`)
+- `wiki/topics/{slug}.md` — ТОЛЬКО РЕДАКТИРОВАТЬ (без CREATE из `/ingest`)
+- `wiki/graph/edges.jsonl` — ДОПОЛНИТЬ через инструмент
+- `wiki/graph/citations.jsonl` — ДОПОЛНИТЬ через инструмент
+- `wiki/graph/context_brief.md` — ПЕРЕСОБРАТЬ (пропуск в РЕЖИМЕ INIT)
+- `wiki/graph/open_questions.md` — ПЕРЕСОБРАТЬ (пропуск в РЕЖИМЕ INIT)
+- `wiki/index.md` — ДОПОЛНИТЬ
+- `wiki/log.md` — ДОПОЛНИТЬ через инструмент
+- `wiki/canvases/*.canvas` — СОЗДАТЬ/ПЕРЕЗАПИСАТЬ (только при --visualize и не в РЕЖИМЕ INIT)
 
-### Graph edges created
+### Создаваемые графовые рёбра
 
-- `paper → concept`: `introduces_concept` / `uses_concept` / `extends_concept` / `critiques_concept` with `confidence`
-- `paper → foundation`: `derived_from` (foundation is terminal; no reverse link)
-- `paper → paper`: `same_problem_as` / `similar_method_to` / `builds_on` / `challenges` with `confidence`
-- bibliographic `paper → paper`: `cites` in `graph/citations.jsonl`
+- `paper → concept`: `introduces_concept` / `uses_concept` / `extends_concept` / `critiques_concept` с `confidence`
+- `paper → foundation`: `derived_from` (foundation терминален; нет обратной ссылки)
+- `paper → paper`: `same_problem_as` / `similar_method_to` / `builds_on` / `challenges` с `confidence`
+- библиографическое `paper → paper`: `cites` в `graph/citations.jsonl`
 
-`tools/research_wiki.py add-edge` rejects missing confidence/evidence for
-paper-paper and paper-concept semantic edges, and rejects legacy
-paper-to-concept or paper-to-paper types on new writes.
+## Рабочий процесс
 
-## Workflow
-
-**Pre-condition**: working directory contains `wiki/`, `raw/`, and `tools/`. Resolve the Python interpreter once and reuse it:
+**Предусловие**: рабочая директория содержит `wiki/`, `raw/` и `tools/`. Определите интерпретатор Python один раз и переиспользуйте:
 
 ```bash
-# Find the project root via git so worktree subagents can still locate .venv.
-# .venv is gitignored, so a subagent whose cwd is ../.worktrees/<branch>/
-# doesn't have one — without this lookup it falls back to system python3 and
-# misses the .env-loaded API keys plus the installed deps (deepxiv-sdk etc.).
-# git rev-parse --git-common-dir returns the main repo's .git regardless of
-# which worktree the shell is in; its parent is the project root.
 GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null || true)
 PROJECT_ROOT=""
 if [ -n "$GIT_COMMON_DIR" ]; then
@@ -93,207 +84,137 @@ fi
 export PYTHON_BIN
 ```
 
-### Step 1: Resolve the source
+### Шаг 1: Определение источника
 
-1. If `/init` passed a `canonical_ingest_path`, enter **INIT MODE** and consume that path verbatim. Do not rescan `raw/`. See `references/init-mode.md`.
-2. If the source is an arXiv URL, extract the arXiv ID, use `"$PYTHON_BIN" tools/fetch_s2.py paper <arxiv-id>` to recover the title when possible, then run `"$PYTHON_BIN" tools/init_discovery.py download --raw-root raw --arxiv-id <arxiv-id> --title "<title-or-arxiv-id>"`. Continue from the returned `canonical_ingest_path`. The helper tries arXiv source first and falls back to PDF; do not call `fetch_arxiv.py` for a single paper because it is RSS-only.
-3. If the source is a local `.tex`, use it directly.
-4. If the source is a local `.pdf`, run the preprocessing pipeline in `references/pdf-preprocessing.md` to produce a prepared `.tex` under `raw/tmp/` before continuing.
+1. Если `/init` передал `canonical_ingest_path`, войдите в **РЕЖИМ INIT** и используйте этот путь дословно. Не пересканируйте `raw/`. См. `references/init-mode.md`.
+2. Если источник — URL arXiv, извлеките arXiv ID, используйте `"$PYTHON_BIN" tools/fetch_s2.py paper <arxiv-id>` для восстановления заголовка, затем запустите `"$PYTHON_BIN" tools/init_discovery.py download --raw-root raw --arxiv-id <arxiv-id> --title "<title-or-arxiv-id>"`.
+3. Если источник — локальный `.tex`, используйте напрямую.
+4. Если источник — локальный `.pdf`, запустите пайплайн предобработки из `references/pdf-preprocessing.md` для получения подготовленного `.tex` в `raw/tmp/`.
 
-Raw persistence rule: never copy or duplicate a file already under `raw/discovered/`, `raw/tmp/`, or `raw/papers/` into a different raw subtree.
+Правило постоянства raw: никогда не копируйте и не дублируйте файл, уже находящийся в `raw/discovered/`, `raw/tmp/` или `raw/papers/`, в другое поддерево raw.
 
-### Step 2: Paper identity and enrichment
+### Шаг 2: Идентификация и обогащение статьи
 
-1. Generate the paper slug:
-
+1. Сгенерируйте slug статьи:
    ```bash
-   "$PYTHON_BIN" tools/research_wiki.py slug "<paper-title>"
+   "$PYTHON_BIN" tools/research_wiki.py slug "<заголовок-статьи>"
    ```
-
-2. Stop-if-exists: if `wiki/papers/{slug}.md` already exists and the arXiv ID or title matches, report and exit. If they differ, resolve the collision per `references/error-handling.md`.
-3. When an arXiv ID is available, query Semantic Scholar:
-
+2. Проверка на существование: если `wiki/papers/{slug}.md` уже существует и arXiv ID или заголовок совпадают, сообщите и завершитесь.
+3. Когда доступен arXiv ID, запросите Semantic Scholar:
    ```bash
    "$PYTHON_BIN" tools/fetch_s2.py paper <arxiv-id>
    ```
-
-   Use the result for `venue`, `year`, `s2_id`, citation count, and the evidence behind the `importance` score (1-5).
-4. Optional DeepXiv enrichment, when available. Skip silently if it fails:
-
+4. Опциональное обогащение DeepXiv, при доступности:
    ```bash
    "$PYTHON_BIN" tools/fetch_deepxiv.py brief <arxiv-id>
    "$PYTHON_BIN" tools/fetch_deepxiv.py head <arxiv-id>
    "$PYTHON_BIN" tools/fetch_deepxiv.py social <arxiv-id>
    ```
 
-   `brief` seeds the Key-idea section AND the new `tldr` frontmatter field; `head` sanity-checks your tex parsing against the section structure; `social` is an auxiliary importance signal.
+### Шаг 3: Запись страницы статьи
 
-### Step 3: Write the paper page
+Откройте `runtime/schema/entities.yaml` (раздел papers) для набора полей и `runtime/templates/papers.md.tmpl` для порядка разделов тела. Заполните каждое обязательное поле frontmatter.
 
-Open `runtime/schema/entities.yaml` (papers section) for the field set and `runtime/templates/papers.md.tmpl` for body section order. Fill every required frontmatter field; leave `cited_by` empty for now (step 5 backfills it).
+Три поля frontmatter, которые новая схема требует заполнить, хотя они не обязательны для lint:
 
-Three frontmatter fields the new schema requires you to populate even though they are not lint-required (so existing pages do not break, but new ingests must:):
+- `tldr` — однострочное резюме статьи, подходящее как строка поиска/предварительного просмотра. НЕ многоабзачная аннотация; одно предложение.
+- `contribution_type` — список типов вклада из замкнутого набора `[method, theory, benchmark, analysis, application, system, position, survey]`.
+- `datasets` — список названий наборов данных/бенчмарков, используемых или вводимых статьёй.
 
-- `tldr` — one-sentence summary of the paper, suitable as a search/preview line. NOT a multi-paragraph abstract; one sentence.
-- `contribution_type` — list of contribution kinds drawn from the closed set `[method, theory, benchmark, analysis, application, system, position, survey]`. A paper may have several (e.g. method + benchmark). Do not invent new values.
-- `datasets` — list of dataset / benchmark names the paper uses or introduces (e.g. `MMLU`, `BFCL`, `AppWorld`). Use `[]` when the paper introduces no concrete dataset; do not fabricate.
+Разделы тела для заполнения, в этом порядке: `Problem & Context`, `Key idea`, `Method`, `Experiment & Results`, `Limitations`, `Open questions`, `My take`, `Related`.
 
-Before writing, run a **shape check** on the frontmatter you are about to emit — no more than this:
+### Шаг 4: Концепции, методы, люди
 
-- every required key is present and non-empty
-- `importance` ∈ {1,2,3,4,5}; `maturity` on concepts ∈ the documented set; `type` on methods ∈ the documented set
-- `contribution_type` items all come from the enum above
-- YAML parses
+Следуйте `references/dedup-policy.md`. Кратко:
 
-The shape check is intentionally narrow. Backlink symmetry, dangling-node detection, and cross-entity consistency are `/check`'s job, not this skill's.
+1. Для каждого кандидата концепции сначала вызовите `find-similar-concept`.
+2. Для каждого кандидата метода (названная, переиспользуемая техника) проверьте `wiki/methods/` по имени + тегам.
+3. Предпочтите слияние с лучшим результатом. Создавайте новую страницу только при отсутствии приемлемого кандидата и важности статьи.
+4. Для каждой записываемой или редактируемой сущности запишите обратную ссылку в том же ходу.
+5. Создавайте `wiki/people/{slug}.md` только для статей с importance ≥ 4.
+6. При создании `wiki/concepts/{slug}.md` и принадлежности концепции к теме установите `parent_topic: <topic-slug>`.
 
-Body sections to populate, in this order: `Problem & Context`, `Key idea`, `Method`, `Experiment & Results`, `Limitations`, `Open questions`, `My take`, `Related`.
+### Шаг 5: Рёбра между статьями и `cited_by`
 
-Section semantics:
-
-- **Problem & Context** — what the paper attacks AND where the field stood before this paper. Two-in-one section.
-- **Experiment & Results** — setup, primary metrics, and results in one place. Do not stop at "they beat the baseline"; cite the numbers and their conditions.
-
-### Step 4: Concepts, methods, people
-
-Follow `references/dedup-policy.md`. In short:
-
-1. For each candidate concept, call `find-similar-concept` first.
-2. For each candidate method (named, reusable technique that other papers could cite), check `wiki/methods/` for an existing entry by name + tags. There is no `find-similar-method` tool — do a directory scan and a manual title/alias compare against `runtime/schema/entities.yaml`'s `methods.name` field.
-3. Prefer merging into the top result. Create a new page only when no acceptable candidate exists and the paper's importance justifies it. The `## Method` body section on the paper page is **always** filled (it is this paper's own method narrative); a separate `wiki/methods/{slug}.md` is only created when the technique is namable, reusable, and likely to be referenced by other papers.
-4. For each entity you write or edit, write the reverse link in the same turn. The obligation matrix lives in `references/cross-references.md`.
-5. Create a `wiki/people/{slug}.md` only for papers with importance ≥ 4. Otherwise append the paper's `[[paper-slug]]` to existing author pages' `## Recent work` only. People entities use `research_areas` (list_str) and a `type.kind` enum (`researcher` / `team` / `organization`); only assign `type.kind = team` or `organization` when the byline itself names the team or organization (do not infer it from a researcher's affiliation).
-6. When creating a `wiki/concepts/{slug}.md` and the concept clearly belongs under an existing topic (e.g. all "self-improving coding agents" subtopics), set `parent_topic: <topic-slug>` (bare slug, NOT `[[wikilink]]` — `parent_topic` is `link`-typed, not `list_link`). The reverse `## Concepts` body section on the topic page must be appended in the same turn.
-7. When creating or editing a `wiki/methods/{slug}.md`, populate `realizes_concepts: [[c1], [c2], ...]` for any concept this method instantiates (typically the concept(s) introduced by the same paper). The reverse `## Realized by` body section on each concept page must be appended in the same turn.
-
-### Step 5: Paper-to-paper edges and `cited_by`
-
-Skip this whole step in INIT MODE — the parent `/init` handles it at fan-in.
+Пропустите весь этот шаг в РЕЖИМЕ INIT — родительский `/init` обрабатывает его при слиянии.
 
 ```bash
 "$PYTHON_BIN" tools/fetch_s2.py references <arxiv-id>
 "$PYTHON_BIN" tools/fetch_s2.py citations <arxiv-id>
 ```
 
-- For each reference whose arXiv ID or title resolves to an existing `wiki/papers/{slug}.md`, add a bibliographic `cites` row to `graph/citations.jsonl`.
-- Add a semantic paper-to-paper edge in `graph/edges.jsonl` only when the source text gives a clear cue. Edge-type selection is in `references/cross-references.md`. If no semantic relation cleanly fits, keep only the `cites` row.
-- For each citation already in the wiki, append the citer's slug to this paper's `cited_by`.
-- Surface unmatched high-citation references in the final report so the user can decide whether to follow up with another `/ingest`.
+### Шаг 6: Темы и индекс
 
-### Step 6: Topics and index
+1. Сопоставьте теги статьи с существующими `wiki/topics/*.md`. Для каждого совпадения:
+   - importance ≥ 4 → добавьте в `## Seminal works` темы И добавьте `[[paper-slug]]` в `key_papers`
+   - importance < 4 → добавьте в `## SOTA tracker` или `## Recent work` по году
+2. Не создавайте новые страницы тем из `/ingest` — создание тем принадлежит `/init` и `/edit`.
+3. Добавьте новые или отредактированные записи страниц в `wiki/index.md`.
 
-1. Match the paper's tags against existing `wiki/topics/*.md`. For each match:
-   - importance ≥ 4 → append to the topic's `## Seminal works` AND append `[[paper-slug]]` to the topic's `key_papers` frontmatter list
-   - importance < 4 → append under `## SOTA tracker` or `## Recent work` by year (no frontmatter update)
-   - if the paper directly addresses a listed open problem (under `## Open problems` / `### Known gaps` / `### Methodological gaps`), annotate that line on the topic page
-2. Do not create new topic pages from `/ingest` — topic creation belongs to `/init` and `/edit`.
-3. Append new or edited page entries to `wiki/index.md` under their category headings. Format: each entity kind is a top-level YAML key (matching `runtime/schema/entities.yaml`), with `- slug: <slug>` entries beneath.
-
-### Step 7: Log and rebuild
+### Шаг 7: Журнал и пересборка
 
 ```bash
-"$PYTHON_BIN" tools/research_wiki.py log wiki/ "ingest | added papers/<slug> | updated: <list>"
+"$PYTHON_BIN" tools/research_wiki.py log wiki/ "ingest | добавлено papers/<slug> | обновлено: <список>"
 ```
 
-Unless in INIT MODE:
-
+Если не в РЕЖИМЕ INIT:
 ```bash
 "$PYTHON_BIN" tools/research_wiki.py rebuild-context-brief wiki/
 "$PYTHON_BIN" tools/research_wiki.py rebuild-open-questions wiki/
 ```
 
-### Step 7.5: Optional visualization (only if `--visualize` is set)
+### Шаг 7.5: Опциональная визуализация (только при --visualize)
 
-Skip this step unless the user explicitly passed `--visualize`. Also skip it in INIT MODE — `/init`'s parent process regenerates Canvas + HTML once at fan-in, so individual subagents must not duplicate the work and risk concurrent writes.
+Пропустите этот шаг, если пользователь явно не передал `--visualize`. Также пропустите в РЕЖИМЕ INIT.
 
-When active, regenerate Canvas + HTML (best-effort; visualize failure must not fail `/ingest`):
+### Шаг 8: Отчёт
 
-```bash
-"$PYTHON_BIN" tools/visualize.py generate-canvas wiki/ \
-  || echo "WARN: visualize generate-canvas failed; run /visualize manually" >&2
-```
+Выведите одну компактную сводку, покрывающую: созданные страницы, обновлённые страницы, добавленные графовые рёбра, обнаруженные противоречия (если есть) и высокопороговые ссылки, ещё не существующие в wiki.
 
-`--obsidian` is not regenerated here — `wiki/.obsidian/graph.json` is project-level static config that only changes when `config/visualize.json` palette changes; run `/visualize --obsidian` manually for that case.
+### Шаг 9: Опциональное обнаружение (только при --discover)
 
-### Step 8: Report
+Пропустите этот шаг, если пользователь явно не передал `--discover`.
 
-Emit one compact summary covering: pages created, pages updated, graph edges added, contradictions surfaced (if any), and high-citation references not yet in the wiki (suggested follow-up ingests). Close with:
+## Ограничения
 
-```
-Wiki: +1 paper, +{N} methods, +{M} concepts, +{K} edges
-```
+- `raw/papers/`, `raw/notes/`, `raw/web/` принадлежат пользователю и доступны только для чтения.
+- `wiki/graph/` принадлежит инструментам. Редактируйте только через `tools/research_wiki.py`.
+- Slug'и всегда поступают из `tools/research_wiki.py slug`. Никогда не создавайте вручную.
+- Каждая прямая ссылка записывает свою обратную ссылку в том же ходу — инвариант двунаправленных ссылок wiki.
+- `/ingest` выполняет проверку формы своего собственного вывода и останавливается на этом.
+- Предполагайте, что другой `/ingest` может выполняться конкурентно в sibling worktree.
 
-### Step 9: Optional discovery (only if `--discover` is set)
+## Обработка ошибок
 
-Skip this step unless the user explicitly passed `--discover`. Also skip it in INIT MODE — `/init`'s parent process decides whether to run discovery at fan-in, not individual subagents.
+См. `references/error-handling.md`. Ключевые моменты: ошибки парсинга источника каскадируют tex → PDF → vision API → ручная передача; простои S2 устанавливают `importance` по умолчанию 3 и пропускают обратное заполнение цитат; простои DeepXiv молча пропускают обогащение; коллизии slug'ов добавляют численный суффикс.
 
-When active, invoke `/discover` with the just-ingested paper as the single anchor:
+## Зависимости
 
-```bash
-"$PYTHON_BIN" tools/discover.py from-anchors \
-  --id <arxiv-id-of-this-paper> \
-  --wiki-root wiki \
-  --limit 10 \
-  --output-checkpoint .checkpoints/ \
-  --markdown
-```
-
-Append the markdown output to the report under a heading like "Related papers you may want to ingest next". Do not auto-ingest anything from the shortlist — the user picks. If discovery fails (S2 outage, all channels empty), note the failure in one line and continue — a failed `/discover` must not fail an otherwise successful `/ingest`.
-
-## Constraints
-
-- `raw/papers/`, `raw/notes/`, `raw/web/` are user-owned and read-only. Direct local `/ingest` may add prepared sidecars under `raw/tmp/`; direct arXiv ingests may write fetched source artifacts under `raw/discovered/`. INIT MODE treats all of `raw/` as read-only.
-- `wiki/graph/` is tool-owned. Edit only through `tools/research_wiki.py`.
-- Slugs always come from `tools/research_wiki.py slug`. Never hand-craft.
-- Every forward link writes its reverse link in the same turn — the wiki's bidirectional-link invariant. The only exception is links to `wiki/foundations/`, which are terminal.
-- In INIT MODE, do not write reverse links into pages that already exist (created by a sibling worktree or scaffold). Record the relationship via `tools/research_wiki.py add-edge` only; the parent `/init` backfills reverse links during fan-in.
-- Source priority: `.tex` > `.pdf` > vision API fallback. Never ingest from a PDF when a usable `.tex` is available.
-- Ingest is conservative about new entities:
-  - importance < 4: at most **1** new concept and **1** new method per paper
-  - importance ≥ 4: at most **3** new concepts and **2** new methods per paper
-  - Any further candidates must be merged into their nearest existing entry, or left out for `/check` to flag. Rationale and matching rules: `references/dedup-policy.md`.
-- A `methods/` page is only justified when the technique is **named**, **reusable**, and **citable** by a future paper. The paper page's own `## Method` body section captures this paper's method narrative; do not duplicate it as a methods entity unless the method earns reuse.
-- `/ingest` runs a shape check on its own output (required keys, enum ranges, YAML parses) and stops there. Backlink symmetry, dangling nodes, and full semantic audits belong to `/check`. Do not re-implement them here.
-- Assume another `/ingest` may run concurrently in a sibling worktree. All shared-file writes (`graph/edges.jsonl`, `graph/citations.jsonl`, `index.md`, `log.md`) must go through `tools/research_wiki.py` or use append-only semantics. See `references/init-mode.md`.
-- In INIT MODE, skip `fetch_s2.py citations`, `fetch_s2.py references`, and the `rebuild-*` commands — the parent `/init` runs them once after fan-in.
-- In INIT MODE, also skip Step 7.5 visualization regardless of whether `--visualize` was set; the parent `/init` regenerates Canvas + HTML once at fan-in to avoid concurrent writes from sibling worktrees.
-
-## Error Handling
-
-See `references/error-handling.md`. Highlights: source parse failures cascade tex → PDF → vision API → user handoff; S2 outages default `importance` to 3 and skip citation backfill; DeepXiv outages skip enrichment silently; slug collisions append a numeric suffix.
-
-## Dependencies
-
-### Tools (via Bash)
-
+### Инструменты (через Bash)
 - `"$PYTHON_BIN" tools/research_wiki.py slug "<title>"`
 - `"$PYTHON_BIN" tools/research_wiki.py find-similar-concept wiki/ "<title>" --aliases "<a,b,c>"`
 - `"$PYTHON_BIN" tools/research_wiki.py add-edge wiki/ --from <id> --to <id> --type <type> --evidence "<text>" [--confidence high|medium|low]`
-  - `--confidence high|medium|low` is required for paper-paper and paper-concept semantic edges.
 - `"$PYTHON_BIN" tools/research_wiki.py add-citation wiki/ --from papers/<citing> --to papers/<cited> --source semantic_scholar`
 - `"$PYTHON_BIN" tools/research_wiki.py log wiki/ "<message>"`
 - `"$PYTHON_BIN" tools/research_wiki.py rebuild-context-brief wiki/`
 - `"$PYTHON_BIN" tools/research_wiki.py rebuild-open-questions wiki/`
 - `"$PYTHON_BIN" tools/prepare_paper_source.py --raw-root raw --source <local-path> [--title "<recovered-title>"] [--arxiv-id "<recovered-arxiv-id>"]`
-- `"$PYTHON_BIN" tools/init_discovery.py download --raw-root raw --arxiv-id <id> --title "<title-or-id>"` — single-paper arXiv source/PDF download into `raw/discovered/`
+- `"$PYTHON_BIN" tools/init_discovery.py download --raw-root raw --arxiv-id <id> --title "<title-or-id>"`
 - `"$PYTHON_BIN" tools/fetch_s2.py paper|citations|references <arxiv-id>`
 - `"$PYTHON_BIN" tools/fetch_deepxiv.py brief|head|social <arxiv-id>`
-- `"$PYTHON_BIN" tools/discover.py from-anchors --id <arxiv-id> --wiki-root wiki --limit 10 --output-checkpoint .checkpoints/ --markdown` — only when `--discover` is set
-- `"$PYTHON_BIN" tools/visualize.py generate-canvas wiki/` — only when `--visualize` is set and not in INIT MODE
+- `"$PYTHON_BIN" tools/discover.py from-anchors --id <arxiv-id> --wiki-root wiki --limit 10 --output-checkpoint .checkpoints/ --markdown`
+- `"$PYTHON_BIN" tools/visualize.py generate-canvas wiki/`
 
-### Shared References
-
+### Общие справочники
 - `.claude/skills/shared-references/citation-verification.md`
 
-### Skills
+### Навыки
+- `/init` — вызывает `/ingest` в параллельных подагентах через РЕЖИМ INIT
+- `/check` — проверяет состояние wiki после завершения `/ingest`
+- `/discover` — опциональное продолжение при --discover
+- `/visualize` — Шаг 7.5 при --visualize и не в РЕЖИМЕ INIT
 
-- `/init` — calls `/ingest` in parallel subagents via INIT MODE
-- `/check` — audits wiki state after `/ingest` completes; owns every semantic check `/ingest` intentionally does not perform
-- `/discover` — optional follow-up when `--discover` is set; produces a shortlist of related papers the user may want to ingest next
-- `/visualize` — Step 7.5 (when `--visualize` is set and not in INIT MODE) regenerates Canvas + HTML by calling `tools/visualize.py` directly (best-effort)
-
-### External APIs
-
-- Semantic Scholar (via `tools/fetch_s2.py`)
-- DeepXiv (via `tools/fetch_deepxiv.py`, optional; graceful fallback)
-- arXiv (source download)
+### Внешние API
+- Semantic Scholar (через `tools/fetch_s2.py`)
+- DeepXiv (через `tools/fetch_deepxiv.py`, опционально)
+- arXiv (загрузка источников)

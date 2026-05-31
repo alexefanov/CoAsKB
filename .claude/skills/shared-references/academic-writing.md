@@ -1,156 +1,156 @@
-# Academic Writing Principles
+# Принципы академического письма
 
-> Shared reference for all skills that produce written output: /paper-draft, /paper-plan, /survey.
-> These principles ensure publication-quality writing that reads as expert-authored, not AI-generated.
+> Общий справочник для всех навыков, генерирующих текст: /paper-draft, /paper-plan, /survey.
+> Эти принципы обеспечивают публикационное качество письма, которое выглядит как написанное экспертом, а не сгенерированное AI.
 
 ---
 
-## 1. Narrative Structure
+## 1. Структура повествования
 
-### The Hourglass Shape
+### Форма песочных часов
 
-Every well-structured paper follows an hourglass:
+Каждая хорошо структурированная статья следует форме песочных часов:
 
 ```
-BROAD:   Introduction — why this matters to the field
-NARROW:  Method — exactly what we did
-NARROW:  Experiments — exactly what happened
-BROAD:   Discussion — what this means for the field
+ШИРОКИЙ:   Введение — почему это важно для области
+УЗКИЙ:     Метод — что именно мы сделали
+УЗКИЙ:     Эксперименты — что именно произошло
+ШИРОКИЙ:   Обсуждение — что это значит для области
 ```
 
-### Section-Level Rules
+### Правила для разделов
 
-- **Introduction**: Start with the problem (not the solution). The reader must feel the gap before you fill it.
-  - Paragraph 1: broad context and importance
-  - Paragraph 2: specific problem and why existing approaches fall short
-  - Paragraph 3: "In this work, we..." — your contribution
-  - Paragraph 4: summary of results and paper structure
+- **Введение**: Начните с проблемы (не решения). Читатель должен почувствовать пробел, прежде чем вы его заполните.
+  - Абзац 1: широкий контекст и важность
+  - Абзац 2: конкретная проблема и почему существующие подходы не работают
+  - Абзац 3: "В данной работе мы..." — ваш вклад
+  - Абзац 4: сводка результатов и структура статьи
 
-- **Related Work**: Organize by theme, not by paper. Each paragraph covers a research direction, not a single citation.
-  - End each paragraph with how your work differs from that direction
-  - Never write a flat list of "X did Y. Z did W."
+- **Связанная работа**: Организуйте по темам, а не по статьям. Каждый абзац покрывает направление, а не одну цитату.
+  - Завершайте каждый абзац тем, чем ваша работа отличается от этого направления
+  - Никогда не пишите плоский список "X сделал Y. Z сделал W."
 
-- **Method**: Lead with intuition before formalism. A reader should understand *why* before *how*.
-  - One figure showing the overall architecture (mandatory)
-  - Notation introduced before first use
-  - Each subsection = one design decision
+- **Метод**: Ведите интуицией перед формализмом. Читатель должен понять *почему* до *как*.
+  - Одна фигура, показывающая общую архитектуру (обязательна)
+  - Обозначения вводятся перед первым использованием
+  - Каждый подраздел = одно решение по дизайну
 
-- **Experiments**: Claim-first structure. Each subsection begins with the claim it validates.
-  - "We claim X. To verify, we..." (not "We ran experiment A. Results show...")
-  - Tables before discussion (readers scan tables first)
-  - Error bars or confidence intervals mandatory
+- **Эксперименты**: Структура "сначала утверждение". Каждый подраздел начинается с утверждения, которое он валидирует.
+  - "Мы утверждаем X. Для проверки мы..." (не "Мы запустили эксперимент A. Результаты показывают...")
+  - Таблицы перед обсуждением (читатели сначала просматривают таблицы)
+  - Строки погрешностей или доверительные интервалы обязательны
 
-- **Conclusion**: New insight, not summary. What should the reader remember tomorrow?
+- **Заключение**: Новое понимание, а не сводка. Что должен запомнить читатель завтра?
 
-## 2. Clarity Rules
+## 2. Правила ясности
 
-### Sentence Level
+### На уровне предложений
 
-- **One idea per sentence.** If a sentence has "and" + "which" + "that", split it.
-- **Active voice by default.** "We train the model" not "The model is trained."
-- **Specific > vague.** "Reduces latency by 40%" not "significantly improves performance."
-- **Define before use.** Every acronym spelled out on first use. Every symbol defined before first equation.
+- **Одна идея на предложение.** Если предложение содержит "и" + "который" + "что", разделите его.
+- **Действительный залог по умолчанию.** "Мы обучаем модель" вместо "Модель обучается."
+- **Конкретное > расплывчатое.** "Снижает латентность на 40%" вместо "значительно улучшает производительность."
+- **Определяйте перед использованием.** Каждая аббревиатура раскрывается при первом использовании. Каждый символ определяется перед первым уравнением.
 
-### Paragraph Level
+### На уровне абзацев
 
-- **Topic sentence first.** Every paragraph starts with its main claim.
-- **One point per paragraph.** If you find yourself writing "Additionally" mid-paragraph, start a new one.
-- **Transitions between paragraphs.** The last sentence of paragraph N should connect to the first sentence of paragraph N+1.
+- **Тезисное предложение в начале.** Каждый абзац начинается с основного утверждения.
+- **Одна мысль на абзац.** Если вы обнаруживаете, что пишете "Кроме того" в середине абзаца, начните новый.
+- **Связи между абзацами.** Последнее предложение абзаца N должно соединяться с первым предложением абзаца N+1.
 
-### Notation Consistency
+### Согласованность обозначений
 
-- Define a `math_commands.tex` file for shared notation
-- Same symbol = same meaning throughout the paper
-- Bold lowercase for vectors (**x**), bold uppercase for matrices (**W**), calligraphic for sets
-- Never redefine a symbol mid-paper
+- Определите файл `math_commands.tex` для общих обозначений
+- Один и тот же символ = одно и то же значение на протяжении всей статьи
+- Строчные жирные для векторов (**x**), прописные жирные для матриц (**W**), каллиграфические для множеств
+- Никогда не переопределяйте символ в середине статьи
 
-## 3. Figure and Table Design
+## 3. Дизайн фигур и таблиц
 
-### Figures
+### Фигуры
 
-- **Every figure must be referenced in text** and discussed (not just displayed)
-- **Colorblind-safe palettes**: use distinguishable patterns + colors (never rely on color alone)
-- **Font size >= 8pt** in all labels, legends, axis ticks
-- **Vector format preferred** (PDF/SVG for line plots, PNG only for photos/screenshots)
-- **Caption is self-contained**: a reader should understand the figure from its caption alone
-- **Consistent style**: all figures use the same font, line width, color scheme
+- **Каждая фигура должна быть указана в тексте** и обсуждена (а не просто показана)
+- **Палитры, безопасные для дальтоников**: используйте различимые узоры + цвета (никогда не полагайтесь только на цвет)
+- **Размер шрифта >= 8pt** во всех подписях, легендах, делениях осей
+- **Предпочтительно векторный формат** (PDF/SVG для линейных графиков, PNG только для фото/скриншотов)
+- **Подпись самодостаточна**: читатель должен понять фигуру по её подписи
+- **Единый стиль**: все фигуры используют один шрифт, толщину линий, цветовую схему
 
-### Tables
+### Таблицы
 
-- **Horizontal rules only** (no vertical lines, no full grid): `\toprule`, `\midrule`, `\bottomrule`
-- **Best result in bold**, second-best underlined
-- **Units in column header**, not in every cell
-- **Align decimal points** in numeric columns
-- **Caption above table** (convention in most ML venues)
+- **Только горизонтальные линии** (без вертикальных линий, без полной сетки): `\toprule`, `\midrule`, `\bottomrule`
+- **Лучший результат жирным**, второй — подчёркнутым
+- **Единицы в заголовке столбца**, а не в каждой ячейке
+- **Выравнивание десятичных точек** в числовых столбцах
+- **Подпись над таблицей** (конвенция в большинстве ML-площадок)
 
-## 4. De-AI Polish Rules
+## 4. Правила удаления AI-маркеров
 
-AI-generated text has recognizable patterns. These must be eliminated before submission.
+Текст, сгенерированный AI, имеет узнаваемые паттерны. Их необходимо устранить до подачи.
 
-### Words and Phrases to Remove or Replace
+### Слова и фразы для удаления или замены
 
-| AI Pattern | Replace With |
-|------------|-------------|
-| "delve into" | "examine" / "analyze" / remove entirely |
-| "it is worth noting that" | remove (just state the thing) |
-| "it is important to note" | remove |
-| "in the realm of" | "in" |
-| "leverage" (as verb) | "use" / "exploit" / "apply" |
+| AI-паттерн | Замена |
+|------------|--------|
+| "delve into" | "examine" / "analyze" / удалить полностью |
+| "it is worth noting that" | удалить (просто скажите это) |
+| "it is important to note" | удалить |
+| "in the realm of" | "в" |
+| "leverage" (как глагол) | "use" / "exploit" / "apply" |
 | "utilize" | "use" |
-| "facilitate" | "enable" / "allow" / remove |
-| "comprehensive" (without evidence) | remove or quantify |
-| "crucial" / "pivotal" | "important" / "key" / remove |
-| "Furthermore" at paragraph start | vary: "Moreover" / "In addition" / restructure |
-| "In conclusion" (exact phrase) | "To summarize" / restructure without filler |
-| "a myriad of" | "many" / "various" / specific number |
+| "facilitate" | "enable" / "allow" / удалить |
+| "comprehensive" (без доказательств) | удалить или количественно оценить |
+| "crucial" / "pivotal" | "important" / "key" / удалить |
+| "Furthermore" в начале абзаца | варьируйте: "Moreover" / "In addition" / перестройте |
+| "In conclusion" (точная фраза) | "To summarize" / перестройте без заполнителя |
+| "a myriad of" | "many" / "various" / конкретное число |
 | "shed light on" | "reveal" / "clarify" / "show" |
-| "pave the way for" | "enable" / remove |
-| "cutting-edge" / "state-of-the-art" (as filler) | only use SOTA when citing specific benchmarks |
-| "robust" (without robustness experiments) | remove or qualify |
-| "novel" (overuse) | use once in abstract + once in intro, no more |
+| "pave the way for" | "enable" / удалить |
+| "cutting-edge" / "state-of-the-art" (как заполнитель) | используйте SOTA только при цитировании конкретных бенчмарков |
+| "robust" (без экспериментов робастности) | удалить или уточнить |
+| "novel" (чрезмерное использование) | используйте один раз в аннотации + один раз во введении, не больше |
 
-### Structural Patterns to Fix
+### Структурные паттерны для исправления
 
-- **Excessive hedging**: "It could potentially be argued that X might..." → "X is likely because..."
-- **Redundant topic shifts**: "Having discussed X, we now turn to Y" → just start Y
-- **Enumeration addiction**: "First... Second... Third..." in every paragraph → vary structure
-- **Superlative inflation**: "groundbreaking", "revolutionary" → let results speak
-- **Repetitive sentence openings**: vary subject-verb patterns across consecutive sentences
+- **Избыточная осторожность**: "Could it potentially be argued that X might..." → "X likely because..."
+- **Избыточные переходы тем**: "Having discussed X, we now turn to Y" → просто начните Y
+- **Зависимость от перечисления**: "First... Second... Third..." в каждом абзаце → варьируйте структуру
+- **Инфляция суперlatивов**: "groundbreaking", "revolutionary" → пусть результаты говорят сами за себя
+- **Повторяющиеся начала предложений**: варьируйте паттерны подлежащее-сказуемое между последовательными предложениями
 
-### The Polish Pass
+### Проход шлифовки
 
-After drafting, run this mental checklist on every paragraph:
+После написания выполните этот мысленный чеклист для каждого абзаца:
 
-1. Could a reviewer guess this was AI-generated? If yes, rewrite.
-2. Does every adjective earn its place? Remove unearned superlatives.
-3. Is there a shorter way to say this? Use it.
-4. Does this paragraph add information, or just fill space? Cut filler.
-5. Read aloud: does it sound like a human expert wrote it?
+1. Могут ли рецензенты догадаться, что это сгенерировано AI? Если да, перепишите.
+2. Каждое прилагательное заслуживает своего места? Удалите незаслуженные суперлативы.
+3. Есть ли более короткий способ это сказать? Используйте его.
+4. Добавляет ли этот абзац информацию или просто заполняет пространство? Вырежьте заполнитель.
+5. Прочитайте вслух: звучит ли это так, как написал человеческий эксперт?
 
-## 5. Venue-Specific Formatting
+## 5. Форматирование для конкретных площадок
 
-### Page Limits (typical)
+### Лимиты страниц (типичные)
 
-| Venue | Main | References | Appendix |
-|-------|------|-----------|----------|
-| ICLR | 10 pages | unlimited | unlimited |
-| NeurIPS | 9 pages | unlimited | unlimited |
-| ICML | 8 pages | unlimited | unlimited |
-| ACL | 8 pages (long) | unlimited | unlimited |
-| CVPR | 8 pages | +2 pages | — |
-| IEEE TPAMI | ~20 pages | included | — |
+| Площадка | Основное | Ссылки | Приложение |
+|----------|----------|--------|-----------|
+| ICLR | 10 страниц | без ограничений | без ограничений |
+| NeurIPS | 9 страниц | без ограничений | без ограничений |
+| ICML | 8 страниц | без ограничений | без ограничений |
+| ACL | 8 страниц (long) | без ограничений | без ограничений |
+| CVPR | 8 страниц | +2 страницы | — |
+| IEEE TPAMI | ~20 страниц | включены | — |
 
-### Anonymity Rules
+### Правила анонимности
 
-- No author names, affiliations, or acknowledgments in submission
-- No "our previous work [1]" — use "Smith et al. [1]" (third person)
-- No GitHub links to identifiable repos
-- No institution-specific cluster names
+- Нет имён авторов, принадлежностей или благодарностей в подаче
+- Нет "our previous work [1]" — используйте "Smith et al. [1]" (третье лицо)
+- Нет ссылок GitHub на идентифицируемые репозитории
+- Нет названий кластеров, специфичных для учреждений
 
-## What NOT To Do
+## Чего НЕ ДЕЛАТЬ
 
-- **Never submit without de-AI polish** — reviewers increasingly check for AI patterns
-- **Never use filler paragraphs** — every paragraph must advance the argument
-- **Never present results without context** — "95% accuracy" means nothing without baseline comparison
-- **Never mix tenses** — Method in present tense, experiments in past tense, results in present
-- **Never cite without discussing** — every \cite must be accompanied by how it relates to your work
+- **Никогда не подавайте без удаления AI-маркеров** — рецензенты всё чаще проверяют паттерны AI
+- **Никогда не используйте абзацы-заполнители** — каждый абзац должен продвигать аргумент
+- **Никогда не представляйте результаты без контекста** — "95% accuracy" ничего не значит без сравнения с базовым
+- **Никогда не смешивайте времена** — Method в настоящем времени, эксперименты в прошедшем, результаты в настоящем
+- **Никогда не цитируйте без обсуждения** — каждая \cite должна сопровождаться тем, как она связана с вашей работой

@@ -1,92 +1,92 @@
-# Reviewer Independence Principle
+# Принцип независимости рецензента
 
-> Referenced by: `/review`, `/novelty`, `/ideate`, `/exp-eval`, `/exp-design`, `/paper-plan`, `/paper-draft`, `/rebuttal`, `/refine`
-
----
-
-## Core Rule
-
-When using a Review LLM (any external model) as a reviewer or cross-verifier, **never share the primary model's own judgment, scores, or conclusions** with the reviewer before they form their independent assessment.
-
-The reviewer must receive:
-- The **artifact** being reviewed (idea, method, paper draft, experiment results)
-- The **relevant context** (wiki pages, prior work, constraints)
-- The **review criteria** (what to evaluate, at what difficulty level)
-
-The reviewer must **NOT** receive:
-- Claude's own score or rating of the artifact
-- Claude's assessment of strengths/weaknesses
-- Claude's recommendation (proceed/modify/abandon)
-- Any framing that anchors the reviewer toward a particular conclusion
+> Используется: `/review`, `/novelty`, `/ideate`, `/exp-eval`, `/exp-design`, `/paper-plan`, `/paper-draft`, `/rebuttal`, `/refine`
 
 ---
 
-## Why This Matters
+## Основное правило
 
-1. **Anchoring bias**: If the Review LLM sees "Claude rated this 7/10", its review will cluster around 7. Independent assessment catches blind spots that anchored assessment misses.
-2. **Confirmation bias**: If Claude says "the main weakness is X", the Review LLM will focus on X and miss weakness Y. Unprimed reviewers explore the full space.
-3. **Diversity of perspective**: The entire value of cross-model review is that different models have different biases. Sharing judgments before review collapses this diversity.
+При использовании Review LLM (любой внешней модели) в качестве рецензента или кросс-верификатора **никогда не делитесь собственным суждением, оценками или выводами основной модели** с рецензентом до формирования им независимой оценки.
 
----
+Рецензент должен получить:
+- **Артефакт** для проверки (идея, метод, черновик статьи, результаты эксперимента)
+- **Релевантный контекст** (wiki-страницы, предшествующие работы, ограничения)
+- **Критерии проверки** (что оценивать, на каком уровне сложности)
 
-## How to Apply
-
-### In `/review` (adversarial critique)
-- Step 2: Send artifact + context + review prompt to the Review LLM. Do NOT include any pre-assessment.
-- Step 3 (multi-turn): Claude may respond to the Review LLM's critique with rebuttals, but these are responses to its points, not pre-formed judgments.
-
-### In `/novelty` (cross-verification)
-- Step 3: Send method signature + existing similar works to the Review LLM. Do NOT include Claude's novelty score from Step 2.
-
-### In `/ideate` (dual-model brainstorm)
-- Phase 2: The Review LLM generates ideas from the same landscape context as Claude, but does NOT see Claude's idea list. Merge happens after both complete independently.
-
-### In `/exp-eval` (impartial verdict)
-- Step 2: Send experiment results + the linked idea's hypothesis + context to the Review LLM. Do NOT include Claude's interpretation of the results.
+Рецензент **НЕ ДОЛЖЕН** получать:
+- Собственную оценку или рейтинг Claude для артефакта
+- Оценку сильных/слабых сторон от Claude
+- Рекомендацию Claude (продолжить/изменить/прекратить)
+- Любую формулировку, которая привязывает рецензента к определённому выводу
 
 ---
 
-## Composing Independent Assessments
+## Почему это важно
 
-After both models have independently assessed:
-
-1. **If scores agree** (within 1 point): Use the average. High confidence.
-2. **If scores disagree** (2+ points apart): Flag the disagreement explicitly. Investigate which model missed what. Report both scores with reasoning.
-3. **Conservative default**: When combining novelty or quality scores, take the **lower** score. Better to underestimate than to overcommit to a flawed idea.
-4. **Never average away a critical finding**: If one model finds a fatal flaw (e.g., the method is already published), that finding stands regardless of the other model's score.
+1. **Эффект привязки**: Если Review LLM видит "Claude оценил это 7/10", его проверка будет сконцентрирована вокруг 7. Независимая оценка выявляет слепые зоны, которые привязанная оценка пропускает.
+2. **Подтверждение предвзятости**: Если Claude говорит "основная слабость — X", Review LLM сосредоточится на X и пропустит слабость Y. Ненаправленные рецензенты исследуют всё пространство.
+3. **Разнообразие перспектив**: Вся ценность кросс-модельной проверки в том, что разные модели имеют разные предвзятости. Совместное суждение до проверки уничтожает это разнообразие.
 
 ---
 
-## Review LLM Availability Check
+## Как применять
 
-Before calling `mcp__llm-review__chat`, every skill must check availability and handle gracefully.
+### В `/review` (адверсивная критика)
+- Шаг 2: Отправьте артефакт + контекст + промпт проверки в Review LLM. НЕ включайте предварительную оценку.
+- Шаг 3 (многоходовый): Claude может отвечать на критику Review LLM возражениями, но это ответы на его аргументы, а не предварительные суждения.
 
-### Detection
+### В `/novelty` (кросс-верификация)
+- Шаг 3: Отправьте сигнатуру метода + существующие похожие работы в Review LLM. НЕ включайте оценку новизны Claude из шага 2.
 
-A call to `mcp__llm-review__chat` will fail if:
-- The MCP server is not configured (missing `.mcp.json` or `enableAllProjectMcpServers` not set)
-- `LLM_API_KEY` or `LLM_BASE_URL` is not set in `.env`
-- The API endpoint is unreachable
+### В `/ideate` (двумодельный мозговой штурм)
+- Этап 2: Review LLM генерирует идеи из того же ландшафтного контекста, что и Claude, но НЕ видит список идей Claude. Слияние происходит после независимого завершения обоих.
 
-### Fallback Protocol
+### В `/exp-eval` (беспристрастный вердикт)
+- Шаг 2: Отправьте результаты эксперимента + гипотезу связанной идеи + контекст в Review LLM. НЕ включайте интерпретацию результатов от Claude.
 
-When the review MCP server is **unavailable**:
+---
 
-1. **Do NOT silently skip the review step.** Inform the user:
-   > "Cross-model review is not configured. This skill works best with an independent review LLM. Would you like to set it up now, or proceed with Claude-only analysis?"
+## Составление независимых оценок
 
-2. **If the user wants to configure**, guide them interactively:
-   - Ask which OpenAI-compatible API provider they have (DeepSeek, OpenAI, Qwen, OpenRouter, etc.)
-   - Help them edit `.env` to set `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`
-   - Tell them to restart Claude Code so the MCP server picks up the new config
-   - Reference `.env.example` for the full provider table
+После независимой оценки обеими моделями:
 
-3. **If the user wants to proceed without review**, continue with Claude-only mode:
-   - Skip the `mcp__llm-review__chat` call
-   - Perform the review/critique step using Claude itself (self-review)
-   - Clearly mark the output as `[Claude self-review — no independent second opinion]`
-   - The rest of the skill workflow proceeds normally
+1. **Если оценки согласны** (в пределах 1 балла): Используйте среднее. Высокая уверенность.
+2. **Если оценки расходятся** (2+ балла): Явно отметьте расхождение. Исследуйте, какая модель что упустила. Сообщите обе оценки с обоснованием.
+3. **Консервативный по умолчанию**: При объединении оценок новизны или качества берите **меньшую** оценку. Лучше занижать, чем переоценивать дефектную идею.
+4. **Никогда не усредняйте фатальную находку**: Если одна модель находит фатальную уязвимость (например, метод уже опубликован), эта находка остается в силе независимо от оценки другой модели.
 
-### When Review LLM IS Available
+---
 
-Proceed with the standard cross-model review protocol as defined above. The `mcp__llm-review__chat` tool is provided by the `llm-review` MCP server (configured in `.mcp.json`), which works with any OpenAI-compatible API.
+## Проверка доступности Review LLM
+
+Перед вызовом `mcp__llm-review__chat` каждый навык должен проверить доступность и обработать корректно.
+
+### Обнаружение
+
+Вызов `mcp__llm-review__chat` завершится ошибкой, если:
+- MCP-сервер не настроен (отсутствует `.mcp.json` или не установлен `enableAllProjectMcpServers`)
+- `LLM_API_KEY` или `LLM_BASE_URL` не заданы в `.env`
+- Конечная точка API недоступна
+
+### Протокол запасного варианта
+
+Когда MCP-сервер проверки **недоступен**:
+
+1. **НЕ пропускайте молча шаг проверки.** Сообщите пользователю:
+   > "Кросс-модельная проверка не настроена. Этот навык лучше всего работает с независимым Review LLM. Хотите настроить его сейчас или продолжить с анализом только через Claude?"
+
+2. **Если пользователь хочет настроить**, направьте интерактивно:
+   - Спросите, какой провайдер API, совместимый с OpenAI, у них есть (DeepSeek, OpenAI, Qwen, OpenRouter и т.д.)
+   - Помогите отредактировать `.env` для установки `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`
+   - Скажите перезапустить Claude Code, чтобы MCP-сервер принял новую конфигурацию
+   - Ссылка на `.env.example` для полной таблицы провайдеров
+
+3. **Если пользователь хочет продолжить без проверки**, продолжите в режиме только Claude:
+   - Пропустите вызов `mcp__llm-review__chat`
+   - Выполните шаг проверки/kritики с помощью самого Claude (самопроверка)
+   - Явно пометьте вывод как `[Самопроверка Claude — нет независимого второго мнения]`
+   - Остальной рабочий процесс навыка продолжается нормально
+
+### Когда Review LLM ДОСТУПЕН
+
+Продолжите со стандартным протоколом кросс-модельной проверки, как определено выше. Инструмент `mcp__llm-review__chat` предоставляется MCP-сервером `llm-review` (настроен в `.mcp.json`), который работает с любым API, совместимым с OpenAI.

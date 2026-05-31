@@ -1,219 +1,214 @@
 ---
-description: Generate and update visualization artifacts — Obsidian graph config and Canvas knowledge maps. The interactive web graph view lives in the SPA at app/modules/graph.js (served by tools/serve.py).
+name: visualize
+description: Генерация и обновление артефактов визуализации — конфигурация графа Obsidian и карты знаний Canvas. Интерактивный веб-просмотр графа находится в SPA в app/modules/graph.js (обслуживается tools/serve.py).
 argument-hint: [--obsidian] [--canvas] [--focus <node_id>] [--depth N] [--types <page-type,...>] [--edge-types <edge-type,...>] [--all]
 ---
 
 # /visualize
 
-> Generate visualization artifacts for the OmegaWiki knowledge graph.
-> Produces Obsidian graph config (color groups by entity type) and curated
-> Canvas views with labeled typed edges. For interactive web exploration
-> use the SPA Graph view (`tools/serve.py`, then `#/graph`).
+> Генерация артефактов визуализации для графа знаний OmegaWiki.
+> Создаёт конфигурацию графа Obsidian (цветные группы по типам сущностей) и курируемые
+> виды Canvas с подписанными типизированными рёбрами. Для интерактивного веб-просмотра
+> используйте вид графа SPA (`tools/serve.py`, затем `#/graph`).
 
-## Inputs
+## Входы
 
-- `--obsidian` (optional): Generate/update `.obsidian/graph.json` with entity-type color groups
-- `--canvas` (optional): Generate Obsidian Canvas (`.canvas`) from graph data with labeled edges
-- `--focus <node_id>` (optional): Center canvas on a specific node (e.g., `methods/my-method`)
-- `--depth N` (optional): BFS depth for focused canvas (default: 2)
-- `--types <list>` (optional): Filter nodes to these page types, comma-separated (e.g., `papers,concepts`)
-- `--edge-types <list>` (optional): Filter edges to these semantic types, comma-separated (e.g., `builds_on,challenges`)
-- `--all` (optional, default if no flags): Generate all visualization artifacts
+- `--obsidian` (опционально): Генерация/обновление `.obsidian/graph.json` с цветными группами по типам сущностей
+- `--canvas` (опционально): Генерация Obsidian Canvas (`.canvas`) из данных графа с подписанными рёбрами
+- `--focus <node_id>` (опционально): Центрирование canvas на конкретном узле (например, `methods/my-method`)
+- `--depth N` (опционально): глубина BFS для центрированного canvas (по умолчанию: 2)
+- `--types <list>` (опционально): Фильтрация узлов по типам страниц, через запятую (например, `papers,concepts`)
+- `--edge-types <list>` (опционально): Фильтрация рёбер по семантическим типам, через запятую (например, `builds_on,challenges`)
+- `--all` (опционально, по умолчанию если нет флагов): Генерация всех артефактов визуализации
 
-## Outputs
+## Выходы
 
-- `wiki/.obsidian/graph.json` — Obsidian graph color configuration (per-entity-type color groups)
-- `wiki/.obsidian/app.json` — Obsidian app settings (only if not exists)
-- `wiki/canvases/knowledge-map.canvas` — Full knowledge map Canvas with labeled edges
-- `wiki/canvases/idea-evidence.canvas` — Idea-centric subgraph Canvas
-- `wiki/canvases/focus-{node-id}.canvas` — Focused Canvas (when --focus is used)
-- Console output: Obsidian plugin recommendations and setup instructions
+- `wiki/.obsidian/graph.json` — конфигурация цветов графа Obsidian (цветные группы по типам сущностей)
+- `wiki/.obsidian/app.json` — настройки приложения Obsidian (только если не существует)
+- `wiki/canvases/knowledge-map.canvas` — Полная карта знаний Canvas с подписанными рёбрами
+- `wiki/canvases/idea-evidence.canvas` — Подграф Canvas, центрированный на идеях
+- `wiki/canvases/focus-{node-id}.canvas` — Центрированный Canvas (при использовании --focus)
+- Вывод в консоль: рекомендации плагинов Obsidian и инструкции по настройке
 
-The standalone-HTML explorer (`wiki/graph-view.html`) was retired; the
-SPA Graph view at `app/modules/graph.js` (served by `tools/serve.py`)
-covers the same use case and lives in the same codebase as the rest of
-the frontend.
+Автономный HTML-просмотрщик (`wiki/graph-view.html`) был отключён; SPA Graph view в `app/modules/graph.js` (обслуживается `tools/serve.py`) покрывает тот же случай использования и находится в том же коде, что и остальной фронтенд.
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
+### Чтение
 
-- `wiki/graph/edges.jsonl` — typed semantic edges
-- `wiki/graph/citations.jsonl` — bibliographic paper citations
-- `wiki/*/` — all entity directories for page metadata (frontmatter)
-- `config/visualize.json` — color palette and visualization preferences
+- `wiki/graph/edges.jsonl` — типизированные семантические рёбра
+- `wiki/graph/citations.jsonl` — библиографические цитаты статей
+- `wiki/*/` — все директории сущностей для метаданных страниц (frontmatter)
+- `config/visualize.json` — палитра цветов и предпочтения визуализации
 
-### Writes
+### Запись
 
-- `wiki/.obsidian/graph.json` — CREATE/OVERWRITE (local-only artifact, gitignored; regenerated each run from `config/visualize.json`)
-- `wiki/.obsidian/app.json` — CREATE only (never overwrite user customizations; gitignored)
-- `wiki/canvases/*.canvas` — CREATE/OVERWRITE (local-only artifact, gitignored)
+- `wiki/.obsidian/graph.json` — СОЗДАТЬ/ПЕРЕЗАПИСАТЬ (локальный артефакт, gitignored; пересобирается при каждом запуске из `config/visualize.json`)
+- `wiki/.obsidian/app.json` — ТОЛЬКО СОЗДАТЬ (никогда не перезаписывайте пользовательские настройки; gitignored)
+- `wiki/canvases/*.canvas` — СОЗДАТЬ/ПЕРЕЗАПИСАТЬ (локальный артефакт, gitignored)
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`).
-Set `WIKI_ROOT=wiki/`.
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`).
+Установите `WIKI_ROOT=wiki/`.
 
-### Step 0: Verify graph data exists
+### Шаг 0: Проверка наличия данных графа
 
-Check that `wiki/graph/edges.jsonl` exists and is non-empty. If empty, report that no graph data
-exists yet and suggest running `/ingest` first.
+Проверьте, что `wiki/graph/edges.jsonl` существует и не пуст. Если пуст, сообщите, что данные графа
+пока не существуют, и предложите сначала запустить `/ingest`.
 
-### Step 1: Generate Obsidian config (--obsidian or --all)
+### Шаг 1: Генерация конфигурации Obsidian (--obsidian или --all)
 
 ```bash
 python3 tools/visualize.py generate-obsidian-config wiki/
 ```
 
-Creates `.obsidian/graph.json` with 9 per-entity-type color groups using `path:{entity_type}` queries.
-Creates `.obsidian/app.json` only if it does not already exist.
+Создаёт `.obsidian/graph.json` с 9 цветными группами по типам сущностей, используя запросы `path:{entity_type}`.
+Создаёт `.obsidian/app.json` только если он ещё не существует.
 
-### Step 2: Generate Canvas views (--canvas or --all)
+### Шаг 2: Генерация видов Canvas (--canvas или --all)
 
-#### Step 2a — Full knowledge map
+#### Шаг 2a — Полная карта знаний
 
 ```bash
 python3 tools/visualize.py generate-canvas wiki/
 ```
 
-Layout: force-directed (no fixed center). Nodes are initially clustered by
-entity type, then settled via a spring–electron simulation.
+Макет: направленный силами (без фиксированного центра). Узлы первоначально группируются по
+типу сущности, затем размещаются через симуляцию пружин-электрон.
 
-#### Step 2b — Focused canvas
+#### Шаг 2b — Центрированный canvas
 
-**Resolve the focus node before generating:**
+**Разрешите узел фокуса перед генерацией:**
 
-1. If the user passed `--focus <node_id>` explicitly, use it as-is. Skip the
-   rest of this resolution.
-2. Otherwise, enumerate foundation pages: `ls wiki/foundations/*.md` (excluding
-   `.gitkeep`).
-   - **0 files**: skip Step 2b entirely. No focused canvas is generated; only
-     the full knowledge map from Step 2a is produced.
-   - **1 file**: auto-select that foundation as `--focus` (e.g.
-     `foundations/<slug>`). Print the choice to the console; do **not** prompt.
-   - **2+ files**: ask the user via `AskUserQuestion` to pick one. List each
-     foundation slug as an option (label = `foundations/<slug>`, description =
-     the page's frontmatter `title`). Use the picked slug as `--focus`.
+1. Если пользователь явно передал `--focus <node_id>`, используйте его как есть. Пропустите
+   остальную часть разрешения.
+2. Иначе, перечислите страницы foundations: `ls wiki/foundations/*.md` (исключая `.gitkeep`).
+   - **0 файлов**: полностью пропустите шаг 2b. Центрированный canvas не генерируется; только
+     полная карта знаний из шага 2a.
+   - **1 файл**: автоматически выберите этот foundation как `--focus` (например, `foundations/<slug>`).
+     Печатайте выбор в консоль; НЕ запрашивайте.
+   - **2+ файла**: спросите пользователя через `AskUserQuestion` для выбора. Перечислите каждый
+     slug foundation как вариант (метка = `foundations/<slug>`, описание =
+     заголовок frontmatter страницы). Используйте выбранный slug как `--focus`.
 
-Then generate:
+Затем сгенерируйте:
 
 ```bash
 python3 tools/visualize.py generate-canvas wiki/ --focus <node_id> --depth <N>
 ```
 
-Layout: radial concentric rings. The focus node sits at the canvas center;
-nodes at BFS distance `d` from the focus occupy ring `d`. Within each ring,
-nodes are sorted by entity type so same-type nodes cluster on the circle.
+Макет: радиальные концентрические кольца. Узел фокуса находится в центре canvas;
+узлы на расстоянии BFS `d` от фокуса занимают кольцо `d`. Внутри каждого кольца
+узлы сортируются по типу сущности, так что узлы одного типа группируются на окружности.
 
-**`--focus` BFS logic**: starting from the target node, run breadth-first search over
-`edges.jsonl` + `citations.jsonl`, collecting all nodes and edges within `--depth` hops.
-Render only that neighbourhood subgraph. If `node_id` is not found, abort and list the
-5 closest slug matches.
+**Логика BFS `--focus`**: начиная с целевого узла, выполняйте поиск в ширину по
+`edges.jsonl` + `citations.jsonl`, собирая все узлы и рёбра в пределах `--depth` хопов.
+Рендерите только этот окрестный подграф. Если `node_id` не найден, прервитесь и перечислите
+5 ближайших совпадений slug'ов.
 
-Canvas node schema:
+Схема узлов Canvas:
 
 ```json
 {
   "id": "<slug>",
   "type": "file",
-  "file": "<relative-path-to-md>",
-  "label": "<frontmatter title>",
+  "file": "<относительный-путь-к-md>",
+  "label": "<заголовок frontmatter>",
   "x": <int>,
   "y": <int>,
-  "width": <int, base size × importance scale for papers>,
-  "height": <int, base size × importance scale for papers>,
-  "color": "<obsidian-color-id>"
+  "width": <int, базовый размер × масштаб важности для статей>,
+  "height": <int, базовый размер × масштаб важности для статей>,
+  "color": "<id-цвета-obsidian>"
 }
 ```
 
-The `label` field overrides the displayed name; older Obsidian versions that
-do not honour it fall back to the filename (slug). The width/height base is
-per entity type; for papers the size is multiplied by an importance scale
-(1→0.7×, 2→0.85×, 3→1.0×, 4→1.2×, 5→1.5×, default 3 when missing).
+Поле `label` переопределяет отображаемое имя; более старые версии Obsidian, которые
+не учитывают его, возвращаются к имени файла (slug). Ширина/высота базовая для
+каждого типа сущности; для статей размер умножается на масштаб важности
+(1→0.7×, 2→0.85×, 3→1.0×, 4→1.2×, 5→1.5×, по умолчанию 3 при отсутствии).
 
-Canvas edge schema:
+Схема рёбер Canvas:
 
 ```json
 {
-  "id": "<source>-<target>-<edge-type>",
+  "id": "<источник>-<цель>-<тип-ребра>",
   "fromNode": "<slug>",
   "toNode": "<slug>",
-  "label": "<edge-type>"
+  "label": "<тип-ребра>"
 }
 ```
 
-If `--types` is set, drop nodes not in the list and drop edges whose source or target was dropped.
-If `--edge-types` is set, drop edges not in the list.
+Если задан `--types`, удалите узлы не из списка и удалите рёбра, чей источник или цель был удалён.
+Если задан `--edge-types`, удалите рёбра не из списка.
 
-### Step 3: SPA Graph view (auto-started in background)
+### Шаг 3: Вид графа SPA (автозапуск в фоне)
 
-The previous standalone-HTML explorer was retired. For interactive web
-exploration, the SPA backend (`tools/serve.py`) is started automatically
-by this skill — the user does **not** need to run `python tools/serve.py`
-manually.
+Предыдущий автономный HTML-просмотрщик был отключён. Для интерактивного веб-просмотра
+бэкенд SPA (`tools/serve.py`) запускается автоматически этим навыком — пользователю НЕ нужно запускать
+`python tools/serve.py` вручную.
 
-**Auto-start logic:**
+**Логика автозапуска:**
 
-1. Probe port 8765 to check whether the server is already running:
+1. Проверьте порт 8765, чтобы узнать, запущен ли уже сервер:
 
    ```bash
    python3 -c "import socket,sys; s=socket.socket(); s.settimeout(0.3); sys.exit(0 if s.connect_ex(('127.0.0.1',8765))==0 else 1)"
    ```
 
-   Exit code `0` = port in use (server already up — skip start). Exit code
-   `1` = port free (need to start).
+   Код выхода `0` = порт используется (сервер уже запущен — пропустите запуск). Код выхода
+   `1` = порт свободен (нужно запустить).
 
-2. If the port is free, start the server in the background via the **`Bash`
-   tool with `run_in_background: true`** (not foreground — foreground would
-   block the skill indefinitely):
+2. Если порт свободен, запустите сервер в фоне через инструмент **`Bash`**
+   с **`run_in_background: true`** (не на переднем плане — передний план
+   заблокирует навык бесконечно):
 
    ```bash
    python3 tools/serve.py
    ```
 
-   Do not spawn an `Agent` subagent for this — agents are not designed for
-   long-running services, and the server may die when the agent returns. The
-   background `Bash` process is owned by the Claude Code session and lives
-   for the session's lifetime.
+   Не создавайте подагент `Agent` для этого — агенты не предназначены для
+   долгоживущих сервисов, и сервер может умереть, когда агент вернётся. Фоновый процесс `Bash`
+   принадлежит сессии Claude Code и живёт на протяжении всей сессии.
 
-3. Print the SPA URL to the user:
+3. Выведите URL SPA пользователю:
 
    ```
    SPA Graph view: http://127.0.0.1:8765/#/graph
    ```
 
-The SPA Graph view (`app/modules/graph.js`) is a real ES module with
-the same Cytoscape + force layout + filters + BFS search as the old
-single-page generator, plus integrated double-click navigation to the
-SPA Reader view. `/visualize` no longer regenerates `wiki/graph-view.html`.
+Вид графа SPA (`app/modules/graph.js`) — это настоящий ES-модуль с
+тем же Cytoscape + направленным макетом + фильтрами + поиском BFS, что и старый
+одностраничный генератор, плюс интегрированная двойная навигация к
+виду чтения SPA. `/visualize` больше не пересобирает `wiki/graph-view.html`.
 
-### Step 4: Print recommendations
+### Шаг 4: Печать рекомендаций
 
 ```bash
 python3 tools/visualize.py list-recommendations
 ```
 
-Prints recommended Obsidian plugins (Graph Analysis, Dataview, Excalidraw) and setup instructions.
+Печатает рекомендованные плагины Obsidian (Graph Analysis, Dataview, Excalidraw) и инструкции по настройке.
 
-### Step 5: Log
+### Шаг 5: Журнал
 
 ```bash
-python3 tools/research_wiki.py log wiki/ "visualize | generated: [list of artifacts]"
+python3 tools/research_wiki.py log wiki/ "visualize | сгенерировано: [список артефактов]"
 ```
 
-Standard log format:
+Стандартный формат журнала:
 
 ```markdown
-## [YYYY-MM-DD] /visualize | <format> — <n> nodes, <m> edges<focus-note>
+## [YYYY-MM-DD] /visualize | <формат> — <n> узлов, <m> рёбер<примечание-фокуса>
 ```
 
-Where `<focus-note>` is ` (focus: <node_id>, depth <N>)` when `--focus` was used, or empty otherwise.
+Где `<примечание-фокуса>` — ` (фокус: <node_id>, глубина <N>)` при использовании `--focus`, или пусто в противном случае.
 
-## Color Palette
+## Цветовая палитра
 
-### Node colors (by page_type)
+### Цвета узлов (по page_type)
 
-| page_type     | HTML hex  | Obsidian color ID |
+| page_type     | HTML hex  | Цвет Obsidian ID |
 | ------------- | --------- | ----------------- |
 | `papers`      | `#4C9BE8` | `"1"`             |
 | `concepts`    | `#F4A261` | `"2"`             |
@@ -225,44 +220,44 @@ Where `<focus-note>` is ` (focus: <node_id>, depth <N>)` when `--focus` was used
 | `Summary`     | `#90BE6D` | `"4"`             |
 | `foundations` | `#B5B5B5` | `"6"`             |
 
-### Edge colors (HTML mode, by semantic category)
+### Цвета рёбер (HTML-режим, по семантической категории)
 
-| Category    | Types                                                                | Hex       |
-| ----------- | -------------------------------------------------------------------- | --------- |
-| Similarity  | `same_problem_as`, `similar_method_to`                               | `#ADB5BD` |
-| Lineage     | `builds_on`, `extends_concept`, `derived_from`, `inspired_by`        | `#4C9BE8` |
-| Comparison  | `challenges`, `critiques_concept`                                    | `#E76F51` |
-| Concept use | `introduces_concept`, `uses_concept`                                 | `#F4A261` |
-| Evidence    | `supports`, `contradicts`, `tested_by`, `invalidates`                | `#9B5DE5` |
-| Gap         | `addresses_gap`                                                      | `#F9C74F` |
-| Citation    | `cites`                                                              | `#B5B5B5` |
+| Категория    | Типы                                                                   | Hex       |
+| ------------ | ---------------------------------------------------------------------- | --------- |
+| Схожесть     | `same_problem_as`, `similar_method_to`                                 | `#ADB5BD` |
+| Происхождение| `builds_on`, `extends_concept`, `derived_from`, `inspired_by`          | `#4C9BE8` |
+| Сравнение    | `challenges`, `critiques_concept`                                      | `#E76F51` |
+| Использование| `introduces_concept`, `uses_concept`                                   | `#F4A261` |
+| Доказательства| `supports`, `contradicts`, `tested_by`, `invalidates`                 | `#9B5DE5` |
+| Пробел       | `addresses_gap`                                                        | `#F9C74F` |
+| Цитирование  | `cites`                                                                | `#B5B5B5` |
 
-## Constraints
+## Ограничения
 
-- Never edit `wiki/graph/` manually — only read from it
-- `config/visualize.json` is user-owned — never overwrite it
-- `.obsidian/app.json` is created only if missing (respect user customizations)
-- Canvas files are regenerated on each run (idempotent overwrite)
-- No external Python dependencies required (stdlib only)
-- `wiki/.obsidian/` and `wiki/canvases/` are gitignored as local-only artifacts; the source of truth is `config/visualize.json` + `wiki/graph/`. `/init` Step 6 and direct `/visualize` invocations regenerate them deterministically — never commit them.
+- Никогда не редактируйте `wiki/graph/` вручную — только читайте из него
+- `config/visualize.json` принадлежит пользователю — никогда не перезаписывайте
+- `.obsidian/app.json` создаётся только при отсутствии (уважайте пользовательские настройки)
+- Файлы Canvas пересобираются при каждом запуске (идемпотентная перезапись)
+- Внешние зависимости Python не требуются (только stdlib)
+- `wiki/.obsidian/` и `wiki/canvases/` gitignored как локальные артефакты; источник истины — `config/visualize.json` + `wiki/graph/`. `/init` Этап 6 и прямые вызовы `/visualize` пересобирают их детерминированно — никогда не коммитьте.
 
-## Error Handling
+## Обработка ошибок
 
-- **No graph data**: inform user to run `/ingest` first to build the knowledge base
-- **config/visualize.json missing**: report error, file should exist at `config/visualize.json`
-- **--focus node not found**: abort with `Error: node "<node_id>" not found`; list 5 closest slug matches
-- **No nodes after filtering**: abort with summary of filters applied and types available
-- **Canvas > 500 nodes**: warn that large canvases may be slow; suggest `--focus` or `--types` to narrow scope
-- **Entity directory missing**: skip silently, only process directories that exist
-- **Malformed JSONL lines**: skip silently, continue processing remaining lines
-- **wiki/canvases/ missing**: create directory before writing
+- **Нет данных графа**: сообщите пользователю запустить `/ingest` для построения базы знаний
+- **config/visualize.json отсутствует**: сообщите об ошибке, файл должен находиться в `config/visualize.json`
+- **--focus узел не найден**: прервитесь с `Error: node "<node_id>" not found`; перечислите 5 ближайших совпадений slug'ов
+- **Нет узлов после фильтрации**: прервитесь со сводкой применённых фильтров и доступных типов
+- **Canvas > 500 узлов**: предупредите, что большие canvas могут быть медленными; предложите `--focus` или `--types` для сужения области
+- **Директория сущности отсутствует**: пропустите молча, обрабатывайте только существующие директории
+- **Некорректные строки JSONL**: пропустите молча, продолжайте обработку оставшихся строк
+- **wiki/canvases/ отсутствует**: создайте директорию перед записью
 
-## Dependencies
+## Зависимости
 
-### Tools (via Bash)
+### Инструменты (через Bash)
 
-- `python3 tools/visualize.py generate-obsidian-config wiki/` — Obsidian config
-- `python3 tools/visualize.py generate-canvas wiki/ [--focus <node_id>] [--depth N]` — Canvas generation
-- `python3 tools/visualize.py list-recommendations` — Plugin recommendations
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log entry
-- `python3 tools/serve.py` — local SPA server (Graph view at `#/graph`)
+- `python3 tools/visualize.py generate-obsidian-config wiki/` — конфигурация Obsidian
+- `python3 tools/visualize.py generate-canvas wiki/ [--focus <node_id>] [--depth N]` — генерация Canvas
+- `python3 tools/visualize.py list-recommendations` — рекомендации плагинов
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
+- `python3 tools/serve.py` — локальный SPA-сервер (вид графа `#/graph`)

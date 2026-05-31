@@ -1,216 +1,217 @@
 ---
-description: Generate a Related Work section for a paper from wiki knowledge — thematic grouping → narrative structure → LaTeX output, following citation-verification and academic-writing
+name: survey
+description: Генерация раздела Related Work для статьи из знаний wiki — тематическая группировка → структура повествования → вывод LaTeX, следуя citation-verification и academic-writing
 argument-hint: <research-question-or-idea-slugs> [--format latex|markdown] [--max-papers 30]
 ---
 
 # /survey
 
-> Generate a Related Work section ready for direct use in a paper, based on existing wiki knowledge.
-> Draw material from wiki/papers/, concepts/, topics/; group by research direction (not paper-by-paper listing).
-> End each group with a statement of how it differs from this work. Citations follow citation-verification.md;
-> writing follows academic-writing.md Related Work rules.
-> Supports LaTeX and Markdown output formats.
+> Генерация раздела Related Work, готового к прямому использованию в статье, на основе существующих знаний wiki.
+> Материал берётся из wiki/papers/, concepts/, topics/; группировка по направлению (не листинг статей).
+> Каждая группа завершается утверждением о том, чем она отличается от этой работы. Цитаты следуют citation-verification.md;
+> написание следует правилам Related Work из academic-writing.md.
+> Поддерживает форматы вывода LaTeX и Markdown.
 
-## Inputs
+## Входы
 
-- `query`: one of:
-  - research question description (free text, e.g. "parameter-efficient fine-tuning for LLMs")
-  - list of idea slugs (from wiki/ideas/, used to organize related work around specific ideas)
-  - path to PAPER_PLAN.md (extract Related Work section definition from it)
-- `--format` (optional, default `latex`): output format
-  - `latex`: `\cite{key}` citations, embeddable directly in a paper
-  - `markdown`: `[[slug]]` wikilink citations, for wiki archiving
-- `--max-papers` (optional, default 30): maximum number of papers to cite
+- `query`: одно из:
+  - описание исследовательского вопроса (свободный текст, например, "parameter-efficient fine-tuning for LLMs")
+  - список slug'ов идей (из wiki/ideas/, используется для организации связанной работы вокруг конкретных идей)
+  - путь к PAPER_PLAN.md (извлечение определения раздела Related Work)
+- `--format` (опционально, по умолчанию `latex`): формат вывода
+  - `latex`: цитаты `\cite{key}`, встраиваемые непосредственно в статью
+  - `markdown`: цитаты wikilink `[[slug]]`, для архивации в wiki
+- `--max-papers` (опционально, по умолчанию 30): максимальное количество цитируемых статей
 
-## Outputs
+## Выходы
 
-- `wiki/outputs/related-work-{slug}-{date}.md` — Related Work text (archived)
-- `wiki/graph/edges.jsonl` — derived_from edges (if a new output is created)
-- `wiki/log.md` — appended log entry
-- **Terminal output** — Related Work body text (for direct copy-paste)
+- `wiki/outputs/related-work-{slug}-{date}.md` — текст Related Work (архивный)
+- `wiki/graph/edges.jsonl` — рёбра derived_from (если создан новый вывод)
+- `wiki/log.md` — добавлена запись в журнал
+- **Вывод в терминал** — текст тела Related Work (для прямого копирования)
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
+### Чтение
 - `wiki/papers/*.md` — Problem & Context, Key idea, Experiment & Results, Related, My take
 - `wiki/concepts/*.md` — Definition, Variants, Comparison, Known limitations
 - `wiki/topics/*.md` — Overview, Timeline, Open problems, Seminal works
-- `wiki/ideas/*.md` — Hypothesis, Motivation, origin_gaps (if input is idea slugs)
-- `wiki/methods/*.md` — Mechanism, Procedure, source_papers (when ideas reference methods)
-- `wiki/index.md` — content catalog, filtered by importance
-- `wiki/graph/context_brief.md` — global context
-- `wiki/graph/edges.jsonl` — inter-paper semantic relationships (same_problem_as, similar_method_to, builds_on, challenges)
-- `.claude/skills/shared-references/academic-writing.md` — Related Work writing rules
-- `.claude/skills/shared-references/citation-verification.md` — citation discipline
+- `wiki/ideas/*.md` — Hypothesis, Motivation, origin_gaps (если вход — slug'и идей)
+- `wiki/methods/*.md` — Mechanism, Procedure, source_papers (когда идеи ссылаются на методы)
+- `wiki/index.md` — каталог содержимого, фильтрованный по важности
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `wiki/graph/edges.jsonl` — межстатьевые семантические отношения (same_problem_as, similar_method_to, builds_on, challenges)
+- `.claude/skills/shared-references/academic-writing.md` — правила написания Related Work
+- `.claude/skills/shared-references/citation-verification.md` — дисциплина цитирования
 
-### Writes
-- `wiki/outputs/related-work-{slug}-{date}.md` — archived file
-- `wiki/graph/edges.jsonl` — derived_from edges
-- `wiki/log.md` — appended operation log
+### Запись
+- `wiki/outputs/related-work-{slug}-{date}.md` — архивный файл
+- `wiki/graph/edges.jsonl` — рёбра derived_from
+- `wiki/log.md` — добавлена запись в журнал операций
 
-### Graph edges created
-- `derived_from`: related-work output → source papers
+### Создаваемые графовые рёбра
+- `derived_from`: вывод related-work → исходные статьи
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**: confirm the working directory is the wiki project root (the directory containing `wiki/`, `raw/`, `tools/`).
+**Предусловие**: убедитесь, что рабочая директория — корень проекта wiki (директория, содержащая `wiki/`, `raw/`, `tools/`).
 
-### Step 1: Locate Relevant Knowledge
+### Шаг 1: Поиск релевантных знаний
 
-1. **Parse input**:
-   - If free text: extract keywords; match against tags and titles in wiki/index.md
-   - If idea slugs: read each idea's `origin_gaps` (concepts/topics) and walk to `concepts.key_papers` and topic seminal works to collect related papers; also read methods linked from the idea's `## Approach sketch` and pull their `source_papers`
-   - If PAPER_PLAN path: read the Related Work section's groupings and citations
-2. **Read wiki/graph/context_brief.md** for global context
-3. **Read wiki/graph/edges.jsonl**: extract inter-paper semantic relationships (same_problem_as, similar_method_to, builds_on, challenges)
-4. **Build candidate paper list**:
-   - Sort by importance descending from index.md
-   - Rank by tags and domain match
-   - Cap at `--max-papers` papers
-5. **If candidate papers < 5**: warn "insufficient related papers; consider /ingest of more papers first"
+1. **Парсинг входа**:
+   - Если свободный текст: извлеките ключевые слова; сопоставьте с тегами и заголовками в wiki/index.md
+   - Если slug'и идей: прочитайте `origin_gaps` каждой идеи (концепции/темы) и пройдите к `concepts.key_papers` и базовым работам тем для сбора связанных статей; также прочитайте методы, связанные из `## Approach sketch` идеи, и извлеките их `source_papers`
+   - Если путь к PAPER_PLAN: прочитайте группировки и цитаты раздела Related Work
+2. Прочитайте `wiki/graph/context_brief.md` для глобального контекста
+3. Прочитайте `wiki/graph/edges.jsonl`: извлеките межстатьевые семантические отношения (same_problem_as, similar_method_to, builds_on, challenges)
+4. **Построение списка кандидатов статей**:
+   - Сортировка по убыванию важности из index.md
+   - Ранжирование по совпадению тегов и домена
+   - Ограничение `--max-papers` статей
+5. **Если кандидатов < 5**: предупредите "недостаточно связанных статей; рассмотрите /ingest большего количества статей"
 
-### Step 2: Deep-Read Related Pages
+### Шаг 2: Глубокое чтение связанных страниц
 
-For each paper in the candidate list:
+Для каждой статьи в списке кандидатов:
 
-1. Read `wiki/papers/{slug}.md`: focus on Problem & Context, Key idea, Experiment & Results, My take
-2. Read linked `wiki/concepts/*.md`: focus on Definition, Variants, Comparison
-3. Read related `wiki/topics/*.md`: focus on Timeline, Open problems
+1. Прочитайте `wiki/papers/{slug}.md`: фокус на Problem & Context, Key idea, Experiment & Results, My take
+2. Прочитайте связанные `wiki/concepts/*.md`: фокус на Definition, Variants, Comparison
+3. Прочитайте связанные `wiki/topics/*.md`: фокус на Timeline, Open problems
 
-Record for each paper:
-- core contribution (one sentence)
-- method category (which research direction it belongs to)
-- relationship to this work (same problem / similar method / builds on / challenges)
-- limitations (extracted from Limitations or My take)
+Запишите для каждой статьи:
+- основной вклад (одно предложение)
+- категория метода (к какому направлению исследований относится)
+- отношение к этой работе (та же проблема / похожий метод / основана на / оспаривает)
+- ограничения (извлечённые из Limitations или My take)
 
-### Step 3: Thematic Grouping
+### Шаг 3: Тематическая группировка
 
-Following the Related Work rules in `shared-references/academic-writing.md`:
+Следуя правилам Related Work в `shared-references/academic-writing.md`:
 
-1. **Group by research direction** (not paper-by-paper listing):
-   - Extract natural groupings from wiki/topics/ and concepts/ classifications
-   - 3–8 papers per group
-   - Group headings describe research directions (e.g. "Parameter-Efficient Fine-Tuning"), not individual papers
-2. **Determine group order**:
-   - Broad to specific (major direction → sub-direction → most related methods)
-   - Or chronological (foundational → development → recent)
-3. **Determine within-group order**:
-   - Ascending by year (show progression)
-   - Important papers: 2–3 sentences; secondary papers: 1 sentence
-4. **Annotate each group's relationship to this work**:
-   - End each group with one sentence: "Unlike these approaches, our method..." or "We build upon X by..."
+1. **Группировка по направлению** (не листинг статей):
+   - Извлечение естественных группировок из классификаций wiki/topics/ и concepts/
+   - 3–8 статей на группу
+   - Заголовки групп описывают направления исследований (например, "Parameter-Efficient Fine-Tuning"), а не отдельные статьи
+2. **Определение порядка групп**:
+   - От широкого к узкому (основное направление → поднаправление → наиболее связанные методы)
+   - Или хронологический (базовый → развитие → недавние)
+3. **Определение порядка внутри группы**:
+   - По возрастанию года (показ прогресса)
+   - Важные статьи: 2–3 предложения; второстепенные: 1 предложение
+4. **Аннотация отношения группы к этой работе**:
+   - Завершите каждую группу одним предложением: "В отличие от этих подходов, наш метод..." или "Мы основываемся на X, ..."
 
-### Step 4: Generate Paragraphs
+### Шаг 4: Генерация абзацев
 
-Following `shared-references/academic-writing.md`:
+Следуя `shared-references/academic-writing.md`:
 
-1. **One or two paragraphs per group**:
-   - Opening: background and importance of the direction
-   - Body: expand on each paper's contribution in within-group order
-   - Closing: positioning relative to this work (required)
+1. **Один или два абзаца на группу**:
+   - Введение: фон и важность направления
+   - Тело: расширение вклада каждой статьи в порядке группы
+   - Завершение: позиционирование относительно этой работы (обязательно)
 
-2. **Citation format**:
-   - `--format latex`: `\cite{key}`, key generated from citation-verification.md naming rules
+2. **Формат цитирования**:
+   - `--format latex`: `\cite{key}`, ключ сгенерирован по правилам именования citation-verification.md
    - `--format markdown`: `[[slug]]`
 
-3. **Writing standards**:
-   - No flat lists ("X did Y. Z did W.")
-   - Each paragraph has a topic sentence
-   - Use contrastive connectives ("While X focuses on..., Y addresses...")
-   - No AI-signature vocabulary (see de-AI list in academic-writing.md)
+3. **Стандарты написания**:
+   - Нет плоских списков ("X сделал Y. Z сделал W.")
+   - Каждый абзац имеет предложение-тезис
+   - Используйте контрастные связки ("While X focuses on..., Y addresses...")
+   - Нет словаря с AI-маркерами (см. список удаления AI в academic-writing.md)
 
-4. **De-AI polish**:
-   - Scan and replace AI-signature vocabulary
-   - Vary sentence openings
-   - Remove filler sentences
+4. **Удаление AI-маркеров**:
+   - Сканирование и замена словаря с AI-маркерами
+   - Варьирование начал предложений
+   - Удаление предложений-заполнителей
 
-### Step 5: BibTeX Preparation (--format latex only)
+### Шаг 5: Подготовка BibTeX (только --format latex)
 
-If output format is LaTeX, following `shared-references/citation-verification.md`:
+Если формат вывода — LaTeX, следуя `shared-references/citation-verification.md`:
 
-1. Collect all `\cite{key}` citations
-2. For each key, attempt to fetch BibTeX: DBLP → CrossRef → S2
-3. Verified: record BibTeX
-4. Unverified: mark `[UNCONFIRMED]`
-5. Output list of BibTeX entries (can be appended to paper/references.bib)
-6. Report citation coverage
+1. Соберите все цитаты `\cite{key}`
+2. Для каждого ключа попробуйте получить BibTeX: DBLP → CrossRef → S2
+3. Верифицированные: запишите BibTeX
+4. Неверифицированные: пометьте `[UNCONFIRMED]`
+5. Выведите список записей BibTeX (можно добавить в paper/references.bib)
+6. Сообщите покрытие цитат
 
-### Step 6: Archive
+### Шаг 6: Архивация
 
-1. **Generate slug**:
+1. **Генерация slug**:
    ```bash
-   python3 tools/research_wiki.py slug "<query-keywords>"
+   python3 tools/research_wiki.py slug "<ключевые-слова-запроса>"
    ```
 
-2. **Write archive file**:
-   Create `wiki/outputs/related-work-{slug}-{date}.md`:
+2. **Запись архивного файла**:
+   Создайте `wiki/outputs/related-work-{slug}-{date}.md`:
    ```yaml
    ---
-   title: "Related Work: {topic}"
+   title: "Related Work: {тема}"
    type: related-work
    format: {latex|markdown}
    paper_count: {N}
    date_generated: YYYY-MM-DD
    ---
    ```
-   Body is the complete Related Work text.
-   If latex format: append BibTeX entries as an appendix.
+   Тело — полный текст Related Work.
+   Если формат latex: добавьте записи BibTeX в виде приложения.
 
-3. **Add graph edges**:
+3. **Добавление графовых рёбер**:
    ```bash
-   # output → each cited paper
+   # вывод → каждая цитируемая статья
    python3 tools/research_wiki.py add-edge wiki/ \
      --from "outputs/related-work-{slug}-{date}" --to "papers/{paper-slug}" \
-     --type derived_from --evidence "Cited in related work section"
+     --type derived_from --evidence "Цитировано в разделе related work"
    ```
 
-4. **Append log**:
+4. **Добавление в журнал**:
    ```bash
    python3 tools/research_wiki.py log wiki/ \
-     "survey | {topic} | {N} papers, {G} groups, format: {format}"
+     "survey | {topic} | {N} статей, {G} групп, формат: {format}"
    ```
 
-5. **Terminal output**: complete Related Work body text + citation coverage statistics
+5. **Вывод в терминал**: полный текст Related Work + статистика покрытия цитат
 
-## Constraints
+## Ограничения
 
-- **Only cite papers already in the wiki**: do not fabricate citations; every `\cite{}` or `[[slug]]` must correspond to a page in wiki/papers/
-- **Group by theme, not as a flat list**: each paragraph covers a research direction, not "Paper A did X. Paper B did Y."
-- **Every group must have a positioning sentence**: state the relationship to this work (at the end — difference or inheritance)
-- **Warn when candidate papers < 5**: prompt user to /ingest more papers first
-- **BibTeX follows citation-verification.md**: do not generate from LLM memory (--format latex only)
-- **De-AI polish is mandatory**: a polish pass must be applied after generation
-- **Archive to outputs/**: do not directly modify wiki papers/concepts/topics pages
-- **Graph edges via tools/research_wiki.py**: do not manually edit edges.jsonl
+- **Цитируйте только статьи, уже существующие в wiki**: не фабрикуйте цитаты; каждый `\cite{}` или `[[slug]]` должен соответствовать странице в wiki/papers/
+- **Группировка по темам, а не плоский список**: каждый абзац покрывает направление, а не "Статья A сделала X. Статья B сделала Y."
+- **Каждая группа должна иметь предложение позиционирования**: укажите отношение к этой работе (в конце — отличие или наследование)
+- **Предупреждение при кандидатах < 5**: предложите пользователю сначала выполнить /ingest большего количества статей
+- **BibTeX следует citation-verification.md**: не генерируйте из памяти LLM (только --format latex)
+- **Удаление AI-маркеров обязательно**: проход шлифовки должен быть применён после генерации
+- **Архивация в outputs/**: не изменяйте напрямую wiki-страницы papers/concepts/topics
+- **Графовые рёбра через tools/research_wiki.py**: не редактируйте вручную edges.jsonl
 
-## Error Handling
+## Обработка ошибок
 
-- **Fewer than 3 wiki papers**: error; suggest /ingest of enough papers first
-- **No matching papers**: broaden search scope (relax tag matching); if still none, error
-- **All BibTeX fetches failed** (latex format): use [UNCONFIRMED] placeholders; report count
-- **PAPER_PLAN format mismatch**: ignore plan's grouping suggestions; use automatic grouping
-- **Slug conflict**: append date suffix
+- **Менее 3 статей wiki**: ошибка; предложите сначала выполнить /ingest достаточного количества статей
+- **Нет подходящих статей**: расширите область поиска (ослабьте сопоставление тегов); если всё ещё нет, ошибка
+- **Все извлечения BibTeX не удались** (формат latex): используйте заполнители [UNCONFIRMED]; сообщите количество
+- **Несоответствие формата PAPER_PLAN**: игнорируйте предложения по группировке из плана; используйте автоматическую группировку
+- **Конфликт slug'ов**: добавьте суффикс даты
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py slug "<title>"` — generate slug
-- `python3 tools/research_wiki.py add-edge wiki/ ...` — add graph edge
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log
-- `python3 tools/fetch_s2.py search "<title>"` — BibTeX fallback (S2 search)
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py slug "<title>"` — генерация slug
+- `python3 tools/research_wiki.py add-edge wiki/ ...` — добавление графового ребра
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
+- `python3 tools/fetch_s2.py search "<title>"` — резервный BibTeX (поиск S2)
 
-### MCP Servers
-- None (survey does not require Review LLM; use /review --focus writing for separate review)
+### MCP-серверы
+- Нет (survey не требует Review LLM; используйте /review --focus writing для отдельной проверки)
 
 ### Claude Code Native
-- `Read` — read wiki pages
-- `Glob` — find ideas, methods, concepts, topics, papers
-- `WebFetch` — DBLP / CrossRef BibTeX fetch (--format latex only)
+- `Read` — чтение wiki-страниц
+- `Glob` — поиск идей, методов, концепций, тем, статей
+- `WebFetch` — извлечение BibTeX из DBLP / CrossRef (только --format latex)
 
-### Shared References
-- `.claude/skills/shared-references/academic-writing.md` — Related Work writing rules + de-AI polish
-- `.claude/skills/shared-references/citation-verification.md` — BibTeX fetch and [UNCONFIRMED] protocol
+### Общие справочники
+- `.claude/skills/shared-references/academic-writing.md` — правила написания Related Work + удаление AI-маркеров
+- `.claude/skills/shared-references/citation-verification.md` — извлечение BibTeX и протокол [UNCONFIRMED]
 
-### Called by
-- `/paper-draft` Step 3 (Related Work section can be delegated to this skill)
-- Manual user invocation
+### Вызывается из
+- `/paper-draft` Шаг 3 (раздел Related Work может быть делегирован этому навыку)
+- Ручной вызов пользователя

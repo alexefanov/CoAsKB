@@ -1,344 +1,344 @@
 ---
-description: Parse review comments → atomize concerns (Rvx-Cy) → map to wiki ideas/methods → check evidence → Review LLM stress-test → generate rebuttal
+name: rebuttal
+description: Парсинг комментариев рецензентов → атомизация concerns (Rvx-Cy) → маппинг к идеям/методам wiki → проверка доказательств → стресс-тест Review LLM → генерация опровержения
 argument-hint: <review-file-or-path> [--paper-slug <slug>] [--venue <venue>] [--stress-test] [--format formal|rich]
 ---
 
 # /rebuttal
 
-> Parse review comments, atomize each concern (Rvx-Cy numbering) and map it to a wiki idea or method,
-> check whether evidence is sufficient (tracing back to wiki experiments),
-> simulate reviewer follow-up questions with Review LLM (stress-test, scored 1-5), and generate
-> a formal plain-text rebuttal and a rich-text rebuttal.
-> Safety checks ensure no fabrication, no overpromise, full coverage.
+> Парсинг комментариев рецензентов, атомизация каждого concern (нумерация Rvx-Cy) и маппинг к идее или методу wiki,
+> проверка достаточности доказательств (восхождение к экспериментам wiki),
+> моделирование последующих вопросов рецензента с помощью Review LLM (стресс-тест, оценка 1-5), и генерация
+> формального опровержения простым текстом и опровержения форматированного текста.
+> Проверки безопасности гарантируют отсутствие фабрикаций, переобещаний, полного покрытия.
 
-## Inputs
+## Входы
 
-- `review`: source of review comments, one of:
-  - file path (e.g. `raw/reviews/reviewer1.txt`, `raw/reviews/meta-review.md`)
-  - multiple file paths (comma-separated: `raw/reviews/R1.txt,raw/reviews/R2.txt,raw/reviews/R3.txt`)
-  - directly pasted review text
-- `--paper-slug` (optional): slug of the associated paper in wiki/outputs/, used to locate PAPER_PLAN
-- `--venue` (optional): target conference/journal (ICLR / NeurIPS / ICML / ACL / CVPR); affects rebuttal format and word limits
-- `--stress-test` (optional, enabled by default): Review LLM simulates reviewer follow-up; disable with `--no-stress-test`
-- `--format` (optional, default `formal`): output format
-  - `formal`: formal plain-text rebuttal (suitable for pasting directly into submission system)
-  - `rich`: rich-text version (with wiki [[links]], detailed analysis, improvement plan)
+- `review`: источник комментариев рецензентов, один из:
+  - путь к файлу (например, `raw/reviews/reviewer1.txt`, `raw/reviews/meta-review.md`)
+  - несколько путей к файлам (через запятую: `raw/reviews/R1.txt,raw/reviews/R2.txt,raw/reviews/R3.txt`)
+  - вставленный напрямую текст рецензии
+- `--paper-slug` (опционально): slug связанной статьи в wiki/outputs/, используется для поиска PAPER_PLAN
+- `--venue` (опционально): целевая конференция/журнал (ICLR / NeurIPS / ICML / ACL / CVPR); влияет на формат и лимиты слов опровержения
+- `--stress-test` (опционально, включён по умолчанию): Review LLM моделирует последующие вопросы рецензента; отключение через `--no-stress-test`
+- `--format` (опционально, по умолчанию `formal`): формат вывода
+  - `formal`: формальное опровержение простым текстом (подходит для вставки в систему подачи)
+  - `rich`: форматированная версия (с wikilinks, подробным анализом, планом улучшений)
 
-## Outputs
+## Выходы
 
-- **wiki/outputs/rebuttal-{slug}.md** — rich-text rebuttal (with [[wikilinks]], evidence tracing, analysis tables)
-- **wiki/outputs/rebuttal-{slug}.txt** — formal rebuttal (plain text, suitable for pasting into submission system)
-- **wiki/ideas/*.md** / **wiki/methods/*.md** — if a concern exposes an evidence gap, append a suggestion to the relevant section (`## Risks` / `## Lessons learned` for ideas; `## Limitations` for methods)
-- **wiki/log.md** — append log entry
+- **wiki/outputs/rebuttal-{slug}.md** — форматированное опровержение (с wikilinks, трассировкой доказательств, таблицами анализа)
+- **wiki/outputs/rebuttal-{slug}.txt** — формальное опровержение (простой текст, подходящий для вставки в систему подачи)
+- **wiki/ideas/*.md** / **wiki/methods/*.md** — если concern обнаруживает пробел в доказательствах, добавьте предложение в соответствующий раздел (`## Risks` / `## Lessons learned` для идей; `## Limitations` для методов)
+- **wiki/log.md** — добавлена запись в журнал
 
-## Wiki Interaction
+## Взаимодействие с Wiki
 
-### Reads
-- `wiki/ideas/*.md` — map concerns to ideas, check linked experiments and novelty argument
-- `wiki/methods/*.md` — map concerns to methods, check Mechanism / Procedure / Limitations
-- `wiki/experiments/*.md` — find experiment results supporting ideas (via `linked_idea`)
-- `wiki/papers/*.md` — find citation context for referenced papers
-- `wiki/concepts/*.md` — understand the conceptual background of method-related concerns
-- `wiki/outputs/PAPER_PLAN.md` — understand paper structure (from /paper-plan, if --paper-slug provided)
-- `wiki/graph/context_brief.md` — global context
-- `wiki/graph/edges.jsonl` — idea-experiment-paper-method relationships
-- `.claude/skills/shared-references/cross-model-review.md` — Review LLM stress-test independence
+### Чтение
+- `wiki/ideas/*.md` — маппинг concerns к идеям, проверка связанных экспериментов и аргумента о новизне
+- `wiki/methods/*.md` — маппинг concerns к методам, проверка Mechanism / Procedure / Limitations
+- `wiki/experiments/*.md` — поиск результатов экспериментов, подтверждающих идеи (через `linked_idea`)
+- `wiki/papers/*.md` — поиск контекста цитирования для указанных статей
+- `wiki/concepts/*.md` — понимание концептуального фона concerns, связанных с методами
+- `wiki/outputs/PAPER_PLAN.md` — понимание структуры статьи (из /paper-plan, если указан --paper-slug)
+- `wiki/graph/context_brief.md` — глобальный контекст
+- `wiki/graph/edges.jsonl` — отношения идея-эксперимент-статья-метод
+- `.claude/skills/shared-references/cross-model-review.md` — независимость стресс-теста Review LLM
 
-### Writes
-- `wiki/outputs/rebuttal-{slug}.md` — rich-text version
-- `wiki/outputs/rebuttal-{slug}.txt` — formal plain-text version
-- `wiki/ideas/*.md` / `wiki/methods/*.md` — append reviewer-identified gaps to `## Risks` / `## Lessons learned` (ideas) or `## Limitations` (methods); do not silently flip an idea's status — only flag concerns
-- `wiki/log.md` — append log entry
+### Запись
+- `wiki/outputs/rebuttal-{slug}.md` — форматированная версия
+- `wiki/outputs/rebuttal-{slug}.txt` — формальная версия простым текстом
+- `wiki/ideas/*.md` / `wiki/methods/*.md` — добавление обнаруженных рецензентом пробелов в `## Risks` / `## Lessons learned` (идеи) или `## Limitations` (методы); не изменяйте молча статус идеи — только отмечайте concerns
+- `wiki/log.md` — добавлена запись в журнал
 
-### Graph edges created
-- None (rebuttal is a query operation; does not modify the knowledge graph)
+### Создаваемые графовые рёбра
+- Нет (опровержение — операция запроса; не изменяет граф знаний)
 
-## Workflow
+## Рабочий процесс
 
-**Precondition**:
-1. Confirm working directory is the wiki project root (containing `wiki/`, `raw/`, `tools/`)
-2. Read `cross-model-review.md` to confirm stress-test independence principle
-3. Generate slug: `python3 tools/research_wiki.py slug "{paper-slug}-rebuttal"`
+**Предусловие**:
+1. Убедитесь, что рабочая директория — корень проекта wiki (содержит `wiki/`, `raw/`, `tools/`)
+2. Прочитайте cross-model-review.md для подтверждения принципа независимости стресс-теста
+3. Сгенерируйте slug: `python3 tools/research_wiki.py slug "{paper-slug}-rebuttal"`
 
-### Step 1: Parse Review Comments
+### Шаг 1: Парсинг комментариев рецензентов
 
-1. **Read review text**:
-   - If file path(s): read all specified files
-   - If direct text: use directly
-   - Merge multiple reviewers' comments, annotated by source (Reviewer 1/2/3/Meta)
+1. **Чтение текста рецензии**:
+   - Если пути к файлам: прочитайте все указанные файлы
+   - Если прямой текст: используйте напрямую
+   - Объедините комментарии нескольких рецензентов, аннотированные по источнику (Рецензент 1/2/3/Мета)
 
-2. **Identify structure**:
-   - Extract each reviewer's: overall score (Accept/Reject/Borderline), confidence, summary, Strengths, Weaknesses, questions
-   - If the format is non-standard (plain text), use LLM to parse into structured format
+2. **Определение структуры**:
+   - Извлеките для каждого рецензента: общий балл (Accept/Reject/Borderline), уверенность, сводка, Сильные стороны, Слабости, вопросы
+   - Если формат нестандартный (простой текст), используйте LLM для парсинга в структурированный формат
 
-3. **Output**: structured comments for each reviewer
+3. **Вывод**: структурированные комментарии для каждого рецензента
 
-### Step 2: Atomize Concerns
+### Шаг 2: Атомизация concerns
 
-Split each weakness and question into independent atomic concerns:
+Разделите каждую слабость и вопрос на независимые атомарные concerns:
 
-1. **Splitting rules**:
-   - A single weakness may be a compound sentence containing multiple independent concerns ("the method lacks ablation experiments and also does not compare with X" → split into 2 concerns)
-   - Assign each atomic concern an ID in `Rvx-Cy` format (Rv1-C1 = Reviewer 1, Concern 1; Rv1-C2 = Reviewer 1, Concern 2)
-   - Retain reviewer number to ensure traceability back to the original comment
+1. **Правила разделения**:
+   - Одна слабость может быть составным предложением, содержащим несколько независимых concerns ("метод не имеет абляционных экспериментов и также не сравнивается с X" → разделите на 2 concern)
+   - Присвойте каждому атомарному concern ID в формате `Rvx-Cy` (Rv1-C1 = Рецензент 1, Concern 1; Rv1-C2 = Рецензент 1, Concern 2)
+   - Сохраняйте номер рецензента для обеспечения прослеживаемости до исходного комментария
 
-2. **Classify each concern**:
-   - **evidence**: factual questions about experimental data or result interpretation
-   - **method**: methodological questions about method design or algorithmic correctness
-   - **missing**: missing experiments/analysis/comparisons/citations
-   - **clarity**: unclear expression, symbol confusion, figure issues
-   - **scope**: insufficient contribution, applicability questions
-   - **novelty**: overlap with existing work, insufficient innovation
-   - **minor**: formatting, typos, and other small issues
+2. **Классификация каждого concern**:
+   - **evidence**: фактические вопросы об экспериментальных данных или интерпретации результатов
+   - **method**: методологические вопросы о дизайне метода или корректности алгоритма
+   - **missing**: отсутствующие эксперименты/анализ/сравнения/цитаты
+   - **clarity**: нечёткая формулировка, путаница в обозначениях, проблемы с фигурами
+   - **scope**: недостаточный вклад, вопросы применимости
+   - **novelty**: перекрытие с существующей работой, недостаточная инновационность
+   - **minor**: форматирование, опечатки и другие мелкие проблемы
 
-3. **Assess severity**: critical / major / minor
+3. **Оценка серьёзности**: critical / major / minor
 
-4. **Output**: atomized concern list, each containing {id (Rvx-Cy), reviewer, type, severity, text}
+4. **Вывод**: список атомизированных concerns, каждый содержащий {id (Rvx-Cy), рецензент, тип, серьёзность, текст}
 
-### Step 3: Map Concerns to Wiki Ideas / Methods
+### Шаг 3: Маппинг concerns к идеям/методам wiki
 
-For each concern:
+Для каждого concern:
 
-1. **Find associated idea or method**:
-   - Extract keywords from concern text
-   - Search `wiki/ideas/*.md` and `wiki/methods/*.md` for matches (idea for hypothesis/result challenges; method for design/algorithmic challenges)
-   - Read `wiki/graph/edges.jsonl` to find idea↔experiment and method↔paper relationships
-   - If no direct match is found: annotate as "unmapped" (no direct entity correspondence)
+1. **Поиск связанной идеи или метода**:
+   - Извлеките ключевые слова из текста concern
+   - Поиск в `wiki/ideas/*.md` и `wiki/methods/*.md` для совпадений (идея для вызовов гипотезы/результатов; метод для вызовов дизайна/алгоритма)
+   - Прочитайте `wiki/graph/edges.jsonl` для поиска связей idea↔experiment и method↔paper
+   - Если прямое совпадение не найдено: аннотируйте как "unmapped" (нет прямого соответствия сущности)
 
-2. **Check Evidence Status**:
-   - For an idea: read `linked_experiments`, count succeeded/inconclusive/failed outcomes; read `novelty_score` and `status`
-   - For a method: read `source_papers` and `## Limitations`
-   - **Judgment**:
-     - Sufficient: ≥1 succeeded experiment for the linked idea, OR method backed by source paper(s)
-     - Partial: experiments exist but mixed outcomes
-     - Insufficient: no supporting experiments or thin source coverage
-     - Contradicted: failed/inconclusive experiments dominate
+2. **Проверка статуса доказательств**:
+   - Для идеи: прочитайте `linked_experiments`, подсчитайте succeeded/inconclusive/failed результаты; прочитайте `novelty_score` и `status`
+   - Для метода: прочитайте `source_papers` и `## Limitations`
+   - **Суждение**:
+     - Достаточно: ≥1 succeeded эксперимент для связанной идеи, ИЛИ метод подтверждён source paper(s)
+     - Частично: эксперименты есть, но смешанные результаты
+     - Недостаточно: нет вспомогательных экспериментов или слабое покрытие источниками
+     - Опровержено: failed/inconclusive эксперименты преобладают
 
-3. **Output**:
+3. **Вывод**:
 
-| Concern ID | Reviewer | Type | Severity | Entity mapped | Evidence Status | Strategy |
-|------------|----------|------|----------|---------------|-----------------|----------|
+| ID concern | Рецензент | Тип | Серьёзность | Сопоставленная сущность | Статус доказательств | Стратегия |
+|------------|-----------|-----|-------------|------------------------|---------------------|-----------|
 | Rv1-C1 | R1 | method | critical | [[method-slug]] | sufficient | A |
 | Rv1-C2 | R1 | missing | major | [[idea-slug]] | insufficient | B |
 | Rv2-C1 | R2 | novelty | major | unmapped | — | D |
 
-### Step 4: Draft Rebuttal Responses
+### Шаг 4: Набросок ответов на опровержения
 
-Draft a response for each concern according to its strategy:
+Набросайте ответ для каждого concern в соответствии со стратегией:
 
-**Strategy A — Evidence sufficient (respond directly):**
-- Cite specific experiment results and data (annotate source, ensure traceability to wiki/experiments/)
-- Point to evidence in the wiki (convert to paper citations)
-- If the concern is based on a misunderstanding: politely clarify, point to the relevant Section in the paper
+**Стратегия A — Доказательства достаточны (прямой ответ):**
+- Цитируйте конкретные результаты экспериментов и данные (аннотируйте источник, обеспечьте прослеживаемость до wiki/experiments/)
+- Укажите на доказательства в wiki (преобразуйте в цитаты статей)
+- Если concern основан на недопонимании: вежливо разъясните, укажите на соответствующий раздел в статье
 
-**Strategy B — Evidence insufficient (acknowledge + concrete plan):**
-- Honestly acknowledge that current evidence is not sufficient
-- Propose a concrete supplementary experiment plan (can link to /exp-design)
-- State a specific timeline and resource requirements
-- Do not use vague commitments; only commit to concrete executable supplementary experiments
+**Стратегия B — Доказательства недостаточны (признание + конкретный план):**
+- Честно признайте, что текущих доказательств недостаточно
+- Предложите конкретный план дополнительных экспериментов (можно связать с /exp-design)
+- Укажите конкретные сроки и ресурсные требования
+- Не используйте расплывчатые обещания; только конкретные осуществимые дополнительные эксперименты
 
-**Strategy C — Clarity issue (commit to revision):**
-- Acknowledge the unclear expression
-- Provide the improved description (show the revised text directly in the rebuttal)
-- List specific Paper Edit plans
+**Стратегия C — Проблема ясности (обязательство по исправлению):**
+- Признайте нечёткую формулировку
+- Предоставьте улучшенное описание (покажите исправленный текст непосредственно в опровержении)
+- Перечислите конкретные планы редактирования статьи
 
-**Strategy D — Scope/Novelty challenge (argue):**
-- Highlight essential differences from existing work
-- Cite novelty-check results (if available)
-- Point out differences the reviewer may have overlooked
+**Стратегия D — Вызов scope/новизны (аргументация):**
+- Подчеркните существенные отличия от существующей работ
+- Ссылайтесь на результаты проверки новизны (если доступны)
+- Укажите на отличия, которые рецензент мог упустить
 
-**Format for each response**:
+**Формат для каждого ответа**:
 ```markdown
-**[Rvx-Cy]** {concern summary}
+**[Rvx-Cy]** {краткое описание concern}
 
-{response text, 2-5 sentences, annotated sources for traceability}
+{текст ответа, 2-5 предложений, аннотированные источники для прослеживаемости}
 ```
 
-**Safety checks (per response)**:
-- [ ] No fabrication: do not fabricate data or experiment results
-- [ ] No overpromise: only commit to specific executable supplementary experiments
-- [ ] Cited data is recorded in wiki/experiments/
-- [ ] If the linked idea has `status: invalidated` or its experiments are inconclusive, do not pretend it is supported
+**Проверки безопасности (для каждого ответа)**:
+- [ ] Нет фабрикаций: не фабрикуйте данные или результаты экспериментов
+- [ ] Нет переобещаний: только конкретные осуществимые дополнительные эксперименты
+- [ ] Цитируемые данные записаны в wiki/experiments/
+- [ ] Если связанная идея имеет `status: invalidated` или её эксперименты inconclusive, не притворяйтесь, что она подтверждена
 
-### Step 5: Review LLM Stress-Test
+### Шаг 5: Стресс-тест Review LLM
 
-**Follow cross-model-review.md**: do not send Claude's rebuttal strategy analysis to Review LLM.
+**Следуйте cross-model-review.md**: не отправляйте анализ стратегии опровержения Claude в Review LLM.
 
-If `--stress-test` is enabled (default):
+Если `--stress-test` включён (по умолчанию):
 
 ```
 mcp__llm-review__chat:
-  system: "You are a critical reviewer who has just read a rebuttal to your review
-           comments. You are skeptical and will push back on weak responses.
-           For each rebuttal response, assess on a scale of 1-5:
-           1 = unconvincing (deflection or fabrication suspected)
-           2 = weak (vague, no concrete evidence)
-           3 = acceptable (addresses concern but could be stronger)
-           4 = strong (concrete evidence, clear reasoning)
-           5 = fully convincing (compelling evidence, thorough response)
-           Also check for overpromise: are commitments specific and feasible?
-           Provide a follow-up question for any response scoring <= 3."
+  system: "Вы — строгий рецензент, который только что прочитал опровержение на ваши
+           комментарии рецензии. Вы скептически настроены и будете возражать на слабые ответы.
+           Для каждого ответа опровержения оцените по шкале 1-5:
+           1 = неубедительно (подозрение на отвлечение или фабрикацию)
+           2 = слабо (расплывчато, нет конкретных доказательств)
+           3 = приемлемо (затрагивает concern, но может быть сильнее)
+           4 = сильно (конкретные доказательства, чёткие рассуждения)
+           5 = полностью убедительно (убедительные доказательства, тщательный ответ)
+           Также проверьте на переобещание: конкретны ли и осуществимы ли обязательства?"
   message: |
-    ## Original Review Concerns
-    {atomic concerns list with Rvx-Cy IDs}
+    ## Исходные concerns рецензии
+    {список атомизированных concerns с ID Rvx-Cy}
 
-    ## Author Rebuttal
-    {drafted rebuttal responses}
+    ## Ответ автора
+    {набросанные ответы на опровержения
 
-    ## Please assess each response (score 1-5) and provide follow-up questions.
+    ## Оцените каждый ответ (балл 1-5) и предоставьте последующие вопросы.
 ```
 
-**Handle Review LLM feedback**:
-- **Score 4-5 (convincing)**: keep original response
-- **Score 3 (acceptable)**: strengthen response, add details suggested by Review LLM
-- **Score 1-2 (unconvincing/weak)**: rewrite response, consider switching strategy (A→B, acknowledge insufficiency)
+**Обработка обратной связи Review LLM**:
+- **Балл 4-5 (убедительно)**: сохраните исходный ответ
+- **Балл 3 (приемлемо)**: усильте ответ, добавьте детали, предложенные Review LLM
+- **Балл 1-2 (неубедительно/слабо)**: перепишите ответ, рассмотрите смену стратегии (A→B, признание недостаточности)
 
-**Second round (if any responses scored <= 2)**:
+**Второй раунд (если какие-либо ответы получили балл ≤ 2)**:
 
 ```
 mcp__llm-review__chat-reply:
-  threadId: {previous thread}
+  threadId: {предыдущий тред}
   message: |
-    We've revised the following responses:
-    {revised responses}
-    Please re-assess (score 1-5).
+    Мы переработали следующие ответы:
+    {переработанные ответы}
+    Пожалуйста, переоцените (балл 1-5).
 ```
 
-Maximum 2 rounds of stress-test. Handle follow-up questions and update responses.
+Максимум 2 раунда стресс-теста. Обрабатывайте последующие вопросы и обновляйте ответы.
 
-### Step 6: Format Output + Safety Check
+### Шаг 6: Форматирование вывода + проверка безопасности
 
-**6a. Format formal rebuttal-{slug}.txt** (plain text, suitable for submission system):
+**6a. Формат formal rebuttal-{slug}.txt** (простой текст, подходящий для системы подачи):
 
 ```
-We thank the reviewers for their constructive feedback. We address each concern below.
+Мы благодарим рецензентов за конструктивную обратную связь. Ниже мы отвечаем на каждый concern.
 
-Reviewer 1:
+Рецензент 1:
 
-[Rv1-C1] {concern summary}
-{response}
+[Rv1-C1] {краткое описание concern}
+{ответ}
 
-[Rv1-C2] {concern summary}
-{response}
+[Rv1-C2] {краткое описание concern}
+{ответ}
 
-Reviewer 2:
+Рецензент 2:
 ...
 
-Summary of Revisions:
-- {bulleted list of planned changes}
+Сводка исправлений:
+- {маркированный список запланированных изменений}
 
-Additional Experiments (if applicable):
-- {new experiments committed to, with timeline}
+Дополнительные эксперименты (если применимо):
+- {взятые на себя новые эксперименты со сроками}
 ```
 
-**6b. Format rich-text rebuttal-{slug}.md**:
+**6b. Формат rich-text rebuttal-{slug}.md**:
 
 ```markdown
-# Rebuttal Analysis: {paper title}
+# Анализ опровержения: {название статьи}
 
-## Coverage Summary
-| Concern ID | Type | Severity | Entity | Evidence Status | Review LLM Score | Strategy |
-|------------|------|----------|--------|-----------------|------------------|----------|
+## Сводка покрытия
+| ID concern | Тип | Серьёзность | Сущность | Статус доказательств | Оценка Review LLM | Стратегия |
+|------------|-----|-------------|----------|---------------------|-------------------|-----------|
 | Rv1-C1 | method | critical | [[method-slug]] | sufficient | 4/5 | A |
 | Rv1-C2 | missing | major | [[idea-slug]] | insufficient | 3/5 | B |
 
-## Responses
-### Reviewer 1
+## Ответы
+### Рецензент 1
 **[Rv1-C1]** ...
 **[Rv1-C2]** ...
 
-## Evidence Gap Analysis
-| Entity | Status / Novelty | Gap | Needed |
-|--------|------------------|-----|--------|
-| [[idea-slug]] | proposed / novelty 2 | No ablation on dataset X | Run ablation experiment |
+## Анализ пробелов в доказательствах
+| Сущность | Статус / Новизна | Пробел | Необходимо |
+|----------|------------------|--------|------------|
+| [[idea-slug]] | proposed / novelty 2 | Нет абляции на наборе данных X | Запустить абляционный эксперимент |
 
-## Action Items
+## План действий
 
-### Paper Edits
-| Section | Change | Reason |
-|---------|--------|--------|
-| Section 3.2 | Clarify notation | Rv1-C3 clarity concern |
+### Редактирование статьи
+| Раздел | Изменение | Причина |
+|--------|-----------|---------|
+| Раздел 3.2 | Разъяснение обозначений | Rv1-C3 concern о ясности |
 
-### Wiki Updates
-| Page | Update | Reason |
-|------|--------|--------|
-| ideas/{slug} | Append concern to `## Risks` | Rv2-C1 evidence gap |
+### Обновления wiki
+| Страница | Обновление | Причина |
+|----------|------------|---------|
+| ideas/{slug} | Добавить concern в `## Risks` | Rv2-C1 пробел в доказательствах |
 
-### Suggested Experiments
-| Experiment | Linked Idea | Suggested by |
-|-----------|-------------|--------------|
+### Предложенные эксперименты
+| Эксперимент | Связанная идея | Предложено |
+|-------------|----------------|------------|
 | ablation-dataset-x | [[idea-slug]] | Rv1-C2 |
 
-→ Run `/exp-design ablation-dataset-x` to design follow-up
+→ Запустите `/exp-design ablation-dataset-x` для проектирования последующих
 
-## Review LLM Stress-Test Summary
-- Average score: {N}/5
-- Scores 4-5: {N}/{total}
-- Scores 1-3: {N}/{total} (all revised)
+## Сводка стресс-теста Review LLM
+- Средний балл: {N}/5
+- Баллы 4-5: {N}/{total}
+- Баллы 1-3: {N}/{total} (все переработаны)
 
-## Safety Checklist
-- [x] No fabrication: all cited data exists in wiki/experiments
-- [x] No overpromise: all committed experiments are specific and feasible
-- [x] Full coverage: {N}/{N} concerns addressed (no omissions)
-- [x] Invalidated/inconclusive ideas not presented as supported
+## Чеклист безопасности
+- [x] Нет фабрикаций: все цитируемые данные существуют в wiki/experiments
+- [x] Нет переобещаний: все взятые на себя эксперименты конкретны и осуществимы
+- [x] Полное покрытие: {N}/{N} concerns обработано (без пропусков)
+- [x] Invalidated/inconclusive идеи не представлены как подтверждённые
 ```
 
-**6c. Final safety check**:
-- **Full coverage**: confirm every concern has a response (no omissions)
-- **No fabrication**: every cited data point is recorded in wiki/experiments/ (traceable)
-- **No overpromise**: supplementary experiment commitments are specific and feasible
-- **Honesty on weak ideas**: if the linked idea has `novelty_score <= 2` OR its linked experiments are inconclusive, do not pretend evidence is sufficient
+**6c. Финальная проверка безопасности**:
+- **Полное покрытие**: убедитесь, что на каждый concern есть ответ (без пропусков)
+- **Нет фабрикаций**: каждая цитируемая точка данных записана в wiki/experiments/ (прослеживаема)
+- **Нет переобещаний**: обязательства по дополнительным экспериментам конкретны и осуществимы
+- **Честность по слабым идеям**: если связанная идея имеет `novelty_score <= 2` ИЛИ её эксперименты inconclusive, не притворяйтесь, что доказательства достаточны
 
-**6d. Update wiki**:
-- For ideas with evidence gaps: append reviewer-identified gaps to `## Risks` (or `## Lessons learned`) in `wiki/ideas/{slug}.md`
-- For methods with weak coverage: append concerns to `## Limitations` in `wiki/methods/{slug}.md`
-- Append log:
+**6d. Обновление wiki**:
+- Для идей с пробелами в доказательствах: добавьте обнаруженные рецензентом пробелы в `## Risks` (или `## Lessons learned`) в `wiki/ideas/{slug}.md`
+- Для методов со слабым покрытием: добавьте concerns в `## Limitations` в `wiki/methods/{slug}.md`
+- Добавление в журнал:
   ```bash
   python3 tools/research_wiki.py log wiki/ \
-    "rebuttal | {N} concerns addressed | {M} evidence gaps | stress-test avg: {score}/5"
+    "rebuttal | обработано {N} concerns | {M} пробелов в доказательствах | средний стресс-тест: {score}/5"
   ```
 
-## Constraints
+## Ограничения
 
-- **No fabrication**: never fabricate experiment data or results. Every cited number must be traceable to wiki/experiments/ with source annotated
-- **No overpromise**: only commit to specific executable supplementary experiments. Use "we will run ablation on X with setup Y" not "we will investigate"
-- **Full coverage**: every reviewer concern (Rvx-Cy) must have a response; omissions block output
-- **Evidence traceability**: every piece of evidence cited in a response must be traceable to a wiki page with source slug annotated
-- **Do not silently flip a linked idea's status**: rebuttal only flags concerns by appending to ideas' `## Risks` / `## Lessons learned` or methods' `## Limitations`; status transitions are reserved for `/exp-eval`
-- **Review LLM independence**: during stress-test, follow cross-model-review.md; do not reveal response strategy to Review LLM
-- **Concern ID format**: strictly use Rvx-Cy format (Rv1-C1, Rv1-C2, Rv2-C1) to ensure traceability
-- **Specific commitments**: all revision commitments and experiment plans must be specific (specific Section, specific dataset, explicit metric)
-- **Output to wiki/outputs/**: rebuttal files are stored uniformly in the wiki/outputs/ directory
+- **Нет фабрикаций**: никогда не фабрикуйте экспериментальные данные или результаты. Каждая цитируемая цифра должна быть прослеживаема до wiki/experiments/ с аннотированным источником
+- **Нет переобещаний**: только конкретные осуществимые дополнительные эксперименты. Используйте "мы запустим абляцию на X с настройкой Y", а не "мы исследуем"
+- **Полное покрытие**: каждый concern рецензента (Rvx-Cy) должен иметь ответ; пропуски блокируют вывод
+- **Прослеживаемость доказательств**: каждый элемент доказательства, цитируемый в ответе, должен быть прослеживаем до wiki-страницы с аннотированным slug'ом источника
+- **Не изменяйте молча статус связанной идеи**: опровержение только отмечает concerns добавлением в `## Risks` / `## Lessons learned` идей или `## Limitations` методов; переходы статусов зарезервированы для `/exp-eval`
+- **Независимость Review LLM**: во время стресс-теста следуйте cross-model-review.md; не раскрывайте стратегию ответов Review LLM
+- **Формат ID concerns**: строго используйте формат Rvx-Cy (Rv1-C1, Rv1-C2, Rv2-C1) для обеспечения прослеживаемости
+- **Конкретные обязательства**: все обязательства по исправлениям и планы экспериментов должны быть конкретными (конкретный раздел, конкретный набор данных, явная метрика)
+- **Вывод в wiki/outputs/**: файлы опровержения хранятся в каталоге wiki/outputs/
 
-## Error Handling
+## Обработка ошибок
 
-- **Review file not found**: report error, list available files under raw/reviews/
-- **Review format cannot be parsed**: fall back to plain-text processing; use LLM to extract concerns; annotate in report
-- **Concern cannot be mapped to an idea or method (unmapped)**: annotate as "unmapped"; still respond (based on paper content rather than wiki entity)
-- **Review LLM stress-test unavailable**: skip Step 5; annotate in report "stress-test skipped: Review LLM unavailable"
-- **Evidence severely insufficient**: if >50% of concerns have insufficient evidence, warn the user and suggest supplementing experiments first
-- **Wiki empty**: warn that wiki knowledge base is empty; suggest running /ingest to populate ideas, methods, and experiments
-- **All responses scored 1-2 by Review LLM**: halt output, report requires re-analysis, suggest supplementing experiments first
+- **Файл рецензии не найден**: сообщите об ошибке, перечислите доступные файлы в raw/reviews/
+- **Формат рецензии не парсится**: переход к обработке простого текста; использование LLM для извлечения concerns; аннотация в отчёте
+- **Concern не может быть сопоставлен с идеей или методом (unmapped)**: аннотируйте как "unmapped"; всё равно отвечайте (на основе содержимого статьи, а не сущности wiki)
+- **Стресс-тест Review LLM недоступен**: пропустите шаг 5; аннотируйте в отчёте "стресс-тест пропущен: Review LLM недоступен"
+- **Доказательства серьёзно недостаточны**: если >50% concerns имеют недостаточные доказательства, предупредите пользователя и предложите сначала дополнить эксперименты
+- **Wiki пуста**: предупредите, что база знаний wiki пуста; предложите запустить /ingest для заполнения идей, методов и экспериментов
+- **Все ответы получили балл 1-2 от Review LLM**: остановите вывод, сообщите о необходимости повторного анализа, предложите сначала дополнить эксперименты
 
-## Dependencies
+## Зависимости
 
-### Tools（via Bash）
-- `python3 tools/research_wiki.py slug "{title}"` — generate rebuttal slug
-- `python3 tools/research_wiki.py log wiki/ "<message>"` — append log entry
+### Инструменты (через Bash)
+- `python3 tools/research_wiki.py slug "{title}"` — генерация slug опровержения
+- `python3 tools/research_wiki.py log wiki/ "<message>"` — добавление в журнал
 
-### MCP Servers
-- `mcp__llm-review__chat` — Step 5 stress-test first round
-- `mcp__llm-review__chat-reply` — Step 5 stress-test subsequent rounds
+### MCP-серверы
+- `mcp__llm-review__chat` — стресс-тест раунда 1
+- `mcp__llm-review__chat-reply` — последующие раунды стресс-теста
 
 ### Claude Code Native
-- `Read` — read review comments, wiki pages, shared references
-- `Write` — write rebuttal-{slug}.md, rebuttal-{slug}.txt
-- `Glob` — find ideas, methods, experiments
-- `Grep` — search wiki for concern keywords
+- `Read` — чтение комментариев рецензентов, wiki-страниц, общих справочников
+- `Write` — запись rebuttal-{slug}.md, rebuttal-{slug}.txt
+- `Glob` — поиск идей, методов, экспериментов
+- `Grep` — поиск ключевых слов concerns в wiki
 
-### Shared References
-- `.claude/skills/shared-references/cross-model-review.md` — Review LLM stress-test independence principle
+### Общие справочники
+- `.claude/skills/shared-references/cross-model-review.md` — принцип независимости стресс-теста Review LLM
 
-### Suggested follow-up skills
-- `/exp-design` — design supplementary experiments for concerns with insufficient evidence
-- `/paper-draft` — prepare revised paper (based on Paper Edits checklist)
+### Предлагаемые последующие навыки
+- `/exp-design` — проектирование дополнительных экспериментов для concerns с недостаточными доказательствами
+- `/paper-draft` — подготовка переработанной статьи (на основе чеклиста редактирования статьи)
