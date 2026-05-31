@@ -15,171 +15,327 @@
 #
 # `terminal: true` means the entity writes no outward links (xref reverse-rule exempt).
 # `terminal: true` — сущность не создаёт внешних ссылок (исключение из правил обратных ссылок xref).
+#
+# scope: wiki — сущности общей базы знаний (wiki/)
+# scope: project — сущности в рамках конкретного проекта (projects/<slug>/)
+#
+# =============================================================================
+# WIKI ENTITIES (7) / СУЩНОСТИ БАЗЫ ЗНАНИЙ
+# =============================================================================
 
-papers:
-  dir: wiki/papers/
-  fields:
-    title:             { type: str, required: true }
-    slug:              { type: str, required: true }
-    arxiv:             { type: str }
-    venue:             { type: str }
-    year:              { type: int }
-    tags:              { type: list_str, required: true, default: [] }
-    importance:        { type: int, range: [1, 5], required: true, default: 3 }
-    date_added:        { type: date }
-    source_type:       { type: enum, values: [tex, pdf] }
-    s2_id:             { type: str }
-    tldr:              { type: str }
-    contribution_type: { type: list_str, default: [] }
-    datasets:          { type: list_str, default: [] }
-    code_url:          { type: str }
-    cited_by:          { type: list_link, to: papers, default: [] }
-
-concepts:
-  dir: wiki/concepts/
-  fields:
-    title:            { type: str, required: true }
-    aliases:          { type: list_str, default: [] }
-    tags:             { type: list_str, required: true, default: [] }
-    maturity:         { type: enum, values: [stable, active, emerging, deprecated],
-                        required: true, default: active }
-    definition:       { type: str }
-    key_papers:       { type: list_link, to: papers, required: true, default: [] }
-    first_introduced: { type: str }
-    date_updated:     { type: date }
-    related_concepts: { type: list_link, to: concepts, default: [] }
-    linked_ideas:     { type: list_link, to: ideas, default: [] }
-    parent_topic:     { type: link, to: topics }
-
-topics:
-  dir: wiki/topics/
-  fields:
-    title:          { type: str, required: true }
-    tags:           { type: list_str, required: true, default: [] }
-    key_venues:     { type: list_str, default: [] }
-    related_topics: { type: list_link, to: topics, default: [] }
-    key_people:     { type: list_link, to: people, default: [] }
-    key_papers:     { type: list_link, to: papers, default: [] }
-    linked_ideas:   { type: list_link, to: ideas, default: [] }
-
-people:
-  dir: wiki/people/
-  fields:
-    name:           { type: str, required: true }
-    affiliation:    { type: str }
-    research_areas: { type: list_str, default: [] }
-    homepage:       { type: str }
-    scholar:        { type: str }
-    date_updated:   { type: date }
-    type:
-      type: object
-      fields:
-        kind:    { type: enum, values: [researcher, team, organization], default: researcher }
-        subtype: { type: str }
-
-ideas:
-  dir: wiki/ideas/
+# ---------------------------------------------------------------------------
+# документы — нормативные документы (ГОСТ, СП, ФЗ, СНиП, ПП и т.д.)
+# ---------------------------------------------------------------------------
+документы:
+  dir: wiki/документы/
   fields:
     title:              { type: str, required: true }
-    slug:               { type: str, required: true }
-    status:             { type: enum,
-                          values: [proposed, in_progress, tested, validated, failed],
-                          required: true, default: proposed }
-    origin:             { type: str, required: true }
-    origin_gaps:        { type: list_link, to: [concepts, topics], default: [] }
+    doc_type:           { type: enum,
+                          values: [ГОСТ, ГОСТ Р, "ГОСТ Р ИСО", СП, "СП ", ФЗ, Кодекс,
+                                   Постановление, ПП, РД, ОДМ, МДС, МРР, ВСН, СТО, СНиП, Пособие],
+                          required: true }
+    number:             { type: str, required: true }
+    name:               { type: str, required: true }
+    description:        { type: str, required: true }
+    year:               { type: date, required: true }
+    actualization_date: { type: date }
+    oks:                { type: str }
+    udk:                { type: str }
+    bbk:                { type: str }
     tags:               { type: list_str, required: true, default: [] }
-    target_venue:       { type: str }
-    novelty_score:      { type: int, range: [1, 5] }
-    priority:           { type: int, range: [1, 5], required: true, default: 3 }
-    pilot_result:       { type: str }
-    failure_reason:     { type: str, required_when: { status: failed } }
-    linked_experiments: { type: list_link, to: experiments, default: [] }
-    date_proposed:      { type: date }
-    date_resolved:      { type: date }
-  lifecycle:
-    transitions:
-      proposed:    [in_progress]
-      in_progress: [tested]
-      tested:      [validated, failed]
+    raw_source:         { type: str }
+    replaced_by:        { type: link, to: документы }
 
-methods:
-  dir: wiki/methods/
+# ---------------------------------------------------------------------------
+# понятия — термины, определения (один термин = одна страница)
+# ---------------------------------------------------------------------------
+понятия:
+  dir: wiki/понятия/
   fields:
-    name:              { type: str, required: true }
-    slug:              { type: str, required: true }
-    type:
-      type: enum
-      values: [architecture, training, inference, evaluation, data, benchmark,
-               system, optimization, prompting, protocol, other]
-      required: true
-      default: other
-    tags:              { type: list_str, required: true, default: [] }
-    source_papers:     { type: list_link, to: papers, default: [] }
-    parent_methods:    { type: list_link, to: methods, default: [] }
-    child_methods:     { type: list_link, to: methods, default: [] }
-    realizes_concepts: { type: list_link, to: concepts, default: [] }
-    code_repo:         { type: str }
-    date_updated:      { type: date }
+    title:              { type: str, required: true }
+    aliases:            { type: list_str, default: [] }
+    definition:         { type: str }
+    source_document:    { type: link, to: документы }
+    source_punkt:       { type: str }
+    tags:               { type: list_str, required: true, default: [] }
+    related_concepts:   { type: list_link, to: понятия, default: [] }
 
-experiments:
-  dir: wiki/experiments/
+# ---------------------------------------------------------------------------
+# темы — тематические группы (определяются пользователем)
+# ---------------------------------------------------------------------------
+темы:
+  dir: wiki/темы/
   fields:
-    title:             { type: str, required: true }
-    slug:              { type: str, required: true }
-    status:            { type: enum, values: [planned, running, completed, abandoned],
-                         required: true, default: planned }
-    linked_idea:       { type: link, to: ideas, required: true }
-    evaluates_methods: { type: list_link, to: methods, default: [] }
-    hypothesis:        { type: str, required: true }
-    tags:              { type: list_str, required: true, default: [] }
-    setup:
-      type: object
-      fields:
-        model:     { type: str }
-        dataset:   { type: str }
-        hardware:  { type: str }
-        framework: { type: str }
-    metrics:         { type: list_str, default: [] }
-    baseline:        { type: str }
-    outcome:         { type: enum, values: [succeeded, failed, inconclusive] }
-    key_result:      { type: str }
-    date_planned:    { type: date }
-    date_completed:  { type: date }
-    run_log:         { type: str }
-    started:         { type: str }
-    estimated_hours: { type: int }
-    remote:
-      type: object
-      fields:
-        server:    { type: str }
-        gpu:       { type: str }
-        session:   { type: str }
-        started:   { type: str }
-        completed: { type: str }
-  lifecycle:
-    transitions:
-      planned: [running]
-      running: [completed, abandoned]
+    title:              { type: str, required: true }
+    description:        { type: str }
+    tags:               { type: list_str, required: true, default: [] }
+    related_topics:     { type: list_link, to: темы, default: [] }
+    key_documents:      { type: list_link, to: документы, default: [] }
+    key_concepts:       { type: list_link, to: понятия, default: [] }
 
-Summary:
-  dir: wiki/Summary/
+# ---------------------------------------------------------------------------
+# процессы — бизнес-процессы, методики, подпроцессы
+# Подпроцесс = процесс с заполненным parent_processes.
+# ---------------------------------------------------------------------------
+процессы:
+  dir: wiki/процессы/
   fields:
-    title:        { type: str, required: true }
-    scope:        { type: str, required: true }
-    key_topics:   { type: list_link, to: topics, required: true, default: [] }
-    paper_count:  { type: int }
-    date_updated: { type: date }
+    title:              { type: str, required: true }
+    description:        { type: str, required: true }
+    parent_processes:   { type: list_link, to: процессы, default: [] }
+    steps:
+      type: list_object
+      item:
+        fields:
+          order:        { type: int, required: true }
+          description:  { type: str, required: true }
+          subprocess:   { type: link, to: процессы }
+    tags:               { type: list_str, required: true, default: [] }
+    применяется_для:    { type: list_link, to: темы, default: [] }
+    распространяется_на: { type: list_link, to: понятия, default: [] }
 
+# ---------------------------------------------------------------------------
+# эксперты — специалисты, организации (на будущее)
+# ---------------------------------------------------------------------------
+эксперты:
+  dir: wiki/эксперты/
+  fields:
+    title:              { type: str, required: true }
+    specialization:     { type: list_str, default: [] }
+    affiliation:        { type: str }
+    tags:               { type: list_str, required: true, default: [] }
+
+# ---------------------------------------------------------------------------
+# foundations — фундаментальные понятия (terminal: не создают обратных ссылок)
+# ---------------------------------------------------------------------------
 foundations:
   dir: wiki/foundations/
   terminal: true
   fields:
-    title:            { type: str, required: true }
-    slug:             { type: str, required: true }
-    domain:           { type: str, required: true }
-    status:           { type: enum, values: [mainstream, historical],
-                        required: true, default: mainstream }
-    aliases:          { type: list_str, default: [] }
-    first_introduced: { type: str }
-    date_updated:     { type: date }
-    source_url:       { type: str }
+    title:              { type: str, required: true }
+    domain:             { type: str, required: true }
+    status:             { type: enum, values: [mainstream, historical],
+                          required: true, default: mainstream }
+    aliases:            { type: list_str, default: [] }
+    source_url:         { type: str }
+    date_updated:       { type: date }
+
+# ---------------------------------------------------------------------------
+# сводки — синтез по теме из нескольких источников
+# ---------------------------------------------------------------------------
+сводки:
+  dir: wiki/сводки/
+  fields:
+    title:              { type: str, required: true }
+    scope:              { type: str, required: true }
+    key_entities:       { type: list_link, to: [документы, понятия, темы, процессы], default: [] }
+    tags:               { type: list_str, required: true, default: [] }
+    date_updated:       { type: date }
+
+# =============================================================================
+# PROJECT ENTITIES (3) / СУЩНОСТИ ПРОЕКТОВ
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# задачи — вопросы/гипотезы в рамках проекта
+# ---------------------------------------------------------------------------
+задачи:
+  dir: wiki/задачи/
+  fields:
+    title:              { type: str, required: true }
+    description:        { type: str, required: true }
+    status:             { type: enum,
+                          values: [предложена, в_работе, выполнена, отклонена],
+                          required: true, default: предложена }
+    priority:           { type: int, range: [1, 5], default: 3 }
+    project:            { type: str }
+    tags:               { type: list_str, default: [] }
+
+# ---------------------------------------------------------------------------
+# испытания — экспериментальные данные, натурные/лабораторные тесты
+# ---------------------------------------------------------------------------
+испытания:
+  dir: wiki/испытания/
+  fields:
+    title:              { type: str, required: true }
+    type:               { type: enum,
+                          values: [лабораторные, полевые, инструментальные, визуальные],
+                          required: true, default: полевые }
+    status:             { type: enum,
+                          values: [запланировано, выполняется, завершено, отменено],
+                          required: true, default: запланировано }
+    hypothesis:         { type: str }
+    result:             { type: str }
+    outcome:            { type: enum, values: [подтверждено, опровергнуто, неопределённо] }
+    проверяет_задачу:   { type: link, to: задачи }
+    проект:             { type: str }
+    date_completed:     { type: date }
+
+# ---------------------------------------------------------------------------
+# процессы_проектные — применение wiki-процесса в конкретном проекте
+# ---------------------------------------------------------------------------
+процессы_проектные:
+  dir: wiki/процессы-проектные/
+  fields:
+    title:              { type: str, required: true }
+    wiki_process:       { type: link, to: процессы }
+    description:        { type: str }
+    project:            { type: str }
+    tags:               { type: list_str, default: [] }
+
+# =============================================================================
+# ORIGINAL AutoSci ENTITIES (commented out — preserved for recovery)
+# =============================================================================
+# papers:
+#   dir: wiki/papers/
+#   fields:
+#     title:             { type: str, required: true }
+#     slug:              { type: str, required: true }
+#     arxiv:             { type: str }
+#     venue:             { type: str }
+#     year:              { type: int }
+#     tags:              { type: list_str, required: true, default: [] }
+#     importance:        { type: int, range: [1, 5], required: true, default: 3 }
+#     date_added:        { type: date }
+#     source_type:       { type: enum, values: [tex, pdf] }
+#     s2_id:             { type: str }
+#     tldr:              { type: str }
+#     contribution_type: { type: list_str, default: [] }
+#     datasets:          { type: list_str, default: [] }
+#     code_url:          { type: str }
+#     cited_by:          { type: list_link, to: papers, default: [] }
+#
+# concepts:
+#   dir: wiki/concepts/
+#   fields:
+#     title:            { type: str, required: true }
+#     aliases:          { type: list_str, default: [] }
+#     tags:             { type: list_str, required: true, default: [] }
+#     maturity:         { type: enum, values: [stable, active, emerging, deprecated],
+#                         required: true, default: active }
+#     definition:       { type: str }
+#     key_papers:       { type: list_link, to: papers, required: true, default: [] }
+#     first_introduced: { type: str }
+#     date_updated:     { type: date }
+#     related_concepts: { type: list_link, to: concepts, default: [] }
+#     linked_ideas:     { type: list_link, to: ideas, default: [] }
+#     parent_topic:     { type: link, to: topics }
+#
+# topics:
+#   dir: wiki/topics/
+#   fields:
+#     title:          { type: str, required: true }
+#     tags:           { type: list_str, required: true, default: [] }
+#     key_venues:     { type: list_str, default: [] }
+#     related_topics: { type: list_link, to: topics, default: [] }
+#     key_people:     { type: list_link, to: people, default: [] }
+#     key_papers:     { type: list_link, to: papers, default: [] }
+#     linked_ideas:   { type: list_link, to: ideas, default: [] }
+#
+# people:
+#   dir: wiki/people/
+#   fields:
+#     name:           { type: str, required: true }
+#     affiliation:    { type: str }
+#     research_areas: { type: list_str, default: [] }
+#     homepage:       { type: str }
+#     scholar:        { type: str }
+#     date_updated:   { type: date }
+#     type:
+#       type: object
+#       fields:
+#         kind:    { type: enum, values: [researcher, team, organization], default: researcher }
+#         subtype: { type: str }
+#
+# ideas:
+#   dir: wiki/ideas/
+#   fields:
+#     title:              { type: str, required: true }
+#     slug:               { type: str, required: true }
+#     status:             { type: enum,
+#                           values: [proposed, in_progress, tested, validated, failed],
+#                           required: true, default: proposed }
+#     origin:             { type: str, required: true }
+#     origin_gaps:        { type: list_link, to: [concepts, topics], default: [] }
+#     tags:               { type: list_str, required: true, default: [] }
+#     target_venue:       { type: str }
+#     novelty_score:      { type: int, range: [1, 5] }
+#     priority:           { type: int, range: [1, 5], required: true, default: 3 }
+#     pilot_result:       { type: str }
+#     failure_reason:     { type: str, required_when: { status: failed } }
+#     linked_experiments: { type: list_link, to: experiments, default: [] }
+#     date_proposed:      { type: date }
+#     date_resolved:      { type: date }
+#   lifecycle:
+#     transitions:
+#       proposed:    [in_progress]
+#       in_progress: [tested]
+#       tested:      [validated, failed]
+#
+# methods:
+#   dir: wiki/methods/
+#   fields:
+#     name:              { type: str, required: true }
+#     slug:              { type: str, required: true }
+#     type:
+#       type: enum
+#       values: [architecture, training, inference, evaluation, data, benchmark,
+#                system, optimization, prompting, protocol, other]
+#       required: true
+#       default: other
+#     tags:              { type: list_str, required: true, default: [] }
+#     source_papers:     { type: list_link, to: papers, default: [] }
+#     parent_methods:    { type: list_link, to: methods, default: [] }
+#     child_methods:     { type: list_link, to: methods, default: [] }
+#     realizes_concepts: { type: list_link, to: concepts, default: [] }
+#     code_repo:         { type: str }
+#     date_updated:      { type: date }
+#
+# experiments:
+#   dir: wiki/experiments/
+#   fields:
+#     title:             { type: str, required: true }
+#     slug:              { type: str, required: true }
+#     status:            { type: enum, values: [planned, running, completed, abandoned],
+#                          required: true, default: planned }
+#     linked_idea:       { type: link, to: ideas, required: true }
+#     evaluates_methods: { type: list_link, to: methods, default: [] }
+#     hypothesis:        { type: str, required: true }
+#     tags:              { type: list_str, required: true, default: [] }
+#     setup:
+#       type: object
+#       fields:
+#         model:     { type: str }
+#         dataset:   { type: str }
+#         hardware:  { type: str }
+#         framework: { type: str }
+#     metrics:         { type: list_str, default: [] }
+#     baseline:        { type: str }
+#     outcome:         { type: enum, values: [succeeded, failed, inconclusive] }
+#     key_result:      { type: str }
+#     date_planned:    { type: date }
+#     date_completed:  { type: date }
+#     run_log:         { type: str }
+#     started:         { type: str }
+#     estimated_hours: { type: int }
+#     remote:
+#       type: object
+#       fields:
+#         server:    { type: str }
+#         gpu:       { type: str }
+#         session:   { type: str }
+#         started:   { type: str }
+#         completed: { type: str }
+#   lifecycle:
+#     transitions:
+#       planned: [running]
+#       running: [completed, abandoned]
+#
+# Summary:
+#   dir: wiki/Summary/
+#   fields:
+#     title:        { type: str, required: true }
+#     scope:        { type: str, required: true }
+#     key_topics:   { type: list_link, to: topics, required: true, default: [] }
+#     paper_count:  { type: int }
+#     date_updated: { type: date }
