@@ -3,7 +3,8 @@
 
 # How a slug is shaped / Как формируется slug.  Generation rule / Правило: ключевые слова заголовка,
 # через дефис, нижний регистр.  This regex validates / Этот regex проверяет результат.
-slug_rule: "^[a-z0-9]+(-[a-z0-9]+)*$"
+# NB: Cyrillic allowed for construction domain / кириллица разрешена для строительного домена.
+slug_rule: "^[а-яёa-z0-9]+(-[а-яёa-z0-9]+)*$"
 
 # Where an entity page lives, given its kind and slug / Путь страницы сущности по виду и slug.
 path_pattern: "wiki/{kind}/{slug}.md"
