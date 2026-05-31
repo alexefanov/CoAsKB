@@ -8,7 +8,7 @@ argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos]
 
 ## Аргументы
 - `--from <файл.tex>` (обязательно): главный .tex файл статьи
-- `--output <директория>` (опционально): директория для вывода (по умолч. outputs/poster/)
+- `--output <директория>` (опционально): директория для вывода (по умолчанию outputs/poster/)
 - `--format` (опционально): формат: html (по умолч.) | png | both
 
 ## Поведение

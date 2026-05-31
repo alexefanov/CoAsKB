@@ -19,61 +19,35 @@
 #                                    {from} expands to the source slug / {from} заменяется на slug источника
 #
 # Foundations are terminal: any link to foundations writes no reverse / Фундаментальные страницы терминальны: ссылка на них не создаёт обратной связи.
+#
+# Edge-based reverse links (auto_reverse in edge-rules.yaml) are handled by the
+# graph engine, not by xref.yaml. This file covers only frontmatter-to-frontmatter
+# and body-wikilink-to-frontmatter reverse rules.
 
 rules:
 
-  # papers ## Related → concepts.key_papers
-  - forward: { kind: papers,      body_section: Related,         target: concepts }
-    reverse: { kind: concepts,    frontmatter_field: key_papers, action: append_slug }
+  # документы body wikilink → понятия → понятия body "Источники"
+  - forward: { kind: документы,   body_section: '*',         target: понятия }
+    reverse: { kind: понятия,     body_section: "Источники", action: append_slug }
 
-  # any paper-body wikilink to a person → people ## Recent work
-  - forward: { kind: papers,      body_section: '*',             target: people }
-    reverse: { kind: people,      body_section: "Recent work",   action: append_slug }
+  # документы body wikilink → процессы → процессы body "Нормативные ссылки"
+  - forward: { kind: документы,   body_section: '*',         target: процессы }
+    reverse: { kind: процессы,    body_section: "Нормативные ссылки", action: append_slug }
 
-  # topics.key_people → people ## Research areas
-  - forward: { kind: topics,      frontmatter_field: key_people, target: people }
-    reverse: { kind: people,      body_section: "Research areas", action: append_slug }
+  # процессы body wikilink → документы → документы body "Применяется в"
+  - forward: { kind: процессы,    body_section: '*',         target: документы }
+    reverse: { kind: документы,   body_section: "Применяется в", action: append_slug }
 
-  # concepts.key_papers → papers ## Related
-  - forward: { kind: concepts,    frontmatter_field: key_papers, target: papers }
-    reverse: { kind: papers,      body_section: Related,         action: append_slug }
+  # понятия body wikilink → документы → документы body "Связанные понятия"
+  - forward: { kind: понятия,     body_section: '*',         target: документы }
+    reverse: { kind: документы,   body_section: "Связанные понятия", action: append_slug }
 
-  # ideas.origin_gaps → concepts.linked_ideas
-  - forward: { kind: ideas,       frontmatter_field: origin_gaps, target: concepts }
-    reverse: { kind: concepts,    frontmatter_field: linked_ideas, action: append_slug }
-
-  # ideas.origin_gaps → topics.linked_ideas
-  - forward: { kind: ideas,       frontmatter_field: origin_gaps, target: topics }
-    reverse: { kind: topics,      frontmatter_field: linked_ideas, action: append_slug }
-
-  # experiments.linked_idea → ideas.linked_experiments
-  - forward: { kind: experiments, frontmatter_field: linked_idea, target: ideas }
-    reverse: { kind: ideas,       frontmatter_field: linked_experiments, action: append_slug }
-
-  # methods.source_papers → papers ## Related
-  - forward: { kind: methods,     frontmatter_field: source_papers, target: papers }
-    reverse: { kind: papers,      body_section: Related,         action: append_slug }
-
-  # methods.parent_methods ↔ methods.child_methods (each is the other's reverse)
-  - forward: { kind: methods,     frontmatter_field: parent_methods, target: methods }
-    reverse: { kind: methods,     frontmatter_field: child_methods,  action: append_slug }
-  - forward: { kind: methods,     frontmatter_field: child_methods,  target: methods }
-    reverse: { kind: methods,     frontmatter_field: parent_methods, action: append_slug }
-
-  # experiments.evaluates_methods → methods ## Evaluated by
-  - forward: { kind: experiments, frontmatter_field: evaluates_methods, target: methods }
-    reverse: { kind: methods,     body_section: "Evaluated by",        action: append_slug }
-
-  # methods.realizes_concepts → concepts ## Realized by
-  - forward: { kind: methods,     frontmatter_field: realizes_concepts, target: concepts }
-    reverse: { kind: concepts,    body_section: "Realized by",          action: append_slug }
-
-  # topics.key_papers → papers ## Related
-  - forward: { kind: topics,      frontmatter_field: key_papers,        target: papers }
-    reverse: { kind: papers,      body_section: Related,                action: append_slug }
-
-  # concepts.parent_topic → topics ## Concepts
-  - forward: { kind: concepts,    frontmatter_field: parent_topic,      target: topics }
-    reverse: { kind: topics,      body_section: "Concepts",             action: append_slug }
+  # темы body wikilink → документы/понятия/процессы → respective body "Темы"
+  - forward: { kind: темы,        body_section: '*',         target: документы }
+    reverse: { kind: документы,   body_section: "Темы",     action: append_slug }
+  - forward: { kind: темы,        body_section: '*',         target: понятия }
+    reverse: { kind: понятия,     body_section: "Темы",     action: append_slug }
+  - forward: { kind: темы,        body_section: '*',         target: процессы }
+    reverse: { kind: процессы,    body_section: "Темы",     action: append_slug }
 
 terminal_targets: [foundations]

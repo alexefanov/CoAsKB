@@ -9,7 +9,7 @@ argument-hint: "<research-question-or-idea-slugs> [--format latex|markdown] [--m
 ## Аргументы
 - `--topic <тема>` (обязательно): тема обзора
 - `--from <slug1,slug2,...>` (опциональноретные страницы для включения
-- `--output <файл>` (опционально): путь для .tex (по умолч. outputs/survey-<slug>.tex)
+- `--output <файл>` (опционально): путь для .tex (по умолчанию outputs/survey-<slug>.tex)
 
 ## Поведение
 1. Собери релевантные страницы (из аргумента или поиском по теме).

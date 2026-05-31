@@ -11,7 +11,7 @@ argument-hint: "[setup|status|disable] [--mode inform|auto-ingest] [--hours 24] 
 - `--status` (опционально): показать статус текущей ленты
 - `--disable` (опционально): отключить ежедневные рекомендации
 - `--recommend` (опционально): сформировать разовые рекомендации сейчас
-- `--categories` (опционально): список arXiv-категорий (по умолч. cs.LG,cs.CV,cs.CL,cs.AI,stat.ML)
+- `--categories` (опционально): список arXiv-категорий (по умолчанию cs.LG,cs.CV,cs.CL,cs.AI,stat.ML)
 
 ## Поведение
 1. Проверь настройки: GitHub Actions, категории, email.

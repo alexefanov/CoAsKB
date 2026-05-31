@@ -20,12 +20,10 @@ log_grammar: "## [{date}] {skill} | {details}"
 
 # File-system ownership rules / Правила владения файловой системой.
 ownership:
-  user_owned:  [raw/papers, raw/notes, raw/web]   # skills must not overwrite
-  tools_only:  [wiki/graph]                       # only via tools/research_wiki.py
+  user_owned:  [raw]                              # skills must not overwrite raw sources
+  tools_only:  [wiki/graph, wiki/.entities]       # only via tools/research_wiki.py
   append_only: [wiki/log.md]                      # never rewritten in place
 
 # Where each edge type is physically stored.
 edge_storage:
   default: wiki/graph/edges.jsonl
-  exceptions:
-    cites: wiki/graph/citations.jsonl
