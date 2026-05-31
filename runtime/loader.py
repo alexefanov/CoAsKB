@@ -181,6 +181,10 @@ def edge_endpoint_matches(edge_type: str, from_kind: str, to_kind: str) -> bool:
 
 
 def edge_is_legacy_for_endpoint(edge_type: str, from_kind: str, to_kind: str) -> bool:
+    # Construction domain has no legacy edges; kept for AutoSci backward compat.
+    # Строительный домен не имеет устаревших рёбер; сохранено для обратной совместимости.
+    if 'papers' not in ENTITIES:
+        return False
     if from_kind == 'papers' and to_kind == 'papers':
         return edge_type in LEGACY_PAPER_PAPER_EDGE_TYPES
     if from_kind == 'papers' and to_kind == 'concepts':
