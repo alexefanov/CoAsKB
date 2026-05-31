@@ -249,7 +249,7 @@ def check_field_values(wiki_dir: Path, pages: dict[str, Path]) -> list[LintIssue
 
         # Check enum fields
         enum_checks = {
-            "papers": [("importance", "papers.importance")],
+            "papers": [("importance", "papers.importance"), ("source_type", "papers.source_type")],
             "concepts": [("maturity", "concepts.maturity")],
             "ideas": [("status", "ideas.status"), ("priority", "ideas.priority")],
             "experiments": [("status", "experiments.status"), ("outcome", "experiments.outcome")],
@@ -726,6 +726,13 @@ def check_content_quality(wiki_dir: Path, pages: dict[str, Path]) -> list[LintIs
                 if section_text.strip() == "" or section_text.strip() == "—":
                     issues.append(LintIssue("🔵", "quality", rel,
                                             "Open problems section is empty"))
+
+        # methods without description (warning only)
+        if page_type == "methods":
+            val = extract_frontmatter_value(content, "description")
+            if not val:
+                issues.append(LintIssue("🟡", "missing-description", rel,
+                                        "methods page has no description field"))
 
     return issues
 

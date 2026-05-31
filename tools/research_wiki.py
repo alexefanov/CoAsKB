@@ -135,7 +135,7 @@ def slugify(title: str) -> str:
         'обследование-зданий-и-сооружений'
     """
     # Normalize: lowercase, replace non-alphanum with spaces (including Cyrillic)
-    text = re.sub(r"[^a-zа-я0-9\s]", " ", title.lower())
+    text = re.sub(r"[^a-zа-яё0-9\s]", " ", title.lower())
     words = text.split()
     # Filter stop words but keep short meaningful words (3+ chars or known terms)
     keywords = [w for w in words if w not in STOP_WORDS and len(w) > 1]
@@ -1002,7 +1002,7 @@ def find_entities(wiki_root: str, entity_type: str,
 
 def _normalize_text(text: str) -> str:
     """Lowercase + strip punctuation + collapse whitespace. Used for phrase match."""
-    text = re.sub(r"[^a-z0-9\s]", " ", text.lower())
+    text = re.sub(r"[^a-zа-яё0-9\s]", " ", text.lower())
     return " ".join(text.split())
 
 
@@ -1525,7 +1525,7 @@ def get_maturity(wiki_root: str, as_json: bool = False) -> dict:
     # Check for experiment evidence edges
     edges = load_edges(wiki_root)
     has_experiment_evidence = any(
-        e.get("type") in ("supports", "invalidates")
+        e.get("type") in ("supports", "invalidates", "подтверждает", "противоречит")
         and str(e.get("from", "")).startswith("experiments/")
         for e in edges
     )
@@ -1887,6 +1887,16 @@ def rebuild_index(wiki_root: str) -> None:
                 line_parts.append(f'    affiliation: "{fm["affiliation"]}"')
             if "maturity" in fm:
                 line_parts.append(f"    maturity: {fm['maturity']}")
+            if "number" in fm and fm["number"]:
+                line_parts.append(f'    number: "{fm["number"]}"')
+            if "oks" in fm and fm["oks"]:
+                line_parts.append(f'    oks: "{fm["oks"]}"')
+            if "udk" in fm and fm["udk"]:
+                line_parts.append(f'    udk: "{fm["udk"]}"')
+            if "bbk" in fm and fm["bbk"]:
+                line_parts.append(f'    bbk: "{fm["bbk"]}"')
+            if "source_type" in fm and fm["source_type"]:
+                line_parts.append(f'    source_type: "{fm["source_type"]}"')
 
             entries.append("\n".join(line_parts))
 

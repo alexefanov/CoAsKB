@@ -479,7 +479,7 @@ def _extract_open_questions(cards: list[dict[str, Any]], log_text: str) -> list[
 def _tokenize(text: str) -> list[str]:
     return [
         token
-        for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{2,}", text.lower())
+        for token in re.findall(r"[A-Za-zа-яёА-ЯЁ][A-Za-z0-9а-яёА-ЯЁ_-]{2,}", text.lower())
         if token not in STOPWORDS and not token.isdigit()
     ]
 

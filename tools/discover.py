@@ -461,7 +461,7 @@ def _wiki_known_arxiv_ids(wiki_root: Path | None) -> set[str]:
 
 
 def _title_key(title: str) -> str:
-    title = re.sub(r"[^0-9a-z\u4e00-\u9fff]+", " ", (title or "").lower())
+    title = re.sub(r"[^0-9a-zа-яё\u4e00-\u9fff]+", " ", (title or "").lower())
     return " ".join(title.split())
 
 
@@ -527,7 +527,7 @@ _WIKI_STOP_WORDS = {
     "has", "have", "in", "into", "is", "it", "of", "on", "or", "that",
     "the", "their", "this", "to", "we", "with", "you", "your",
 }
-_WIKI_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9.+/_-]*|[\u4e00-\u9fff]{1,}")
+_WIKI_TOKEN_RE = re.compile(r"[A-Za-z0-9а-яёА-ЯЁ][A-Za-z0-9а-яёА-ЯЁ.+/_-]*|[\u4e00-\u9fff]{1,}")
 
 
 def _tokenize(text: str) -> list[str]:

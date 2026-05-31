@@ -6,6 +6,9 @@ key_topics:
   - "[[тема/слаг]]"
 paper_count: <количество>
 date_updated: <YYYY-MM-DD>
+tags:
+  - <тег>
+  - <тег>
 ---
 
 # <Название>

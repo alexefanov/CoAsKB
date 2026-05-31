@@ -27,3 +27,9 @@ ownership:
 # Where each edge type is physically stored.
 edge_storage:
   default: wiki/graph/edges.jsonl
+
+# Edge priority: when both a Russian and AutoSci edge apply to the same
+# entity pair, prefer the Russian one.
+# Приоритет рёбер: если для пары сущностей подходят и русское, и AutoSci-ребро,
+# используется русское (priority: high).
+edge_priority: russian_set_first

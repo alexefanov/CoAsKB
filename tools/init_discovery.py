@@ -47,7 +47,7 @@ STOP_WORDS = {
     "has", "have", "in", "into", "is", "it", "of", "on", "or", "that",
     "the", "their", "this", "to", "we", "with", "you", "your",
 }
-TOKEN_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9.+/_-]*|[\u4e00-\u9fff]{2,}")
+TOKEN_PATTERN = re.compile(r"[A-Za-z0-9а-яёА-ЯЁ][A-Za-z0-9а-яёА-ЯЁ.+/_-]*|[\u4e00-\u9fff]{2,}")
 ARXIV_NEW_ID_PATTERN = re.compile(r"(?<!\d)(\d{4}\.\d{4,5}(?:v\d+)?)(?!\d)", re.IGNORECASE)
 ARXIV_OLD_ID_PATTERN = re.compile(
     r"(?<![A-Za-z0-9])([a-z\-]+(?:\.[A-Z]{2})?/\d{7}(?:v\d+)?)(?!\d)",
@@ -213,7 +213,7 @@ def _write_text(path: Path, content: str) -> None:
 
 
 def _normalize_text(text: str) -> str:
-    text = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff\s.+/_-]", " ", text.lower())
+    text = re.sub(r"[^0-9A-Za-zа-яёА-ЯЁ\u4e00-\u9fff\s.+/_-]", " ", text.lower())
     return " ".join(text.split())
 
 
