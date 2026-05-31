@@ -6,154 +6,269 @@
 #   direction   directed | symmetric           -- symmetric edges are stored once
 #                                                 with sorted endpoints
 #   workflow    which subsystem owns this edge type
-#               (ingest | evidence | experiment | idea | provenance | citation)
+#               (ingest | edit | check | evidence | experiment | provenance)
 #   attributes  schema for edge-record fields beyond from/to/type
 #
 # Storage location of each edge type is decided in conventions.yaml::edge_storage.
+#
+# Application rules (display, auto_reverse, validation, examples):
+#   runtime/policy/edge-rules.yaml
 
-# -----------------------------------------------------------------------------
-# Paper ↔ Paper semantic edges  (written by /ingest)
-# Семантические рёбра Статья ↔ Статья (создаются /ingest)
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Document ↔ Document edges  (workflow: ingest)
+# Рёбра Документ ↔ Документ
+# =============================================================================
 
-# 4 irreducible paper↔paper semantic edges. The 4 removed in this round
-# (improves_on / compares_against / surveys / complementary_to) were judged
-# redundant:
-#   - improves_on    ⊆ builds_on (subset; merged)
-#   - compares_against ⊆ cites    (every comparison already cites)
-#   - surveys        ⇐ papers.contribution_type contains "survey" (derivable)
-#   - complementary_to ≈ same_problem_as (boundary fuzzy in practice)
+ссылается_на:
+  endpoints: { from: документы, to: документы }
+  direction: directed
+  workflow:  ingest
+  attributes:
+    пункт:    { type: str }
+    контекст: { type: str }
 
-same_problem_as:
-  endpoints: { from: papers, to: papers }
+заменяет:
+  endpoints: { from: документы, to: документы }
+  direction: directed
+  workflow:  ingest
+  attributes:
+    тип_замены: { type: enum, values: [full, partial], required: true }
+    дата:       { type: date }
+
+дополняет:
+  endpoints: { from: документы, to: документы }
   direction: symmetric
   workflow:  ingest
-  attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+  attributes: {}
 
-similar_method_to:
-  endpoints: { from: papers, to: papers }
-  direction: symmetric
-  workflow:  ingest
-  attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+# =============================================================================
+# Document → Process / Concept edges  (workflow: ingest)
+# Рёбра Документ → Процесс / Понятие
+# =============================================================================
 
-builds_on:
-  endpoints: { from: papers, to: papers }
+регламентирует:
+  endpoints: { from: документы, to: процессы }
   direction: directed
   workflow:  ingest
   attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+    уверенность: { type: enum, values: [высокая, средняя], required: true }
+    пункт:       { type: str }
 
-challenges:
-  endpoints: { from: papers, to: papers }
+вводит_термин:
+  endpoints: { from: документы, to: понятия }
   direction: directed
   workflow:  ingest
   attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+    определение: { type: str }
+    пункт:       { type: str }
 
-# -----------------------------------------------------------------------------
-# Paper → Concept semantic edges  (written by /ingest)
-# -----------------------------------------------------------------------------
-
-introduces_concept:
-  endpoints: { from: papers, to: concepts }
+использует_термин:
+  endpoints: { from: [документы, процессы], to: понятия }
   direction: directed
   workflow:  ingest
-  attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+  attributes: {}
 
-uses_concept:
-  endpoints: { from: papers, to: concepts }
+# =============================================================================
+# Process → Process / Topic / Concept edges  (workflow: edit)
+# Рёбра Процесс → Процесс / Тема / Понятие
+# =============================================================================
+
+включает_шаг:
+  endpoints: { from: процессы, to: процессы }
   direction: directed
-  workflow:  ingest
+  workflow:  edit
   attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+    порядок:  { type: int }
+    описание: { type: str }
 
-extends_concept:
-  endpoints: { from: papers, to: concepts }
+применяется_для:
+  endpoints: { from: процессы, to: темы }
   direction: directed
-  workflow:  ingest
-  attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+  workflow:  edit
+  attributes: {}
 
-critiques_concept:
-  endpoints: { from: papers, to: concepts }
+распространяется_на:
+  endpoints: { from: процессы, to: понятия }
   direction: directed
-  workflow:  ingest
+  workflow:  edit
   attributes:
-    confidence: { type: enum, values: [high, medium, low], required: true }
-    evidence:   { type: str, required: true }
+    примечание: { type: str }
 
-# -----------------------------------------------------------------------------
-# Workflow edges (evidence / experiments / ideas / provenance)
-# Endpoints stay broad because these span multiple entity kinds.
-# -----------------------------------------------------------------------------
+# =============================================================================
+# Cross-entity evidence / check edges
+# Рёбра подтверждения/противоречия (межсущностные)
+# =============================================================================
 
-supports:
+противоречит:
   endpoints: { from: '*', to: '*' }
+  direction: symmetric
+  workflow:  check
+  attributes:
+    серьёзность: { type: enum, values: [явное, неявное], required: true }
+    разрешение:  { type: str }
+
+подтверждает:
+  endpoints: { from: [процессы, испытания], to: понятия }
   direction: directed
   workflow:  evidence
   attributes:
-    evidence: { type: str }
+    источник: { type: str }
 
-contradicts:
-  endpoints: { from: '*', to: '*' }
-  direction: directed
-  workflow:  evidence
-  attributes:
-    evidence: { type: str }
+# =============================================================================
+# Project workflow edges  (workflow: experiment)
+# Рёбра проектного цикла
+# =============================================================================
 
-tested_by:
-  endpoints: { from: '*', to: '*' }
+проверяет_задачу:
+  endpoints: { from: испытания, to: задачи }
   direction: directed
   workflow:  experiment
-  attributes:
-    evidence: { type: str }
+  attributes: {}
 
-invalidates:
-  endpoints: { from: '*', to: '*' }
+проверяется_методом:
+  endpoints: { from: процессы, to: процессы }
   direction: directed
   workflow:  experiment
-  attributes:
-    evidence: { type: str }
+  attributes: {}
 
-addresses_gap:
-  endpoints: { from: '*', to: '*' }
-  direction: directed
-  workflow:  idea
-  attributes:
-    evidence: { type: str }
+# =============================================================================
+# Provenance & generic  (workflow: provenance | ingest)
+# Происхождение и общая связь
+# =============================================================================
 
-derived_from:
+происходит_из:
   endpoints: { from: '*', to: '*' }
   direction: directed
   workflow:  provenance
-  attributes:
-    evidence: { type: str }
+  attributes: {}
 
-inspired_by:
+связан_с:
   endpoints: { from: '*', to: '*' }
-  direction: directed
-  workflow:  idea
+  direction: symmetric
+  workflow:  ingest
   attributes:
-    evidence: { type: str }
+    примечание: { type: str }
 
-# -----------------------------------------------------------------------------
-# Bibliographic citation
-# -----------------------------------------------------------------------------
-
-cites:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  citation
-  attributes:
-    source: { type: enum, values: [semantic_scholar, parsed_bib, manual], required: true }
-    date:   { type: date }
+# =============================================================================
+# ORIGINAL AutoSci EDGES (commented out — preserved for recovery)
+# =============================================================================
+# same_problem_as:
+#   endpoints: { from: papers, to: papers }
+#   direction: symmetric
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# similar_method_to:
+#   endpoints: { from: papers, to: papers }
+#   direction: symmetric
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# builds_on:
+#   endpoints: { from: papers, to: papers }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# challenges:
+#   endpoints: { from: papers, to: papers }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# introduces_concept:
+#   endpoints: { from: papers, to: concepts }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# uses_concept:
+#   endpoints: { from: papers, to: concepts }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# extends_concept:
+#   endpoints: { from: papers, to: concepts }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# critiques_concept:
+#   endpoints: { from: papers, to: concepts }
+#   direction: directed
+#   workflow:  ingest
+#   attributes:
+#     confidence: { type: enum, values: [high, medium, low], required: true }
+#     evidence:   { type: str, required: true }
+#
+# supports:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  evidence
+#   attributes:
+#     evidence: { type: str }
+#
+# contradicts:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  evidence
+#   attributes:
+#     evidence: { type: str }
+#
+# tested_by:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  experiment
+#   attributes:
+#     evidence: { type: str }
+#
+# invalidates:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  experiment
+#   attributes:
+#     evidence: { type: str }
+#
+# addresses_gap:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  idea
+#   attributes:
+#     evidence: { type: str }
+#
+# derived_from:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  provenance
+#   attributes:
+#     evidence: { type: str }
+#
+# inspired_by:
+#   endpoints: { from: '*', to: '*' }
+#   direction: directed
+#   workflow:  idea
+#   attributes:
+#     evidence: { type: str }
+#
+# cites:
+#   endpoints: { from: papers, to: papers }
+#   direction: directed
+#   workflow:  citation
+#   attributes:
+#     source: { type: enum, values: [semantic_scholar, parsed_bib, manual], required: true }
+#     date:   { type: date }
