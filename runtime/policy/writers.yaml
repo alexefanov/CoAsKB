@@ -27,71 +27,62 @@
 
 fields:
 
-  # Paper identity & ranking — set at ingest, frozen after.
-  papers.importance:        { writers: [ingest], frozen_after_first_write: true }
-  papers.arxiv:             { writers: [ingest], frozen_after_first_write: true }
-  papers.s2_id:             { writers: [ingest], frozen_after_first_write: true }
-  papers.slug:              { writers: [ingest], frozen_after_first_write: true }
-  papers.cited_by:          { writers: [ingest] }
+  # Document identity — set at ingest, frozen after.
+  документы.doc_type:             { writers: [ingest], frozen_after_first_write: true }
+  документы.number:               { writers: [ingest], frozen_after_first_write: true }
+  документы.year:                 { writers: [ingest], frozen_after_first_write: true }
+  документы.actualization_date:   { writers: [ingest], frozen_after_first_write: true }
+  документы.raw_source:           { writers: [ingest], frozen_after_first_write: true }
+  документы.replaced_by:          { writers: [ingest] }
 
-  # Method provenance — set when a method is first lifted out of a paper.
-  # /init may seed provisional methods from notes/web; /ingest is the
-  # primary writer once a paper introduces or reuses the method.
-  methods.source_papers:    { writers: [ingest, init, edit] }
-  methods.parent_methods:   { writers: [ingest, edit] }
-  methods.child_methods:    { writers: [ingest, edit] }
-  methods.realizes_concepts: { writers: [ingest, edit] }
+  # Concept provenance — definition and source set at ingest.
+  понятия.definition:             { writers: [ingest, edit] }
+  понятия.source_document:        { writers: [ingest], frozen_after_first_write: true }
 
-  # Topic curation — what papers / concepts anchor this research area.
-  topics.key_papers:        { writers: [ingest, init, edit] }
+  # Topic curation — which documents / concepts anchor this area.
+  темы.key_documents:             { writers: [ingest, edit] }
+  темы.key_concepts:              { writers: [ingest, edit] }
 
-  # Concept taxonomy — which topic this concept belongs to.
-  concepts.parent_topic:    { writers: [ingest, init, edit] }
+  # Process structure — composition set at edit time.
+  процессы.parent_processes:      { writers: [edit] }
+  процессы.steps:                 { writers: [edit] }
+  процессы.применяется_для:       { writers: [edit] }
+  процессы.распространяется_на:   { writers: [edit] }
 
-  # Idea lifecycle and judgement scores.
-  ideas.status:             { writers: [ideate, exp-eval, exp-pilot-eval, refine] }
-  ideas.failure_reason:     { writers: [exp-eval, exp-pilot-eval] }
-  ideas.date_resolved:      { writers: [exp-eval] }
-  ideas.pilot_result:       { writers: [exp-pilot-eval] }
-  ideas.target_venue:       { writers: [ideate] }
-  ideas.novelty_score:      { writers: [ideate, novelty] }
+  # Project task lifecycle.
+  задачи.status:                  { writers: [init-project, edit] }
+  задачи.priority:                { writers: [init-project, edit] }
 
-  # Experiment lifecycle.
-  experiments.status:       { writers: [exp-design, exp-run, exp-status, exp-eval] }
-  experiments.outcome:      { writers: [exp-eval] }
-  experiments.key_result:   { writers: [exp-eval] }
-  experiments.date_completed: { writers: [exp-run] }
-  experiments.run_log:      { writers: [exp-run, exp-status] }
-  experiments.remote:       { writers: [exp-run, exp-status] }
-  experiments.evaluates_methods: { writers: [exp-design, edit] }
+  # Test lifecycle.
+  испытания.status:               { writers: [experiment] }
+  испытания.outcome:              { writers: [experiment] }
+  испытания.result:               { writers: [experiment] }
 
 edges:
 
-  # Citation graph — built at ingest, kept fresh by daily-arxiv.
-  cites:                    [ingest]
+  # Document-document semantic — only /ingest produces these.
+  ссылается_на:                  [ingest]
+  заменяет:                      [ingest]
+  дополняет:                     [ingest]
 
-  # Paper-paper semantic — only /ingest produces these judgments.
-  # 4 redundant types (improves_on / compares_against / surveys /
-  # complementary_to) were removed; see runtime/schema/edges.yaml header.
-  same_problem_as:          [ingest]
-  similar_method_to:        [ingest]
-  builds_on:                [ingest]
-  challenges:               [ingest]
+  # Document → process / concept — only /ingest produces these.
+  регламентирует:                [ingest]
+  вводит_термин:                 [ingest]
+  использует_термин:             [ingest]
 
-  # Paper-concept semantic — only /ingest produces these.
-  introduces_concept:       [ingest]
-  uses_concept:             [ingest]
-  extends_concept:          [ingest]
-  critiques_concept:        [ingest]
+  # Process structure — only /edit produces these.
+  включает_шаг:                  [edit]
+  применяется_для:               [edit]
+  распространяется_на:           [edit]
 
-  # Workflow edges — multiple skills can produce these. The endpoints are
-  # broad ('*' on both ends in edges.yaml), so a single edge type can serve
-  # several workflows. Listed writers reflect the canonical producers; /edit
-  # remains the manual escape hatch.
-  supports:                 [ingest, exp-eval]
-  contradicts:              [ingest]
-  tested_by:                [exp-design]
-  invalidates:              [exp-eval]
-  addresses_gap:            [ideate]
-  derived_from:             [ingest]
-  inspired_by:              [ideate]
+  # Cross-entity check / evidence.
+  противоречит:                  [check]
+  подтверждает:                  [evidence, ingest]
+
+  # Project workflow — experiment skills produce these.
+  проверяет_задачу:              [experiment]
+  проверяется_методом:           [experiment]
+
+  # Provenance and generic.
+  происходит_из:                 [provenance, ingest]
+  связан_с:                      [ingest, edit]
