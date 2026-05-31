@@ -1,4 +1,4 @@
----
+﻿---
 description: Generate an academic poster from a drafted paper — distill sections into a single-page HTML poster with figures and inter-section transitions
 argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos] [--no-refine]"
 ---
@@ -630,7 +630,7 @@ or **Ctrl+P** (Win/Linux) → **Save as PDF**. Recommended print settings:
 - **40-word summary**: per the poster_outline_prompt, each section paragraph stays ≤ 40 words before transitions are added.
 - **De-AI polish is mandatory**: per `shared-references/academic-writing.md`. Avoid signature openings ("In this work", "We propose", "Our approach"), replace inflated verbs ("leverage" → "use", "delve" → "examine").
 - **Strict template injection**: `tools/poster.py build` only injects between `<div class="flow" id="flow">...</div>`; do not edit the template's CSS or JavaScript fit algorithm.
-- **Figure selection is interactive by default**: omitting both `--auto-figures` and `--no-figures` runs the Step 2.5 manifest + question flow. The flags are user-owned per CLAUDE.md rule 5 — do not infer them; ask if unsure which mode to use.
+- **Figure selection is interactive by default**: omitting both `--auto-figures` and `--no-figures` runs the Step 2.5 manifest + question flow. The flags are user-owned per AGENTS.md rule 5 — do not infer them; ask if unsure which mode to use.
 - **No special layout for wide figures**: every figure renders inline within its `<section>`. The `wide` flag on visual nodes is informational only — used to surface the ⚠ marker in the manifest so the user can pick an alternative or skip a cramped figure. A future figure-generation skill is expected to solve the aspect-ratio problem upstream by producing poster-fit figures.
 
 ## Error Handling

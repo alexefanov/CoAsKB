@@ -1,4 +1,4 @@
----
+﻿---
 description: Reset wiki state to a clean scaffold by scope (wiki / raw / log / checkpoints / all). Useful during development or carefree restarts after a botched setup.
 argument-hint: "--scope wiki|raw|log|checkpoints|all"
 ---
@@ -14,7 +14,7 @@ Manual: `/reset --scope wiki` / `--scope raw` / `--scope log` / `--scope checkpo
 ## Inputs
 
 - `--scope` *(required)*: one of
-  - `wiki` — delete every `*.md` under `wiki/<entity>/` and `wiki/outputs/`, plus `wiki/index.md`, `wiki/log.md`, and `wiki/graph/` files. Preserves `.gitkeep` and `wiki/CLAUDE.md`.
+  - `wiki` — delete every `*.md` under `wiki/<entity>/` and `wiki/outputs/`, plus `wiki/index.md`, `wiki/log.md`, and `wiki/graph/` files. Preserves `.gitkeep` and `wiki/AGENTS.md`.
   - `raw` — delete every entry under `raw/papers/`, `raw/discovered/`, `raw/tmp/`, `raw/notes/`, `raw/web/` (except `.gitkeep`).
   - `log` — reset `wiki/log.md` to the empty header.
   - `checkpoints` — clear batch state via `research_wiki.py checkpoint-clear`.
@@ -93,7 +93,7 @@ Next steps:
 ## Constraints
 
 - **Confirm before destructive action**: never call `--yes` without showing the plan and asking the user.
-- **Preserves**: `.gitkeep` placeholders, `wiki/CLAUDE.md`, `.claude/` (skills are never touched).
+- **Preserves**: `.gitkeep` placeholders, `wiki/AGENTS.md`, `.claude/` (skills are never touched).
 - **`raw/` deletes are irreversible**: PDFs are not in git history. Warn the user before executing `raw` or `all` scopes.
 - **`/reset` does not touch `tools/`, `mcp-servers/`, `i18n/`, `.env`, or git state.**
 - **Scope is required**: no default action (`/reset` with no flag prompts for scope rather than guessing).

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="assets/logo.png" width="180" alt="ΩmegaWiki Logo">
 
@@ -378,7 +378,7 @@ All pages use **Obsidian `[[wikilink]]` format** — open `wiki/` in Obsidian fo
 
 ```
 OmegaWiki/
-├── CLAUDE.md                    # Runtime schema & rules
+├── AGENTS.md                    # Runtime schema & rules
 ├── wiki/                        # Knowledge base (LLM-maintained)
 │   ├── papers/                  #   Structured paper summaries
 │   ├── concepts/                #   Cross-paper technical concepts

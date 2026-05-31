@@ -1,11 +1,11 @@
-# ΩmegaWiki — Runtime Contract
+﻿# ΩmegaWiki — Runtime Contract
 
-编辑 `i18n/zh/CLAUDE.md`,不要改根目录下的副本。运行 `./setup.sh --lang zh` 同步。
+编辑 `i18n/zh/AGENTS.md`,不要改根目录下的副本。运行 `./setup.sh --lang zh` 同步。
 
 ## 仓库布局
 
 - `wiki/` — 产物面。`index.md` 是目录;`log.md` 是 append-only;每类实体一个子目录;`wiki/graph/` 自动生成。
-- `runtime/` — 契约源(schema + policy + templates)。修改任何规则前先读 `runtime/CLAUDE.md`。
+- `runtime/` — 契约源(schema + policy + templates)。修改任何规则前先读 `runtime/AGENTS.md`。
 - `raw/` — 用户自有 `{papers,notes,web}/`(只读)+ skill 可写的 `discovered/`、`tmp/`。
 - `tools/` — Python 助手(`research_wiki.py` 是 wiki 引擎,`lint.py` 是校验器)。
 
@@ -33,7 +33,7 @@ Wikilink:`[[slug]]`。slug 全小写、连字符分隔、无空格。
 | 正向 → 反向链接规则                            | `runtime/schema/xref.yaml` |
 | slug 规则、ownership、edge 存储位置            | `runtime/schema/conventions.yaml` |
 | 各 skill 对字段/边的写权限                     | `runtime/policy/writers.yaml` |
-| 改契约本身 / 重新 regen                        | `runtime/CLAUDE.md` |
+| 改契约本身 / 重新 regen                        | `runtime/AGENTS.md` |
 
 ## Python 环境
 

@@ -1,4 +1,4 @@
----
+﻿---
 description: 从已撰写的论文生成学术海报 —— 提炼章节为单页 HTML 海报,包含配图和段落间过渡
 argument-hint: "[paper-dir] [--review] [--anonymous] [--no-figures] [--no-logos] [--no-refine]"
 ---
@@ -629,7 +629,7 @@ python3 tools/research_wiki.py log wiki/ \
 - **40 词摘要**:按 poster_outline_prompt,每章正文段在加过渡句前不超过 40 词。
 - **强制去 AI 风格化**:按 `shared-references/academic-writing.md`。避开 "In this work" / "We propose" / "Our approach" 等签名开头,把 "leverage" 换成 "use","delve" 换成 "examine"。
 - **严格模板注入**:`tools/poster.py build` 仅注入到 `<div class="flow" id="flow">...</div>` 之间,不修改模板的 CSS 与 fit 算法。
-- **配图选择默认交互**:未传入 `--auto-figures` 也未传入 `--no-figures` 时,跑 Step 2.5 manifest + 询问流程。这些 flag 按 CLAUDE.md 规则 5 归用户所有 —— 不要替用户推断;不确定时,询问用户。
+- **配图选择默认交互**:未传入 `--auto-figures` 也未传入 `--no-figures` 时,跑 Step 2.5 manifest + 询问流程。这些 flag 按 AGENTS.md 规则 5 归用户所有 —— 不要替用户推断;不确定时,询问用户。
 - **wide 图无特殊布局**:任何图都在 `<section>` 内 inline 渲染。visual 节点上的 `wide` 字段仅作信息提示 —— 用来在 manifest 中显示 ⚠ 标记,让用户选别的图或跳过过宽/过高的图。未来的图像生成 skill 预期会在源头解决比例问题,产出适配海报的图。
 
 ## Error Handling

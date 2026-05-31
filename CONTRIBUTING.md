@@ -1,4 +1,4 @@
-# Contributing to OmegaWiki
+﻿# Contributing to OmegaWiki
 
 Thank you for your interest in contributing to OmegaWiki. This guide covers the essentials.
 
@@ -53,7 +53,7 @@ python -m pytest tests/ -v
 
 OmegaWiki ships in English and Chinese. English is canonical.
 
-When modifying any SKILL.md, runtime CLAUDE.md, or shared-references file:
+When modifying any SKILL.md, runtime AGENTS.md, or shared-references file:
 
 1. Edit `i18n/en/<path>` first.
 2. Apply the equivalent change to `i18n/zh/<path>`.

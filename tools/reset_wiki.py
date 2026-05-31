@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Reset wiki state to a clean scaffold (used by /reset skill).
 
 Scopes:
     wiki         delete all .md content under wiki/<entity>/, wiki/outputs/,
                  wiki/index.md, wiki/log.md, and wiki/graph/ files.
-                 Preserves .gitkeep and wiki/CLAUDE.md.
+                 Preserves .gitkeep and wiki/AGENTS.md.
     raw          delete all files under raw/<sub>/ except .gitkeep.
     log          reset wiki/log.md to empty header.
     checkpoints  call `research_wiki.py checkpoint-clear` to drop batch state.

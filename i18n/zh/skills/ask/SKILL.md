@@ -1,4 +1,4 @@
----
+﻿---
 description: 对 wiki 提问，综合检索相关页面后回答，好的回答可 crystallize 回 wiki
 argument-hint: <question>
 ---
@@ -132,7 +132,7 @@ argument-hint: <question>
    ```
 
 **Case B — 创建新 concept：**
-1. 若回答揭示了新概念：按 CLAUDE.md concept 模板创建 `wiki/concepts/{slug}.md`
+1. 若回答揭示了新概念：按 AGENTS.md concept 模板创建 `wiki/concepts/{slug}.md`
 2. maturity: emerging
 3. key_papers: 从回答引用中提取
 4. 添加 graph edges（concept → papers）

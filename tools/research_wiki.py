@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """OmegaWiki — Wiki Knowledge Engine / Движок базы знаний Wiki.
 
 Core operations for a wiki-centric research knowledge base: entity metadata
@@ -121,7 +121,7 @@ FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
 def slugify(title: str) -> str:
     """Generate a kebab-case slug from a paper/concept title.
 
-    Rules (from product CLAUDE.md):
+    Rules (from product AGENTS.md):
       - All lowercase, hyphen-separated, no spaces
       - Extract meaningful keywords from title, drop stop words
       - Keep first 5-6 keywords for reasonable length
@@ -2108,7 +2108,7 @@ def _append_lines_to_section(fpath: Path, heading: str,
 def append_log(wiki_root: str, message: str) -> None:
     """Append a timestamped entry to log.md.
 
-    Format matches product CLAUDE.md spec:
+    Format matches product AGENTS.md spec:
       ## [YYYY-MM-DD] skill | action | details
     """
     log_path = Path(wiki_root) / "log.md"

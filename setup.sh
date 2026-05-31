@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ============================================================================
 # ΩmegaWiki — One-Click Setup
 # ============================================================================
@@ -160,7 +160,7 @@ fi
 # ── Step 3b: Activate language files ───────────────────────────────
 echo ""
 info "Activating language: $LANG_CODE"
-cp "$I18N_DIR/CLAUDE.md" CLAUDE.md
+cp "$I18N_DIR/AGENTS.md" AGENTS.md
 for src in "$I18N_DIR/skills"/*/SKILL.md; do
     skill_dir=$(dirname "$src")
     name=$(basename "$skill_dir")

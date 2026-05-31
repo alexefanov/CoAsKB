@@ -1,4 +1,4 @@
----
+﻿---
 description: Ask the wiki a question, retrieve and synthesize relevant pages, optionally crystallize the answer back into the wiki
 argument-hint: <question>
 ---
@@ -133,7 +133,7 @@ Choose the crystallize target based on answer content:
    ```
 
 **Case B — Create new concept:**
-1. If the answer reveals a new concept: create `wiki/concepts/{slug}.md` using the CLAUDE.md concept template
+1. If the answer reveals a new concept: create `wiki/concepts/{slug}.md` using the AGENTS.md concept template
 2. maturity: emerging
 3. key_papers: extracted from answer citations
 4. Add graph edges (concept → papers)

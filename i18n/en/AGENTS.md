@@ -1,11 +1,11 @@
-# ΩmegaWiki — Runtime Contract
+﻿# ΩmegaWiki — Runtime Contract
 
-Edit `i18n/en/CLAUDE.md`, not the active copy at root. Run `./setup.sh --lang en` to sync.
+Edit `i18n/en/AGENTS.md`, not the active copy at root. Run `./setup.sh --lang en` to sync.
 
 ## Repository Layout
 
 - `wiki/` — product surface. `index.md` is the catalog; `log.md` is append-only; subdirs per entity kind; `wiki/graph/` is auto-generated.
-- `runtime/` — contract source (schema + policy + templates). Read `runtime/CLAUDE.md` before changing any rule.
+- `runtime/` — contract source (schema + policy + templates). Read `runtime/AGENTS.md` before changing any rule.
 - `raw/` — user-owned `{papers,notes,web}/` (read-only) + skill-writable `discovered/`, `tmp/`.
 - `tools/` — Python helpers (`research_wiki.py` is the wiki engine; `lint.py` is the validator).
 
@@ -33,7 +33,7 @@ Wikilinks: `[[slug]]`. Slugs are lowercase, hyphen-separated, no spaces.
 | Forward → reverse link rules                         | `runtime/schema/xref.yaml` |
 | Slug rule, ownership, edge storage location          | `runtime/schema/conventions.yaml` |
 | Field/edge write permissions per skill               | `runtime/policy/writers.yaml` |
-| Changing the contract / regen                        | `runtime/CLAUDE.md` |
+| Changing the contract / regen                        | `runtime/AGENTS.md` |
 
 ## Python Environment
 

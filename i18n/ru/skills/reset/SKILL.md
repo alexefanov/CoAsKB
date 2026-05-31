@@ -1,4 +1,4 @@
----
+﻿---
 name: reset
 description: Сброс состояния wiki до чистого каркаса по областям (wiki / raw / log / checkpoints / all). Полезно при разработке или беззаботном перезапуске после неудачной настройки.
 argument-hint: "--scope wiki|raw|log|checkpoints|all"
@@ -15,7 +15,7 @@ argument-hint: "--scope wiki|raw|log|checkpoints|all"
 ## Входы
 
 - `--scope` *(обязательно)*: одно из
-  - `wiki` — удаление каждого `*.md` в `wiki/<entity>/` и `wiki/outputs/`, плюс `wiki/index.md`, `wiki/log.md` и файлы `wiki/graph/`. Сохраняет `.gitkeep` и `wiki/CLAUDE.md`.
+  - `wiki` — удаление каждого `*.md` в `wiki/<entity>/` и `wiki/outputs/`, плюс `wiki/index.md`, `wiki/log.md` и файлы `wiki/graph/`. Сохраняет `.gitkeep` и `wiki/AGENTS.md`.
   - `raw` — удаление каждого элемента в `raw/papers/`, `raw/discovered/`, `raw/tmp/`, `raw/notes/`, `raw/web/` (кроме `.gitkeep`).
   - `log` — сброс `wiki/log.md` до пустого заголовка.
   - `checkpoints` — очистка пакетного состояния через `research_wiki.py checkpoint-clear`.
@@ -94,7 +94,7 @@ python3 tools/research_wiki.py log wiki/ "reset | область: <scope>"
 ## Ограничения
 
 - **Подтверждение перед деструктивным действием**: никогда не вызывайте `--yes`, не показав план и не спросив пользователя.
-- **Сохраняет**: заглушки `.gitkeep`, `wiki/CLAUDE.md`, `.claude/` (навыки никогда не затрагиваются).
+- **Сохраняет**: заглушки `.gitkeep`, `wiki/AGENTS.md`, `.claude/` (навыки никогда не затрагиваются).
 - **Удаления в `raw/` необратимы**: PDF не в истории git. Предупредите пользователя перед выполнением областей `raw` или `all`.
 - **`/reset` не трогает `tools/`, `mcp-servers/`, `i18n/`, `.env` или состояние git.**
 - **Область обязательна**: нет действия по умолчанию (`/reset` без флага запрашивает область, а не угадывает).

@@ -1,85 +1,58 @@
-# runtime/ — Wiki Runtime Contract
+# runtime/ — Контракт времени выполнения вики
 
-Single source of truth for what is structurally legal in the wiki.  YAML in
-`schema/` and `policy/` is the contract; `loader.py` is the Python access API
-consumed by `tools/lint.py` and `tools/research_wiki.py`.  **No codegen step** —
-edit YAML, restart the tool.
+Единый источник истины о структурной корректности вики. YAML в `schema/` и `policy/` — контракт; `loader.py` — Python API доступа, используемый `tools/lint.py` и `tools/research_wiki.py`. **Шаг кодогенерации отсутствует** — правишь YAML, перезапускаешь инструмент.
 
-## Folder layout
+## Структура папок
 
 ```
 runtime/
-├── __init__.py     marks runtime/ as a Python package
-├── loader.py       schema access API (imported by tools/lint.py + research_wiki.py)
-├── schema/         data-shape contract (4 YAMLs)
-├── policy/         access control (writers.yaml)
-└── templates/      per-entity body skeletons used by /init and /ingest
+├── __init__.py     помечает runtime/ как Python-пакет
+├── loader.py       API доступа к схеме (импортируется tools/lint.py + research_wiki.py)
+├── schema/         контракт форм данных (4 YAML-файла)
+├── policy/         контроль доступа (writers.yaml)
+└── templates/      скелеты тела страницы по типу сущности, используемые /init и /ingest
 ```
 
-## How to add things
+## Как добавлять
 
-Every change below is **YAML-only, zero Python change**.  Edit, save, done.
+Каждое изменение ниже — **только YAML, ноль изменений Python**. Правишь, сохраняешь, готово.
 
-### Entity-related (`schema/entities.yaml` + `templates/`)
+### Сущности (`schema/entities.yaml` + `templates/`)
 
-- **New entity type** — add a top-level block (`<kind>:` with `dir`, `fields`,
-  optional `lifecycle`, optional `terminal: true`) and create
-  `templates/<kind>.md.tmpl` with the body section skeleton.
-- **New field on an entity** — add it under that entity's `fields:` block with
-  `type` + optional `required` / `default` / `range` / `values` / `to`.
-- **New conditional-required rule** — set `required_when: { other_field: value }`
-  on the field.  `lint` auto-validates.
-- **New lifecycle state or transition** — edit the entity's
-  `lifecycle.transitions:` map.  `research_wiki.py transition` auto-validates.
+- **Новый тип сущности** — добавь блок верхнего уровня (`<kind>:` с `dir`, `fields`, опционально `lifecycle`, опционально `terminal: true`) и создай `templates/<kind>.md.tmpl` со скелетом тела страницы.
+- **Новое поле на сущности** — добавь под `fields:` этого типа с `type` + опционально `required` / `default` / `range` / `values` / `to`.
+- **Новое условно-обязательное правило** — укажи `required_when: { other_field: value }` на поле. `lint` проверяет автоматически.
+- **Новое состояние или переход жизненного цикла** — отредактируй карту `lifecycle.transitions:` сущности. `research_wiki.py transition` проверяет автоматически.
 
-### Edge-related (`schema/edges.yaml`)
+### Рёбра (`schema/edges.yaml`)
 
-- **New edge type** — add a top-level block with `endpoints`, `direction`
-  (`directed | symmetric`), `workflow`, `attributes`.
-- **New attribute on an edge** — add it under that edge's `attributes:` block
-  with `type` + optional `required` / `values`.  `add-edge` collects it,
-  `lint` validates it.
-- **Different storage location** — list it under
-  `conventions.yaml::edge_storage::exceptions` (default is `wiki/graph/edges.jsonl`).
+- **Новый тип ребра** — добавь блок верхнего уровня с `endpoints`, `direction` (`directed | symmetric`), `workflow`, `attributes`.
+- **Новый атрибут на ребре** — добавь под `attributes:` этого типа с `type` + опционально `required` / `values`. `add-edge` собирает, `lint` проверяет.
+- **Другое место хранения** — укажи в `conventions.yaml::edge_storage::exceptions` (по умолчанию — `wiki/graph/edges.jsonl`).
 
-### Cross-reference (`schema/xref.yaml`)
+### Перекрёстные ссылки (`schema/xref.yaml`)
 
-- **New forward → reverse rule** — append to `rules:` with a `forward` block
-  (`kind` + one of `frontmatter_field` / `body_section` / `edge_type`, plus
-  `target`) and a `reverse` block (`kind` + `frontmatter_field` or
-  `body_section`, plus `action: append_slug | append_record`).  `lint` auto-checks.
+- **Новое правило прямой → обратной ссылки** — добавь в `rules:` блок `forward` (`kind` + одно из `frontmatter_field` / `body_section` / `edge_type`, плюс `target`) и блок `reverse` (`kind` + `frontmatter_field` или `body_section`, плюс `action: append_slug | append_record`). `lint` проверяет автоматически.
 
-### Access control (`policy/writers.yaml`)
+### Контроль доступа (`policy/writers.yaml`)
 
-- **Restrict who writes a field** — add `<kind>.<field>: { writers: [skill1, skill2] }`
-  under `fields:`.  Add `frozen_after_first_write: true` if it should not be
-  modified after creation.
-- **Restrict who writes an edge type** — add `<edge_type>: [skill1, skill2]`
-  under `edges:`.
+- **Ограничь, кто пишет поле** — добавь `<kind>.<field>: { writers: [skill1, skill2] }` в `fields:`. Добавь `frozen_after_first_write: true`, если поле нельзя изменять после создания.
+- **Ограничь, кто пишет тип ребра** — добавь `<edge_type>: [skill1, skill2]` в `edges:`.
 
-### Conventions (`schema/conventions.yaml`)
+### Соглашения (`schema/conventions.yaml`)
 
-- **Change slug rule, log grammar, ownership zones** — edit the corresponding
-  top-level key.
+- **Изменить правило slug, грамматику лога, зоны владения** — отредактируй соответствующий ключ верхнего уровня.
 
-## When Python changes ARE needed
+## Когда изменения Python НУЖНЫ
 
-Only when extending the **schema language itself**, not when adding more data:
+Только при расширении **самого языка схемы**, а не при добавлении данных:
 
-- New field type (e.g. `list_date`, `tuple_str`) — extend `loader.py::_valid_values_for`
-- New xref action (e.g. `replace_slug` vs `append_slug`) — extend `lint.py::_has_reverse`
-- New cross-cutting helper (e.g. `edge_supports_evidence_search`) — add to `loader.py`
+- Новый тип поля (например, `list_date`, `tuple_str`) — расширь `loader.py::_valid_values_for`
+- Новое действие xref (например, `replace_slug` вместо `append_slug`) — расширь `lint.py::_has_reverse`
+- Новая сквозная утилита (например, `edge_supports_evidence_search`) — добавь в `loader.py`
 
-## Out of scope
+## Вне области действия
 
-- Skill prompts and workflow logic — `.claude/skills/<skill>/`
-- Lint severity / auto-fix policy — derived from `required` / `default` in schema
-- Migration history — git log + one-shot scripts; no `migrations/` folder
-
-## Кодировка файлов
-
-Все .md-файлы в vault — чистая UTF-8 без BOM.
-- При чтении: `encoding='utf-8'`
-- При записи: `encoding='utf-8'`
-- Проверять, что PowerShell/Python работают с UTF-8, а не Windows-1251
-- При mojibake: UTF-8 → CP1251 → UTF-8
+- Промпты скиллов и логика рабочих процессов — `.claude/skills/<skill>/`
+- Критичность lint'а / политика авто-исправления — выводится из `required` / `default` в схеме
+- История миграций — git log + одноразовые скрипты; папка `migrations/` не предусмотрена

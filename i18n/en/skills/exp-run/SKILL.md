@@ -1,4 +1,4 @@
----
+﻿---
 description: Full experiment execution pipeline — prepare code → deploy(Confirm with the user before operation and ask the applicant to conduct manual inspection) → monitor → collect results, supporting three run modes
 argument-hint: <experiment-slug> [--review] [--collect] [--full] [--env local|remote]
 ---
@@ -189,7 +189,7 @@ argument-hint: <experiment-slug> [--review] [--collect] [--full] [--env local|re
      --cmd "bash experiments/code/{slug}/run.sh" \
      --gpu {gpu_index}
    ```
-6. Update `wiki/experiments/{slug}.md` frontmatter — all of these fields already exist (empty) because `/exp-design` wrote the full CLAUDE.md template:
+6. Update `wiki/experiments/{slug}.md` frontmatter — all of these fields already exist (empty) because `/exp-design` wrote the full AGENTS.md template:
    ```bash
    # Top-level scalar fields — use set-meta
    python3 tools/research_wiki.py set-meta wiki/experiments/{slug}.md status running
@@ -205,7 +205,7 @@ argument-hint: <experiment-slug> [--review] [--collect] [--full] [--env local|re
      started: ""
      completed: ""
    ```
-   Use five Edit calls (one per sub-field) to set `server`, `gpu`, `session`, `started`. Leave `completed: ""` — Phase 4 fills that. If you find the `remote:` block missing from the file, that means `/exp-design` did not write the full CLAUDE.md template; stop and report the bug rather than trying to append the block here (appending would drift the file away from the canonical order and break future edits).
+   Use five Edit calls (one per sub-field) to set `server`, `gpu`, `session`, `started`. Leave `completed: ""` — Phase 4 fills that. If you find the `remote:` block missing from the file, that means `/exp-design` did not write the full AGENTS.md template; stop and report the bug rather than trying to append the block here (appending would drift the file away from the canonical order and break future edits).
 
 7. **Estimate runtime** and write to frontmatter (same estimation logic as local mode):
    ```bash

@@ -1,10 +1,10 @@
-# /ingest Cross-References
+﻿# /ingest Cross-References
 
 Open this reference when you are writing a link on any wiki page. Every forward link has a reverse obligation (except to foundations). The table below is the contract.
 
 ## Forward → reverse obligation
 
-Mirrors the matrix in the root `CLAUDE.md` ("Cross-Reference Rules"), trimmed to the edges `/ingest` actually writes:
+Mirrors the matrix in the root `AGENTS.md` ("Cross-Reference Rules"), trimmed to the edges `/ingest` actually writes:
 
 | Forward action (what you write on page A) | Required reverse action (what you also write on page B in the same turn) |
 |-------------------------------------------|--------------------------------------------------------------------------|
