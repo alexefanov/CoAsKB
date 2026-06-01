@@ -1,4 +1,4 @@
-﻿# ΩmegaWiki — Runtime Contract
+# ΩmegaWiki — Runtime Contract
 
 Edit `i18n/en/AGENTS.md`, not the active copy at root. Run `./setup.sh --lang en` to sync.
 
