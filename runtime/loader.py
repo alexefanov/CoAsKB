@@ -208,8 +208,6 @@ PAPER_CONCEPT_EDGE_TYPES       = edge_types_matching(from_kind='papers', to_kind
 SYMMETRIC_EDGE_TYPES           = edge_types_matching(direction=DIRECTION_SYMMETRIC)
 CONFIDENCE_REQUIRED_EDGE_TYPES = edge_types_matching(confidence=CONFIDENCE_REQUIRED)
 VALID_EDGE_TYPES               = set(EDGE_TYPE_SPECS) | LEGACY_EDGE_TYPES
-PRIORITY_EDGE_TYPES            = {name for name, spec in EDGES.items()
-                                  if spec.get('priority') == 'high'}
 
 
 # ── Generic edge-attribute validator (used by lint + research_wiki) ─────────

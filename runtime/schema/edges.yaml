@@ -1,195 +1,62 @@
 # edges.yaml — Relation contract for graph edges (incl. citations).
-# edges.yaml — Контракт отношений для рёбер графа (включая цитирования).
 #
-# Each edge type declares / Каждый тип ребра объявляет:
-#   endpoints   { from: <kind>, to: <kind> }  -- '*' means any kind / '*' — любой вид
+# Each edge type declares:
+#   endpoints   { from: <kind>, to: <kind> }  -- '*' means any kind
 #   direction   directed | symmetric           -- symmetric edges are stored once
 #                                                 with sorted endpoints
 #   workflow    which subsystem owns this edge type
-#               (ingest | edit | check | evidence | experiment | provenance | citation)
+#               (ingest | edit | check | evidence | experiment | provenance | citation | idea)
 #   attributes  schema for edge-record fields beyond from/to/type
-#   priority    high — приоритет при автоматическом назначении (русские ребра)
 #
 # Storage location of each edge type is decided in conventions.yaml::edge_storage.
-#
-# Application rules (display, auto_reverse, validation, examples):
-#   runtime/policy/edge-rules.yaml
 
 # =============================================================================
-# RUSSIAN DOMAIN EDGES (приоритетные) / РУССКИЕ ДОМЕННЫЕ РЁБРА
-# Russets are prioritized over AutoSci analogs when both apply.
+# INGEST EDGES — Document loading and semantic parsing
 # =============================================================================
 
 # ---------------------------------------------------------------------------
-# Paper ↔ Paper edges (Russian domain)
+# Paper ↔ Paper edges (ingest)
 # ---------------------------------------------------------------------------
 
-ссылается_на:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  ingest
-  priority:  high
-  attributes: {}
-
-заменяет:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  ingest
-  priority:  high
-  attributes:
-    тип_замены: { type: enum, values: [full, partial], required: true }
-    дата:       { type: date }
-
-отменяет:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  ingest
-  priority:  high
-  attributes:
-    дата:     { type: date }
-    причина:  { type: str }
-
-вносит_изменения:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  ingest
-  priority:  high
-  attributes:
-    пункт:      { type: str }
-    описание:   { type: str }
-
-цитирует:
+cites:
   endpoints: { from: papers, to: papers }
   direction: directed
   workflow:  citation
-  priority:  high
   attributes:
-    источник: { type: enum, values: [semantic_scholar, parsed_bib, manual], required: true }
-    дата:     { type: date }
-    пункт:    { type: str }
-    контекст: { type: str }
+    source: { type: enum, values: [semantic_scholar, parsed_bib, manual], required: true }
+    date:   { type: date }
 
-# ---------------------------------------------------------------------------
-# Paper → Concept edges (Russian domain)
-# ---------------------------------------------------------------------------
-
-дополняет:
-  endpoints: { from: papers, to: concepts }
+references:
+  endpoints: { from: papers, to: papers }
   direction: directed
   workflow:  ingest
-  priority:  high
-  attributes: {}
+  attributes:
+    section:  { type: str }
+    context:  { type: str }
 
-вводит_термин:
-  endpoints: { from: papers, to: concepts }
+replaces:
+  endpoints: { from: papers, to: papers }
   direction: directed
   workflow:  ingest
-  priority:  high
   attributes:
-    определение: { type: str }
-    пункт:       { type: str }
+    replace_type: { type: enum, values: [full, partial], required: true }
+    date:         { type: date }
 
-использует_термин:
-  endpoints: { from: [papers, methods], to: concepts }
+cancels:
+  endpoints: { from: papers, to: papers }
   direction: directed
   workflow:  ingest
-  priority:  high
-  attributes: {}
+  attributes:
+    date:    { type: date }
+    reason:  { type: str }
 
-# ---------------------------------------------------------------------------
-# Paper → Method edges (Russian domain)
-# ---------------------------------------------------------------------------
-
-регламентирует:
-  endpoints: { from: papers, to: methods }
+amends:
+  endpoints: { from: papers, to: papers }
   direction: directed
   workflow:  ingest
-  priority:  high
   attributes:
-    уверенность: { type: enum, values: [высокая, средняя], required: true }
-    пункт:       { type: str }
-
-# ---------------------------------------------------------------------------
-# Method → Method edges (Russian domain)
-# ---------------------------------------------------------------------------
-
-содержит_подпроцесс:
-  endpoints: { from: methods, to: methods }
-  direction: directed
-  workflow:  edit
-  priority:  high
-  attributes:
-    порядок:    { type: int }
-    описание:   { type: str }
-
-применяется_для:
-  endpoints: { from: methods, to: topics }
-  direction: directed
-  workflow:  edit
-  priority:  high
-  attributes: {}
-
-# ---------------------------------------------------------------------------
-# Cross-entity evidence edges (Russian domain)
-# ---------------------------------------------------------------------------
-
-противоречит:
-  endpoints: { from: '*', to: '*' }
-  direction: symmetric
-  workflow:  check
-  priority:  high
-  attributes:
-    серьёзность: { type: enum, values: [явное, неявное], required: true }
-    разрешение:  { type: str }
-
-подтверждает:
-  endpoints: { from: [methods, experiments], to: concepts }
-  direction: directed
-  workflow:  evidence
-  priority:  high
-  attributes:
-    источник: { type: str }
-
-# ---------------------------------------------------------------------------
-# Project workflow edges (Russian domain)
-# ---------------------------------------------------------------------------
-
-проверяет_задачу:
-  endpoints: { from: experiments, to: ideas }
-  direction: directed
-  workflow:  experiment
-  priority:  high
-  attributes: {}
-
-проверяется_методом:
-  endpoints: { from: methods, to: methods }
-  direction: directed
-  workflow:  experiment
-  priority:  high
-  attributes: {}
-
-# ---------------------------------------------------------------------------
-# Provenance & generic (Russian domain)
-# ---------------------------------------------------------------------------
-
-происходит_из:
-  endpoints: { from: '*', to: '*' }
-  direction: directed
-  workflow:  provenance
-  priority:  high
-  attributes: {}
-
-связан_с:
-  endpoints: { from: '*', to: '*' }
-  direction: symmetric
-  workflow:  ingest
-  priority:  high
-  attributes:
-    примечание: { type: str }
-
-# =============================================================================
-# AutoSci EDGES (original, uncommented)
-# =============================================================================
+    section:    { type: str }
+    description: { type: str }
 
 same_problem_as:
   endpoints: { from: papers, to: papers }
@@ -223,6 +90,10 @@ challenges:
     confidence: { type: enum, values: [high, medium, low], required: true }
     evidence:   { type: str, required: true }
 
+# ---------------------------------------------------------------------------
+# Paper → Concept edges (ingest)
+# ---------------------------------------------------------------------------
+
 introduces_concept:
   endpoints: { from: papers, to: concepts }
   direction: directed
@@ -255,6 +126,63 @@ critiques_concept:
     confidence: { type: enum, values: [high, medium, low], required: true }
     evidence:   { type: str, required: true }
 
+# ---------------------------------------------------------------------------
+# Paper → Method edges (ingest)
+# ---------------------------------------------------------------------------
+
+regulates:
+  endpoints: { from: papers, to: methods }
+  direction: directed
+  workflow:  ingest
+  attributes:
+    confidence: { type: enum, values: [high, medium, low], required: true }
+    section:    { type: str }
+
+# ---------------------------------------------------------------------------
+# Generic ingest edges
+# ---------------------------------------------------------------------------
+
+related_to:
+  endpoints: { from: '*', to: '*' }
+  direction: symmetric
+  workflow:  ingest
+  attributes:
+    note: { type: str }
+
+# =============================================================================
+# EDIT EDGES — Wiki structuring and organization
+# =============================================================================
+
+contains_subprocess:
+  endpoints: { from: methods, to: methods }
+  direction: directed
+  workflow:  edit
+  attributes:
+    order:       { type: int }
+    description: { type: str }
+
+applies_to:
+  endpoints: { from: methods, to: topics }
+  direction: directed
+  workflow:  edit
+  attributes: {}
+
+# =============================================================================
+# CHECK EDGES — Integrity verification
+# =============================================================================
+
+contradicts:
+  endpoints: { from: '*', to: '*' }
+  direction: symmetric
+  workflow:  check
+  attributes:
+    severity: { type: enum, values: [explicit, implicit], required: true }
+    resolution: { type: str }
+
+# =============================================================================
+# EVIDENCE EDGES — Experimental validation
+# =============================================================================
+
 supports:
   endpoints: { from: '*', to: '*' }
   direction: directed
@@ -262,15 +190,26 @@ supports:
   attributes:
     evidence: { type: str }
 
-contradicts:
-  endpoints: { from: '*', to: '*' }
+confirms:
+  endpoints: { from: [methods, experiments], to: concepts }
   direction: directed
   workflow:  evidence
   attributes:
-    evidence: { type: str }
+    source: { type: str }
+
+# =============================================================================
+# EXPERIMENT EDGES — Research workflow
+# =============================================================================
 
 tested_by:
-  endpoints: { from: '*', to: '*' }
+  endpoints: { from: ideas, to: experiments }
+  direction: directed
+  workflow:  experiment
+  attributes:
+    evidence: { type: str }
+
+tested_with:
+  endpoints: { from: experiments, to: ideas }
   direction: directed
   workflow:  experiment
   attributes:
@@ -283,12 +222,33 @@ invalidates:
   attributes:
     evidence: { type: str }
 
+verified_by:
+  endpoints: { from: methods, to: methods }
+  direction: directed
+  workflow:  experiment
+  attributes: {}
+
+# =============================================================================
+# IDEA EDGES — Knowledge gaps and inspiration
+# =============================================================================
+
 addresses_gap:
-  endpoints: { from: '*', to: '*' }
+  endpoints: { from: ideas, to: '*' }
   direction: directed
   workflow:  idea
   attributes:
     evidence: { type: str }
+
+inspired_by:
+  endpoints: { from: ideas, to: '*' }
+  direction: directed
+  workflow:  idea
+  attributes:
+    evidence: { type: str }
+
+# =============================================================================
+# PROVENANCE EDGES — Origin tracking
+# =============================================================================
 
 derived_from:
   endpoints: { from: '*', to: '*' }
@@ -297,17 +257,8 @@ derived_from:
   attributes:
     evidence: { type: str }
 
-inspired_by:
+originated_from:
   endpoints: { from: '*', to: '*' }
   direction: directed
-  workflow:  idea
-  attributes:
-    evidence: { type: str }
-
-cites:
-  endpoints: { from: papers, to: papers }
-  direction: directed
-  workflow:  citation
-  attributes:
-    source: { type: enum, values: [semantic_scholar, parsed_bib, manual], required: true }
-    date:   { type: date }
+  workflow:  provenance
+  attributes: {}
