@@ -1,7 +1,6 @@
 # writers.yaml — Field- and edge-level write permissions.
-# writers.yaml — Права записи на уровне полей и рёбер.
 #
-# STATUS: SPEC, NOT A RUNTIME GATE / СТАТУС: СПЕЦИФИКАЦИЯ, НЕ ШЛЮЗ ВЫПОЛНЕНИЯ.
+# STATUS: SPEC, NOT A RUNTIME GATE.
 # Nothing in tools/ or .claude/skills/ reads this file at write time. It is a
 # declarative contract for SKILL.md authors and for Claude when reading the
 # repo's rules — "this is who is supposed to write this." Enforcement is at
@@ -28,61 +27,81 @@
 fields:
 
   # Document identity — set at ingest, frozen after.
-  документы.doc_type:             { writers: [ingest], frozen_after_first_write: true }
-  документы.number:               { writers: [ingest], frozen_after_first_write: true }
-  документы.year:                 { writers: [ingest], frozen_after_first_write: true }
-  документы.actualization_date:   { writers: [ingest], frozen_after_first_write: true }
-  документы.raw_source:           { writers: [ingest], frozen_after_first_write: true }
-  документы.replaced_by:          { writers: [ingest] }
+  papers.source_type:           { writers: [ingest], frozen_after_first_write: true }
+  papers.number:                { writers: [ingest], frozen_after_first_write: true }
+  papers.year:                  { writers: [ingest], frozen_after_first_write: true }
+  papers.actualization_date:    { writers: [ingest], frozen_after_first_write: true }
+  papers.raw_source:            { writers: [ingest], frozen_after_first_write: true }
+  papers.replaced_by:           { writers: [ingest] }
 
   # Concept provenance — definition and source set at ingest.
-  понятия.definition:             { writers: [ingest, edit] }
-  понятия.source_document:        { writers: [ingest], frozen_after_first_write: true }
+  concepts.definition:          { writers: [ingest, edit] }
+  concepts.source_document:     { writers: [ingest], frozen_after_first_write: true }
 
   # Topic curation — which documents / concepts anchor this area.
-  темы.key_documents:             { writers: [ingest, edit] }
-  темы.key_concepts:              { writers: [ingest, edit] }
+  topics.key_documents:         { writers: [ingest, edit] }
+  topics.key_concepts:          { writers: [ingest, edit] }
 
   # Process structure — composition set at edit time.
-  процессы.parent_processes:      { writers: [edit] }
-  процессы.steps:                 { writers: [edit] }
-  процессы.применяется_для:       { writers: [edit] }
-  процессы.распространяется_на:   { writers: [edit] }
+  methods.parent_processes:     { writers: [edit] }
+  methods.steps:                { writers: [edit] }
+  methods.applies_to:           { writers: [edit] }
 
   # Project task lifecycle.
-  задачи.status:                  { writers: [init-project, edit] }
-  задачи.priority:                { writers: [init-project, edit] }
+  ideas.status:                 { writers: [init-project, edit] }
+  ideas.priority:               { writers: [init-project, edit] }
 
   # Test lifecycle.
-  испытания.status:               { writers: [experiment] }
-  испытания.outcome:              { writers: [experiment] }
-  испытания.result:               { writers: [experiment] }
+  experiments.status:           { writers: [experiment] }
+  experiments.outcome:          { writers: [experiment] }
+  experiments.result:           { writers: [experiment] }
 
 edges:
 
   # Document-document semantic — only /ingest produces these.
-  ссылается_на:                  [ingest]
-  заменяет:                      [ingest]
-  дополняет:                     [ingest]
+  references:                   [ingest]
+  replaces:                     [ingest]
+  cancels:                      [ingest]
+  amends:                       [ingest]
+  same_problem_as:              [ingest]
+  similar_method_to:            [ingest]
+  builds_on:                    [ingest]
+  challenges:                   [ingest]
 
-  # Document → process / concept — only /ingest produces these.
-  регламентирует:                [ingest]
-  вводит_термин:                 [ingest]
-  использует_термин:             [ingest]
+  # Document → concept — only /ingest produces these.
+  introduces_concept:           [ingest]
+  uses_concept:                 [ingest]
+  extends_concept:              [ingest]
+  critiques_concept:            [ingest]
+
+  # Document → method — only /ingest produces these.
+  regulates:                    [ingest]
+
+  # Generic ingest edges.
+  related_to:                   [ingest, edit]
 
   # Process structure — only /edit produces these.
-  включает_шаг:                  [edit]
-  применяется_для:               [edit]
-  распространяется_на:           [edit]
+  contains_subprocess:          [edit]
+  applies_to:                   [edit]
 
   # Cross-entity check / evidence.
-  противоречит:                  [check]
-  подтверждает:                  [evidence, ingest]
+  contradicts:                  [check]
+  supports:                     [evidence]
+  confirms:                     [evidence]
 
   # Project workflow — experiment skills produce these.
-  проверяет_задачу:              [experiment]
-  проверяется_методом:           [experiment]
+  tested_by:                    [experiment]
+  tested_with:                  [experiment]
+  invalidates:                  [experiment]
+  verified_by:                  [experiment]
+
+  # Idea edges.
+  addresses_gap:                [idea]
+  inspired_by:                  [idea]
 
   # Provenance and generic.
-  происходит_из:                 [provenance, ingest]
-  связан_с:                      [ingest, edit]
+  derived_from:                 [provenance, ingest]
+  originated_from:              [provenance, ingest]
+
+  # Citation edges.
+  cites:                        [citation]

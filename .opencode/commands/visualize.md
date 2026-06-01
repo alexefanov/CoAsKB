@@ -23,7 +23,7 @@ description: 'Визуализация [--obsidian] [--canvas] [--focus NODE] [-
 /visualize --obsidian
 /visualize --canvas
 /visualize --focus idea-2024-001 --depth 3
-/visualize --types papers,ideas --edge-types цитирует,использует
+/visualize --types papers,ideas --edge-types cites,uses_concept
 /visualize --all
 ```
 

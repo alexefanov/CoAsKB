@@ -1,53 +1,51 @@
-# xref.yaml — Bidirectional link contract / Контракт двунаправленных ссылок.
+# xref.yaml — Bidirectional link contract.
 #
 # Whenever entity A writes a forward link to entity B, the reverse update on B
-# is required / Когда сущность A пишет прямую ссылку на B, обратное обновление B обязательно.
-# Each rule has / Каждое правило имеет:
+# is required. Each rule has:
 #
-#   forward.kind                     source entity kind / вид сущности-источника
-#   forward.<frontmatter_field |     where the forward link lives / где живёт прямая ссылка:
-#            body_section       |       frontmatter list field / поле списка в frontmatter, ИЛИ
-#            edge_type>                 body section (use '*' for any) / раздел тела ('*' — любой), ИЛИ
-#                                       graph edge type / тип ребра графа
-#   forward.target                   target entity kind / вид целевой сущности
+#   forward.kind                     source entity kind
+#   forward.<frontmatter_field |     where the forward link lives:
+#            body_section       |       frontmatter list field, OR
+#            edge_type>                 body section (use '*' for any), OR
+#                                       graph edge type
+#   forward.target                   target entity kind
 #
-#   reverse.kind                     target entity kind (same as forward.target) / вид целевой (совпадает)
-#   reverse.<frontmatter_field |     where the reverse update goes / куда идёт обратное обновление
+#   reverse.kind                     target entity kind (same as forward.target)
+#   reverse.<frontmatter_field |     where the reverse update goes
 #            body_section>
 #   reverse.action                   append_slug | append_record
-#   record                           record template (only for append_record) / шаблон записи (только append_record);
-#                                    {from} expands to the source slug / {from} заменяется на slug источника
+#   record                           record template (only for append_record);
+#                                    {from} expands to the source slug
 #
-# Foundations are terminal: any link to foundations writes no reverse / Фундаментальные страницы терминальны: ссылка на них не создаёт обратной связи.
+# Foundations are terminal: any link to foundations writes no reverse.
 #
-# Edge-based reverse links (auto_reverse in edge-rules.yaml) are handled by the
-# graph engine, not by xref.yaml. This file covers only frontmatter-to-frontmatter
-# and body-wikilink-to-frontmatter reverse rules.
+# Edge-based reverse links are handled by the graph engine, not by xref.yaml.
+# This file covers only frontmatter-to-frontmatter and body-wikilink-to-frontmatter reverse rules.
 
 rules:
 
-  # документы body wikilink → понятия → понятия body "Источники"
-  - forward: { kind: документы,   body_section: '*',         target: понятия }
-    reverse: { kind: понятия,     body_section: "Источники", action: append_slug }
+  # papers body wikilink → concepts → concepts body "Sources"
+  - forward: { kind: papers,      body_section: '*',         target: concepts }
+    reverse: { kind: concepts,    body_section: "Sources",   action: append_slug }
 
-  # документы body wikilink → процессы → процессы body "Нормативные ссылки"
-  - forward: { kind: документы,   body_section: '*',         target: процессы }
-    reverse: { kind: процессы,    body_section: "Нормативные ссылки", action: append_slug }
+  # papers body wikilink → methods → methods body "Normative references"
+  - forward: { kind: papers,      body_section: '*',         target: methods }
+    reverse: { kind: methods,     body_section: "Normative references", action: append_slug }
 
-  # процессы body wikilink → документы → документы body "Применяется в"
-  - forward: { kind: процессы,    body_section: '*',         target: документы }
-    reverse: { kind: документы,   body_section: "Применяется в", action: append_slug }
+  # methods body wikilink → papers → papers body "Applied in"
+  - forward: { kind: methods,     body_section: '*',         target: papers }
+    reverse: { kind: papers,      body_section: "Applied in", action: append_slug }
 
-  # понятия body wikilink → документы → документы body "Связанные понятия"
-  - forward: { kind: понятия,     body_section: '*',         target: документы }
-    reverse: { kind: документы,   body_section: "Связанные понятия", action: append_slug }
+  # concepts body wikilink → papers → papers body "Related concepts"
+  - forward: { kind: concepts,    body_section: '*',         target: papers }
+    reverse: { kind: papers,      body_section: "Related concepts", action: append_slug }
 
-  # темы body wikilink → документы/понятия/процессы → respective body "Темы"
-  - forward: { kind: темы,        body_section: '*',         target: документы }
-    reverse: { kind: документы,   body_section: "Темы",     action: append_slug }
-  - forward: { kind: темы,        body_section: '*',         target: понятия }
-    reverse: { kind: понятия,     body_section: "Темы",     action: append_slug }
-  - forward: { kind: темы,        body_section: '*',         target: процессы }
-    reverse: { kind: процессы,    body_section: "Темы",     action: append_slug }
+  # topics body wikilink → papers/concepts/methods → respective body "Topics"
+  - forward: { kind: topics,      body_section: '*',         target: papers }
+    reverse: { kind: papers,      body_section: "Topics",    action: append_slug }
+  - forward: { kind: topics,      body_section: '*',         target: concepts }
+    reverse: { kind: concepts,    body_section: "Topics",    action: append_slug }
+  - forward: { kind: topics,      body_section: '*',         target: methods }
+    reverse: { kind: methods,     body_section: "Topics",    action: append_slug }
 
 terminal_targets: [foundations]

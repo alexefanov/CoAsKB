@@ -1525,7 +1525,7 @@ def get_maturity(wiki_root: str, as_json: bool = False) -> dict:
     # Check for experiment evidence edges
     edges = load_edges(wiki_root)
     has_experiment_evidence = any(
-        e.get("type") in ("supports", "invalidates", "подтверждает", "противоречит")
+        e.get("type") in ("supports", "invalidates", "confirms", "contradicts")
         and str(e.get("from", "")).startswith("experiments/")
         for e in edges
     )
