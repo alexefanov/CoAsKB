@@ -38,15 +38,15 @@ Wikilinks: `[[slug]]`. Slug'и строчные, через дефис, без �
 
 ## Где смотреть
 
-| Нужно | Источник |
-|---|---|
-| Поля frontmatter страниц, перечисления, умолчания, жизненный цикл | `runtime/schema/entities.yaml` |
-| Структура разделов тела страницы | `runtime/templates/{kind}.md.tmpl` |
-| Типы рёбер, атрибуты, направление, уверенность | `runtime/schema/edges.yaml` |
-| Правила прямой/обратной связи | `runtime/schema/xref.yaml` |
-| Правила slug'ов, владение, расположение рёбер | `runtime/schema/conventions.yaml` |
-| Разрешения на запись полей/рёбер для скиллов | `runtime/policy/writers.yaml` |
-| Изменение контракта / регенерация | `runtime/AGENTS.md` |
+| Нужно                                                             | Источник                           |
+| ----------------------------------------------------------------- | ---------------------------------- |
+| Поля frontmatter страниц, перечисления, умолчания, жизненный цикл | `runtime/schema/entities.yaml`     |
+| Структура разделов тела страницы                                  | `runtime/templates/{kind}.md.tmpl` |
+| Типы рёбер, атрибуты, направление, уверенность                    | `runtime/schema/edges.yaml`        |
+| Правила прямой/обратной связи                                     | `runtime/schema/xref.yaml`         |
+| Правила slug'ов, владение, расположение рёбер                     | `runtime/schema/conventions.yaml`  |
+| Разрешения на запись полей/рёбер для скиллов                      | `runtime/policy/writers.yaml`      |
+| Изменение контракта / регенерация                                 | `runtime/AGENTS.md`                |
 
 ## Окружение Python
 
